@@ -1,10 +1,15 @@
 'use strict';
 
+import karmaStrings from './karma.lo.js';
+import realmStrings from './realms.lo.js';
+
 export default {
   code: 'lo',
   label: 'ລາວ',
   htmlLang: 'lo',
   strings: {
+    ...realmStrings,
+    ...karmaStrings,
     'app.title': 'ວິມຸຕຕິ — ປ່າສຽງເອີ້ນ',
 
     'title.name': 'ວິມຸຕຕິ',
@@ -66,7 +71,14 @@ export default {
     'voice.callHome': '«ກັບບ້ານເດີລູກ…»',
 
     'title.chapters': 'ເລືອກບົດ',
+    'title.codex': 'ໄຕຣພູມ 31',
     'end.next': 'ໄປບົດຕໍ່ໄປ',
+    'end.rebirth': 'ຄະຕິພູມ — ທີ່ທີ່ກຳພາໄປ',
+    'hud.karma': 'ບຸນ {merit} · ບາບ {demerit} · ກຸສົນ {kusala} · ອະກຸສົນ {akusala}',
+    'hud.realm': 'ພູມປັດຈຸບັນ: {realm}',
+    'samsara.jati': 'ຈຸຕິ–ປະຕິສັນທິ · {realm}',
+    'codex.title': 'ພູມ 31 — ໄຕຣພູມ',
+    'codex.close': 'ປິດ',
 
     'chapter1.name': 'ປ່າສຽງເອີ້ນ',
     'chapter1.subtitle': 'ບົດທີ 1 — ຄວາມຢ້ານ',

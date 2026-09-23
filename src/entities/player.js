@@ -4,6 +4,7 @@ import { MODE, PATH_WIDTH, PLAYER, TEMPLE, SALA, WORLD } from '../core/constants
 import { clamp, dist, distToPoly } from '../core/math.js';
 import { state } from '../core/state.js';
 import { input, isMindful } from '../systems/input.js';
+import { getRealmModifier } from '../systems/samsara.js';
 import { FALSE_A, FALSE_B, PATH as TRUE_PATH, TREES } from '../world/world-data.js';
 
 export const player = {
@@ -62,6 +63,7 @@ export function updatePlayer(dt) {
   if (running) speed = PLAYER.runSpeed;
   if (mind) speed = PLAYER.mindSpeed;
   if (!onPath) speed *= PLAYER.offPathSpeedFactor;
+  speed *= getRealmModifier().speed;
 
   player.x = clamp(player.x + ax * speed * dt, PLAYER.margin, WORLD.w - PLAYER.margin);
   player.y = clamp(player.y + ay * speed * dt, PLAYER.margin, WORLD.h - PLAYER.margin);

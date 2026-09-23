@@ -1,10 +1,15 @@
 'use strict';
 
+import karmaStrings from './karma.th.js';
+import realmStrings from './realms.th.js';
+
 export default {
   code: 'th',
   label: 'ไทย',
   htmlLang: 'th',
   strings: {
+    ...realmStrings,
+    ...karmaStrings,
     'app.title': 'วิมุตติ — ป่าเสียงเรียก',
 
     'title.name': 'วิมุตติ',
@@ -66,7 +71,14 @@ export default {
     'voice.callHome': '«กลับบ้านนะลูก…»',
 
     'title.chapters': 'เลือกบท',
+    'title.codex': 'ไตรภูมิ 31',
     'end.next': 'ไปบทต่อไป',
+    'end.rebirth': 'คติภูมิ — ที่ที่กรรมพาไป',
+    'hud.karma': 'บุญ {merit} · บาป {demerit} · กุศล {kusala} · อกุศล {akusala}',
+    'hud.realm': 'ภูมิปัจจุบัน: {realm}',
+    'samsara.jati': 'จุติ–ปฏิสนธิ · {realm}',
+    'codex.title': 'ภูมิ 31 — ไตรภูมิ',
+    'codex.close': 'ปิด',
 
     'chapter1.name': 'ป่าเสียงเรียก',
     'chapter1.subtitle': 'บทที่ 1 — ความกลัว',

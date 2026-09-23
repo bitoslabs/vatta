@@ -6,6 +6,7 @@ import { rng } from '../core/rng.js';
 import { state } from '../core/state.js';
 import { isMindful } from '../systems/input.js';
 import { t } from '../systems/i18n.js';
+import { getRealm } from '../systems/samsara.js';
 import { floaters, screenNotes, sparks } from '../systems/effects.js';
 import { ctx, viewport } from '../systems/viewport.js';
 import { textures } from '../world/textures.js';
@@ -53,6 +54,7 @@ export function renderWorld() {
   ctx.restore();
 
   renderLighting(mind);
+  drawRealmVeil();
   if (state.chapter === 2) {
     // Ember veil for the anger chapter.
     ctx.fillStyle = 'rgba(120,30,20,.05)';
@@ -243,4 +245,20 @@ function drawGrain() {
   ctx.fillStyle = textures.grain;
   ctx.fillRect(-40, -40, W + 80, H + 80);
   ctx.restore();
+}
+
+/** A faint tint per plane: woeful planes redden, Brahmā planes grow pale. */
+const REALM_VEILS = Object.freeze({
+  apaya: 'rgba(120,20,20,.05)',
+  kamasugati: null,
+  rupa: 'rgba(210,220,255,.04)',
+  arupa: 'rgba(200,225,255,.055)',
+});
+
+function drawRealmVeil() {
+  const { W, H } = viewport;
+  const veil = REALM_VEILS[getRealm().group];
+  if (!veil) return;
+  ctx.fillStyle = veil;
+  ctx.fillRect(0, 0, W, H);
 }

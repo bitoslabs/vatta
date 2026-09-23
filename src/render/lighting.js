@@ -5,6 +5,7 @@ import { clamp } from '../core/math.js';
 import { rng } from '../core/rng.js';
 import { state } from '../core/state.js';
 import { ctx, lightCanvas, lightCtx, viewport } from '../systems/viewport.js';
+import { getRealmModifier } from '../systems/samsara.js';
 import { GATES } from '../world/world-data.js';
 import { player } from '../entities/player.js';
 import { cam } from '../game/camera.js';
@@ -36,7 +37,7 @@ export function renderLighting(mind) {
     lightCtx.fill();
   };
 
-  const vision = 380 - state.fear * 160 + (mind ? 90 : 0);
+  const vision = 380 - state.fear * 160 + (mind ? 90 : 0) + getRealmModifier().vision;
   punch(player.x, player.y, dawn ? 520 : vision, 0.98);
   punch(TEMPLE.x, TEMPLE.y, TEMPLE.r + 120, 0.96);
   punch(SALA.x, SALA.y, 340, 0.9);

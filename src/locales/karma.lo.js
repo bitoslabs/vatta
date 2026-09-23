@@ -1,0 +1,42 @@
+'use strict';
+
+/** Karma teaching content (ລາວ). */
+export default {
+  'karma.title': 'ກຳ · ບຸນ–ບາບ · ກຸສົນ–ອະກຸສົນ',
+  'karma.merit': 'ບຸນ (puñña)',
+  'karma.demerit': 'ບາບ (pāpa)',
+  'karma.kusala': 'ກຸສົນ (kusala)',
+  'karma.akusala': 'ອະກຸສົນ (akusala)',
+  'karma.fruit': 'ວິບາກ',
+  'karma.rootLabel': 'ມູນເຫດ (ມູນ)',
+
+  'karma.root.lobha': 'ໂລພະ — ຄວາມຢາກໄດ້',
+  'karma.root.dosa': 'ໂທສະ — ຄວາມໂກດຂັດເຄືອງ',
+  'karma.root.moha': 'ໂມຫະ — ຄວາມຫຼົງບໍ່ຮູ້ຈິງ',
+  'karma.root.alobha': 'ອະໂລພະ — ບໍ່ໂລພ ເສຍສະລະ',
+  'karma.root.adosa': 'ອະໂທສະ — ບໍ່ໂກດ ມີເມດຕາ',
+  'karma.root.amoha': 'ອະໂມຫະ — ບໍ່ຫຼົງ ມີປັນຍາ',
+
+  'karma.give.name': 'ທານ',
+  'karma.give.note': 'ການໃຫ້ ເສຍສະລະ ຊ່ວຍເຫຼືອ — ກຸສົນມູນອະໂລພະ',
+  'karma.precept.name': 'ສິນ',
+  'karma.precept.note': 'ສຳລວມກາຍວາຈາ ບໍ່ບຽດບຽນ',
+  'karma.meditate.name': 'ພາວະນາ / ສະມາທິ',
+  'karma.meditate.note': 'ເຈີນສະຕິ-ສະມາທິ ໃຫ້ຈິດຕັ້ງໝັ້ນ',
+  'karma.mindful.name': 'ສະຕິ',
+  'karma.mindful.note': 'ຮູ້ທັນກາຍໃຈໃນປັດຈຸບັນ',
+  'karma.compassion.name': 'ເມດຕາ',
+  'karma.compassion.note': 'ປາດຖະໜາໃຫ້ເປັນສຸກ ບໍ່ໂຕ້ຕອບດ້ວຍໂທສະ',
+  'karma.letgo.name': 'ປ່ອຍວາງ / ຈາຄະ',
+  'karma.letgo.note': 'ລະອຸປາທານ ເຫັນອະນິຈັງ',
+  'karma.harm.name': 'ປານາຕິບາດ / ໂທສະ',
+  'karma.harm.note': 'ເຈດຕາທຳຮ້າຍ ຫຼືໂຕ້ຕອບດ້ວຍຄວາມໂກດ',
+  'karma.steal.name': 'ອະທິນນາທານ / ໂລພະ',
+  'karma.steal.note': 'ຢາກໄດ້ຂອງຜູ້ອື່ນ ຍຶດຄອງ',
+  'karma.lie.name': 'ມຸສາວາດ / ໂມຫະ',
+  'karma.lie.note': 'ກ່າວເທັດ ຫຼອກຕົນແລະຜູ້ອື່ນ',
+  'karma.cling.name': 'ອຸປາທານ',
+  'karma.cling.note': 'ຍຶດໝັ້ນຖືໝັ້ນ ບໍ່ຍອມປ່ອຍ',
+  'karma.panic.name': 'ໂມຫະ / ຕື່ນຕົກໃຈ',
+  'karma.panic.note': 'ຫຼົງໃນຄວາມຢ້ານ ຂາດສະຕິ',
+};

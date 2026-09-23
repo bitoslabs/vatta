@@ -1,10 +1,15 @@
 'use strict';
 
+import karmaStrings from './karma.en.js';
+import realmStrings from './realms.en.js';
+
 export default {
   code: 'en',
   label: 'English',
   htmlLang: 'en',
   strings: {
+    ...realmStrings,
+    ...karmaStrings,
     'app.title': 'Vimutti — The Forest Call',
 
     'title.name': 'Vimutti',
@@ -66,7 +71,14 @@ export default {
     'voice.callHome': '"Come home, my child…"',
 
     'title.chapters': 'Chapters',
+    'title.codex': 'The 31 Planes',
     'end.next': 'Next chapter',
+    'end.rebirth': 'Destination — where kamma leads',
+    'hud.karma': 'Merit {merit} · Demerit {demerit} · Kusala {kusala} · Akusala {akusala}',
+    'hud.realm': 'Current plane: {realm}',
+    'samsara.jati': 'Rebirth · {realm}',
+    'codex.title': 'The 31 Planes of Existence',
+    'codex.close': 'Close',
 
     'chapter1.name': 'The Forest Call',
     'chapter1.subtitle': 'Chapter One — Fear',

@@ -1,0 +1,42 @@
+'use strict';
+
+/** Karma teaching content (English). */
+export default {
+  'karma.title': 'Kamma · Merit–Demerit · Wholesome–Unwholesome',
+  'karma.merit': 'Merit (puñña)',
+  'karma.demerit': 'Demerit (pāpa)',
+  'karma.kusala': 'Wholesome (kusala)',
+  'karma.akusala': 'Unwholesome (akusala)',
+  'karma.fruit': 'Fruition (vipāka)',
+  'karma.rootLabel': 'Roots (mūla)',
+
+  'karma.root.lobha': 'Lobha — greed, wanting',
+  'karma.root.dosa': 'Dosa — anger, aversion',
+  'karma.root.moha': 'Moha — delusion, not knowing',
+  'karma.root.alobha': 'Alobha — non-greed, generosity',
+  'karma.root.adosa': 'Adosa — non-anger, loving-kindness',
+  'karma.root.amoha': 'Amoha — non-delusion, wisdom',
+
+  'karma.give.name': 'Giving (dāna)',
+  'karma.give.note': 'Generosity and sacrifice — rooted in non-greed.',
+  'karma.precept.name': 'Precepts (sīla)',
+  'karma.precept.note': 'Restraint of body and speech; not harming.',
+  'karma.meditate.name': 'Meditation (bhāvanā)',
+  'karma.meditate.note': 'Cultivating mindfulness and concentration.',
+  'karma.mindful.name': 'Mindfulness (sati)',
+  'karma.mindful.note': 'Knowing body and mind in the present.',
+  'karma.compassion.name': 'Loving-kindness (mettā)',
+  'karma.compassion.note': 'Wishing others well; not answering anger with anger.',
+  'karma.letgo.name': 'Letting go (cāga)',
+  'karma.letgo.note': 'Releasing clinging; seeing impermanence.',
+  'karma.harm.name': 'Harming (pāṇātipāta)',
+  'karma.harm.note': 'Intending to hurt, or retaliating in anger — rooted in dosa.',
+  'karma.steal.name': 'Taking (adinnādāna)',
+  'karma.steal.note': 'Coveting and taking what is not given — rooted in lobha.',
+  'karma.lie.name': 'False speech (musāvāda)',
+  'karma.lie.note': 'Deceiving self and others — rooted in moha.',
+  'karma.cling.name': 'Clinging (upādāna)',
+  'karma.cling.note': 'Grasping and refusing to let go.',
+  'karma.panic.name': 'Panic (moha)',
+  'karma.panic.note': 'Lost in fear; mindfulness absent.',
+};

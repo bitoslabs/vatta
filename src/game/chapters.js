@@ -10,6 +10,9 @@ import { resetGhost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { cam } from './camera.js';
 import { resetRelease } from './release.js';
+import { getKarma } from '../systems/karma.js';
+import { resolveRebirth } from '../systems/rebirth.js';
+import { enterRealm } from '../systems/samsara.js';
 
 /**
  * Chapter catalogue. Everything scene-specific (start point, HUD meter label,
@@ -100,6 +103,8 @@ export function loadChapter(id) {
   resetStoryFlags();
   resetGhost(def.ghost || {});
   resetRelease();
+  // You are reborn into this chapter in the plane your kamma has earned.
+  enterRealm(resolveRebirth(getKarma()).realmId);
 
   player.x = def.start.x;
   player.y = def.start.y;

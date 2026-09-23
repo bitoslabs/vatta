@@ -10,6 +10,8 @@ export const state = {
   mode: MODE.TITLE,
   /** Active chapter id (see game/chapters.js). */
   chapter: 1,
+  /** Realm the player is currently born into (see content/realms.js). */
+  realmId: 'manussa',
   /** Locale key for the HUD meter label and the mindfulness hints. */
   meterKey: 'hud.fear',
   mindHintKey: 'hud.mind',

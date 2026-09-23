@@ -3,9 +3,11 @@
 import { MODE, WORLD } from '../core/constants.js';
 import { clamp, dist } from '../core/math.js';
 import { state } from '../core/state.js';
+import { on, EVENTS } from '../core/events.js';
 import { playBell, playThud } from '../systems/audio.js';
 import { addFloater } from '../systems/effects.js';
 import { t, tList } from '../systems/i18n.js';
+import { recordKarma } from '../systems/karma.js';
 import { enrageGhost, ghost, placeGhost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { choose } from '../ui/choices.js';
@@ -67,6 +69,7 @@ function retaliate() {
   state.stats.retaliations++;
   state.fear = clamp(state.fear + RETALIATE_FEAR, 0, 1);
   enrageGhost(ENRAGE_SECONDS);
+  recordKarma('harm');
   cam.shake = 0.5;
   playThud();
   addFloater(player.x, player.y - 120, t('ch2.floater.retaliate'), '#d98a6a', 16);
@@ -78,10 +81,12 @@ function askCompassion() {
   choose(options, (index) => {
     if (index === 0) {
       reviveAnger();
+      recordKarma('harm');
       say('ch2.answerCold', askCompassion);
     } else if (index === 2) {
       say('ch2.answerCool', askCompassion);
     } else {
+      recordKarma('compassion');
       say('ch2.answerWarm', () => {
         ch2.ended = true;
         showEndScreen();
@@ -104,3 +109,8 @@ function reviveAnger() {
 }
 
 registerChapterHandler(2, { start: startChapter2, update: updateChapter2 });
+
+// Enduring anger with mindfulness, rather than striking, is mettā in action.
+on(EVENTS.GHOST_PACIFIED, (cause) => {
+  if (state.chapter === 2 && cause === 'mind') recordKarma('compassion');
+});

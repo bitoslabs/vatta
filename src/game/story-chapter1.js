@@ -3,9 +3,11 @@
 import { INTERACT, MODE, SALA, TEMPLE, WORLD } from '../core/constants.js';
 import { clamp, dist } from '../core/math.js';
 import { state } from '../core/state.js';
+import { on, EVENTS } from '../core/events.js';
 import { playBell, playCall, playThud } from '../systems/audio.js';
 import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
+import { recordKarma } from '../systems/karma.js';
 import { GATES } from '../world/world-data.js';
 import { STATUS } from '../entities/ghost-status.js';
 import { ghost, spawnGhostNearPlayer } from '../entities/ghost.js';
@@ -169,3 +171,8 @@ function loopBack(gate) {
 }
 
 registerChapterHandler(1, { start: startChapter1, update: updateChapter1 });
+
+// Dissolving the ghost through mindfulness is the chapter's wholesome act.
+on(EVENTS.GHOST_PACIFIED, (cause) => {
+  if (state.chapter === 1 && cause === 'mind') recordKarma('mindful');
+});

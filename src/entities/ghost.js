@@ -3,6 +3,9 @@
 import { GHOST, WORLD } from '../core/constants.js';
 import { clamp, dist, lerp } from '../core/math.js';
 import { state } from '../core/state.js';
+import { emit, EVENTS } from '../core/events.js';
+import { recordKarma } from '../systems/karma.js';
+import { getRealmModifier, rebirth } from '../systems/samsara.js';
 import { fade, toast } from '../ui/feedback.js';
 import { t } from '../systems/i18n.js';
 import { TREES } from '../world/world-data.js';
@@ -136,10 +139,13 @@ export function updateGhost(dt, mind, frozen) {
     const away = Math.atan2(ghost.y - player.y, ghost.x - player.x);
     ghost.x += Math.cos(away) * GHOST.retreatSpeed * dt;
     ghost.y += Math.sin(away) * GHOST.retreatSpeed * dt;
-    if (ghost.mindDissolve && ghost.enraged <= 0 && mindHold > ghost.profile.mindDissolveTime) {
+    // Higher planes need less mindfulness to still the ghost; lower planes more.
+    const dissolveTime = ghost.profile.mindDissolveTime * getRealmModifier().mindDissolve;
+    if (ghost.mindDissolve && ghost.enraged <= 0 && mindHold > dissolveTime) {
       ghost.mode = STATUS.FADE;
       ghost.fade = GHOST.fadeDuration;
       mindHold = 0;
+      emit(EVENTS.GHOST_PACIFIED, 'mind');
     }
   } else {
     mindHold = Math.max(0, mindHold - dt * 2);
@@ -187,8 +193,13 @@ export function updateGhost(dt, mind, frozen) {
 
 function onCaught() {
   state.stats.caught++;
+  recordKarma('panic');
+
+  // จุติ–ปฏิสนธิ: this life ends, kamma chooses the next plane.
+  const { realm } = rebirth();
+
   fade(true, () => {
-    toast(t('toast.caught.title'), t('toast.caught.sub'));
+    toast(t('toast.caught.title'), t('samsara.jati', { realm: t(realm.nameKey) }));
     const checkpoint = state.checkpoint;
     player.x = checkpoint.x;
     player.y = checkpoint.y;

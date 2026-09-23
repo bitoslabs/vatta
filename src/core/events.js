@@ -25,6 +25,12 @@ export const EVENTS = Object.freeze({
   DISMISS: 'action:dismiss',
   MUTE_TOGGLE: 'audio:mute-toggle',
   DIALOGUE_ADVANCE: 'dialogue:advance',
-  CHOICE_PICK: 'choice:pick',
+  CHOICE_PICK: 'choice:picked',
   LOCALE_CHANGED: 'locale:changed',
+  /** Payload: the karma action id that was recorded. */
+  KARMA_CHANGED: 'karma:changed',
+  /** Payload: cause of pacification — 'mind' (mindfulness) or 'sala'. */
+  GHOST_PACIFIED: 'ghost:pacified',
+  /** Payload: the realm id the player has just been reborn into. */
+  REBIRTH: 'samsara:rebirth',
 });

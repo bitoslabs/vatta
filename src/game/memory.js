@@ -4,6 +4,7 @@ import { MODE } from '../core/constants.js';
 import { rng } from '../core/rng.js';
 import { state } from '../core/state.js';
 import { tList } from '../systems/i18n.js';
+import { recordKarma } from '../systems/karma.js';
 import { $ } from '../ui/dom.js';
 import { choose } from '../ui/choices.js';
 import { say } from '../ui/dialogue.js';
@@ -41,12 +42,14 @@ function askQuestion() {
   choose(options, (index) => {
     if (index === 0) {
       mem.phase = 'cold';
+      recordKarma('cling');
       say('memoryCold', askQuestion);
     } else if (index === 2) {
       mem.phase = 'cool';
       say('memoryCool', askQuestion);
     } else {
       mem.phase = 'warm';
+      recordKarma('letgo');
       say('memoryWarm', () => {
         $('#memOverlay').classList.add('hidden');
         startRelease();

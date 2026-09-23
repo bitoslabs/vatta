@@ -5,6 +5,7 @@ import { initI18n } from './systems/i18n.js';
 import { initInput } from './systems/input.js';
 import { initViewport } from './systems/viewport.js';
 import { initChoices } from './ui/choices.js';
+import { initCodex } from './ui/codex.js';
 import { initDialogue } from './ui/dialogue.js';
 import { initEndScreen } from './ui/end-screen.js';
 import { initLanguageSwitcher } from './ui/language-switcher.js';
@@ -29,6 +30,7 @@ function bootstrap() {
   initTitleScreen();
   initEndScreen();
   initLanguageSwitcher();
+  initCodex();
   startLoop();
 }
 

@@ -6,6 +6,7 @@ import { state } from '../core/state.js';
 import { playHeart } from '../systems/audio.js';
 import { updateEffects } from '../systems/effects.js';
 import { isMindful } from '../systems/input.js';
+import { getRealmModifier } from '../systems/samsara.js';
 import { ghost, updateGhost } from '../entities/ghost.js';
 import { inSafeZone, player, updatePlayer } from '../entities/player.js';
 import { cam } from './camera.js';
@@ -36,15 +37,19 @@ function updateFear(dt, { frozen, mind, running }) {
     return;
   }
 
-  if (running && player.moving) state.fear += FEAR.runGain * dt;
+  const modifier = getRealmModifier();
+  const gain = modifier.fearGain;
+  const relief = modifier.safeRelief;
+
+  if (running && player.moving) state.fear += FEAR.runGain * gain * dt;
   if (ghost.active) {
     const d = dist(player.x, player.y, ghost.x, ghost.y);
-    if (d < 420) state.fear += FEAR.ghostGain * dt * (1.6 - d / 640);
+    if (d < 420) state.fear += FEAR.ghostGain * gain * dt * (1.6 - d / 640);
   }
-  if (mind) state.fear -= FEAR.mindRelief * dt;
-  else if (!player.moving) state.fear -= FEAR.idleRelief * dt;
-  else state.fear -= FEAR.walkRelief * dt;
-  if (inSafeZone(player.x, player.y)) state.fear -= FEAR.safeRelief * dt;
+  if (mind) state.fear -= FEAR.mindRelief * relief * dt;
+  else if (!player.moving) state.fear -= FEAR.idleRelief * relief * dt;
+  else state.fear -= FEAR.walkRelief * relief * dt;
+  if (inSafeZone(player.x, player.y)) state.fear -= FEAR.safeRelief * relief * dt;
 
   state.fear = clamp(state.fear, 0, 1);
 }

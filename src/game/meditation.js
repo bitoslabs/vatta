@@ -7,6 +7,7 @@ import { state } from '../core/state.js';
 import { on, EVENTS } from '../core/events.js';
 import { playBell, playChime, playThud } from '../systems/audio.js';
 import { addScreenNote, ageScreenNotes } from '../systems/effects.js';
+import { recordKarma } from '../systems/karma.js';
 import { t, tList } from '../systems/i18n.js';
 import { $ } from '../ui/dom.js';
 import { fade } from '../ui/feedback.js';
@@ -173,6 +174,7 @@ function updateDisturbance(dt) {
 
 function completeMeditation() {
   med.done = true;
+  recordKarma('meditate');
   mindFill.style.width = '100%';
   clearTimeout(hushTimer);
   hushTimer = setTimeout(() => {

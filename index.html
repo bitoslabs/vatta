@@ -19,6 +19,8 @@
     <div id="fearLabel">จ ต</div>
     <div id="fearBar"><div id="fearFill"></div></div>
     <div id="mindHint"></div>
+    <div id="karmaReadout"></div>
+    <div id="realmReadout"></div>
   </div>
   <div id="ctrlHint" class="hidden" data-i18n="hud.controls">WASD เดิน · SHIFT วิ่ง · SPACE ค้าง ตั้งสติ · E โต้ตอบ · M เสียง</div>
 
@@ -59,6 +61,7 @@
         <div class="chapter-label" data-i18n="title.chapters">เลือกบท</div>
         <div id="chapterSelect" class="chapter-list"></div>
       </div>
+      <button type="button" class="link-btn" id="codexBtn" data-i18n="title.codex">ไตรภูมิ 31</button>
     </div>
   </div>
 
@@ -94,8 +97,27 @@
       <div class="rule"></div>
       <p id="endLesson" class="lesson"><span style="color:#d9c58c">สัมมาสติ</span> — ท่ามกลางความกลัว รู้กาย รู้ใจ รู้ลมหายใจ<br><br><span style="color:#d9c58c">อนิจจัง</span> — รักได้ โดยไม่ต้องเก็บไว้ตลอดไป</p>
       <p id="endStats" class="stats"></p>
+      <div class="realm">
+        <div class="realm-label" data-i18n="end.rebirth">คติภูมิ — ที่ที่กรรมพาไป</div>
+        <div id="realmName" class="realm-name"></div>
+        <div id="realmPali" class="realm-pali"></div>
+        <div id="realmDesc" class="realm-desc"></div>
+        <div id="realmReason" class="realm-reason"></div>
+        <div id="karmaSummary" class="karma-summary"></div>
+      </div>
       <button class="btn hidden" id="nextBtn" data-i18n="end.next">ไปบทต่อไป</button>
       <button class="btn" id="restartBtn" data-i18n="end.restart">ภาวนาอีกครั้ง</button>
+    </div>
+  </div>
+
+  <!-- ============ Codex (kamma + 31 planes) ============ -->
+  <div id="codexOverlay" class="hidden">
+    <div class="codex-panel">
+      <div class="codex-head">
+        <div class="codex-title" data-i18n="codex.title">ภูมิ 31 — ไตรภูมิ</div>
+        <button type="button" class="link-btn" id="codexClose" data-i18n="codex.close">ปิด</button>
+      </div>
+      <div id="codexBody" class="codex-body"></div>
     </div>
   </div>
 

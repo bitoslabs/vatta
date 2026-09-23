@@ -5,6 +5,9 @@ import { state } from '../core/state.js';
 import { on, EVENTS } from '../core/events.js';
 import { playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
+import { getKarma, activeRoots } from '../systems/karma.js';
+import { resolveRebirth } from '../systems/rebirth.js';
+import { realmById } from '../content/realms.js';
 import { chapterById, loadChapter, nextChapterId } from '../game/chapters.js';
 import { $ } from './dom.js';
 
@@ -14,6 +17,11 @@ const endName = $('#endName');
 const endLesson = $('#endLesson');
 const endStats = $('#endStats');
 const nextBtn = $('#nextBtn');
+const realmName = $('#realmName');
+const realmPali = $('#realmPali');
+const realmDesc = $('#realmDesc');
+const realmReason = $('#realmReason');
+const karmaSummary = $('#karmaSummary');
 
 const FALLBACK_END = {
   titleKey: 'end.title',
@@ -41,6 +49,31 @@ function renderEndText() {
     retaliations: state.stats.retaliations,
     time: `${minutes}:${String(seconds).padStart(2, '0')}`,
   });
+
+  renderRebirth();
+}
+
+/** Show where this run's accumulated karma would lead. */
+function renderRebirth() {
+  const karma = getKarma();
+  const { realmId, reasonKey } = resolveRebirth(karma);
+  const realm = realmById(realmId);
+
+  realmName.textContent = realm ? t(realm.nameKey) : '';
+  realmPali.textContent = realm ? realm.pali : '';
+  realmDesc.textContent = realm ? t(realm.descKey) : '';
+  realmReason.textContent = t(reasonKey);
+  karmaSummary.textContent = t('hud.karma', {
+    merit: karma.merit,
+    demerit: karma.demerit,
+    kusala: karma.kusala,
+    akusala: karma.akusala,
+  });
+
+  const roots = activeRoots();
+  if (roots.length) {
+    karmaSummary.textContent += ` — ${roots.map((root) => t(root.labelKey)).join(' · ')}`;
+  }
 }
 
 export function showEndScreen() {

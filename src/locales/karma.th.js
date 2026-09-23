@@ -1,0 +1,42 @@
+'use strict';
+
+/** Karma teaching content (ไทย): actions, roots, canonical labels. */
+export default {
+  'karma.title': 'กรรม · บุญ–บาป · กุศล–อกุศล',
+  'karma.merit': 'บุญ (puñña)',
+  'karma.demerit': 'บาป (pāpa)',
+  'karma.kusala': 'กุศล (kusala)',
+  'karma.akusala': 'อกุศล (akusala)',
+  'karma.fruit': 'วิบาก',
+  'karma.rootLabel': 'มูลเหตุ (มูล)',
+
+  'karma.root.lobha': 'โลภะ — ความอยากได้',
+  'karma.root.dosa': 'โทสะ — ความโกรธขัดเคือง',
+  'karma.root.moha': 'โมหะ — ความหลงไม่รู้จริง',
+  'karma.root.alobha': 'อโลภะ — ไม่โลภ เสียสละ',
+  'karma.root.adosa': 'อโทสะ — ไม่โกรธ มีเมตตา',
+  'karma.root.amoha': 'อโมหะ — ไม่หลง มีปัญญา',
+
+  'karma.give.name': 'ทาน',
+  'karma.give.note': 'การให้ เสียสละ ช่วยเหลือ — กุศลมูลอโลภะ',
+  'karma.precept.name': 'ศีล',
+  'karma.precept.note': 'สำรวมกายวาจา ไม่เบียดเบียน',
+  'karma.meditate.name': 'ภาวนา / สมาธิ',
+  'karma.meditate.note': 'เจริญสติ-สมาธิ ให้จิตตั้งมั่น',
+  'karma.mindful.name': 'สติ',
+  'karma.mindful.note': 'รู้ทันกายใจในปัจจุบัน',
+  'karma.compassion.name': 'เมตตา',
+  'karma.compassion.note': 'ปรารถนาให้เป็นสุข ไม่ตอบโต้ด้วยโทสะ',
+  'karma.letgo.name': 'ปล่อยวาง / จาคะ',
+  'karma.letgo.note': 'ละอุปาทาน เห็นอนิจจัง',
+  'karma.harm.name': 'ปาณาติบาต / โทสะ',
+  'karma.harm.note': 'เจตนาทำร้าย หรือตอบโต้ด้วยความโกรธ',
+  'karma.steal.name': 'อทินนาทาน / โลภะ',
+  'karma.steal.note': 'อยากได้ของผู้อื่น ยึดครอง',
+  'karma.lie.name': 'มุสาวาท / โมหะ',
+  'karma.lie.note': 'กล่าวเท็จ หลอกตนและผู้อื่น',
+  'karma.cling.name': 'อุปาทาน',
+  'karma.cling.note': 'ยึดมั่นถือมั่น ไม่ยอมปล่อย',
+  'karma.panic.name': 'โมหะ / ตื่นตระหนก',
+  'karma.panic.note': 'หลงในความกลัว ขาดสติ',
+};

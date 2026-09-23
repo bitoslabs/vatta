@@ -47,3 +47,17 @@
   letter-spacing: 0.06em;
   pointer-events: none;
 }
+
+#karmaReadout,
+#realmReadout {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #9a9482;
+  font-variant-numeric: tabular-nums;
+}
+
+#realmReadout {
+  margin-top: 4px;
+  color: var(--gold-dim);
+}

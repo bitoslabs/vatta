@@ -3,12 +3,16 @@
 import { MODE } from '../core/constants.js';
 import { state } from '../core/state.js';
 import { t, tList } from '../systems/i18n.js';
+import { getKarma } from '../systems/karma.js';
+import { getRealm } from '../systems/samsara.js';
 import { $ } from './dom.js';
 
 const hudEl = $('#hud');
 const fearLabel = $('#fearLabel');
 const fearFill = $('#fearFill');
 const mindHint = $('#mindHint');
+const karmaReadout = $('#karmaReadout');
+const realmReadout = $('#realmReadout');
 
 const FEAR_LOW = 0.3;
 const FEAR_HIGH = 0.6;
@@ -23,6 +27,15 @@ export function updateHud(mind) {
     fearFill.style.background = state.fear > FEAR_HIGH
       ? '#b0685a'
       : state.fear > FEAR_LOW ? '#c2a878' : '#e8e2d0';
+
+    const karma = getKarma();
+    karmaReadout.textContent = t('hud.karma', {
+      merit: karma.merit,
+      demerit: karma.demerit,
+      kusala: karma.kusala,
+      akusala: karma.akusala,
+    });
+    realmReadout.textContent = t('hud.realm', { realm: t(getRealm().nameKey) });
 
     if (mind) {
       const quotes = tList(state.mindHintKey || 'hud.mind');
