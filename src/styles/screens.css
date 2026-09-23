@@ -269,3 +269,11 @@
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
 }
+
+.precept-summary {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #8f8272;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}

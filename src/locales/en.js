@@ -207,6 +207,7 @@ export default {
     'ch7.sila.choice.help': '"Go and help him"',
     'ch7.sila.choice.pass': '"Walk on by"',
     'ch7.sila.choice.take': '"Take what is his"',
+    'ch7.sila.choice.lie': '"Lie — say I helped him"',
     'ch7.panna.choice.anicca': '"All things arise and cease; nothing is ours"',
     'ch7.panna.choice.self': '"At least this self still exists"',
     'ch7.panna.choice.unknown': '"I am not sure…"',
@@ -249,6 +250,23 @@ export default {
     'path.sati.desc': 'You remember; the heart cools faster.',
     'path.samadhi.name': 'Right Concentration',
     'path.samadhi.desc': 'The mind is steady; ghosts are easier to still.',
+
+    'hud.precept.count': 'Precepts: {kept}/5',
+    'end.precept.summary': 'Precepts kept {kept}/{total}',
+    'precept.title': 'The Five Precepts — training of body, speech and mind',
+    'precept.kept': 'kept',
+    'precept.broken': 'broken ({count})',
+    'precept.broken.title': 'A precept was broken',
+    'precept.panatipata.name': 'Not harming',
+    'precept.panatipata.desc': 'Meeting conflict with kindness rather than anger.',
+    'precept.adinnadana.name': 'Not taking',
+    'precept.adinnadana.desc': 'Abstaining from what has not been given.',
+    'precept.kamesu.name': 'Not violating others',
+    'precept.kamesu.desc': 'Not overstepping another — not owning anyone.',
+    'precept.musavada.name': 'Truthful speech',
+    'precept.musavada.desc': 'Abstaining from false speech that deceives self and others.',
+    'precept.surameraya.name': 'Sobriety',
+    'precept.surameraya.desc': 'Abstaining from intoxication that scatters mindfulness.',
   },
 
   lists: {
@@ -474,6 +492,9 @@ export default {
     ],
     'ch7.silaTake': [
       { who: '', text: 'We took what was his… and the heart that was light grew heavy.' },
+    ],
+    'ch7.silaLie': [
+      { who: '', text: 'We lied… we said we had helped, when we had walked on — the lie sat heavier in the chest than the truth.' },
     ],
     'ch7.panna': [
       { who: 'Elder Monk', text: 'Before you reach the temple, answer me one thing — what is "self"?' },

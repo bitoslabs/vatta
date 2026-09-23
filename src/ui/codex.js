@@ -2,10 +2,12 @@
 
 import { KARMA_ACTIONS, KARMA_ROOTS } from '../content/karma-actions.js';
 import { FACTORS, factorDescKey, factorNameKey } from '../content/factors.js';
+import { preceptDescKey, preceptNameKey } from '../content/precepts.js';
 import { REALM_GROUPS, realmsByGroup } from '../content/realms.js';
 import { on, EVENTS } from '../core/events.js';
 import { t } from '../systems/i18n.js';
 import { isUnlocked } from '../systems/path.js';
+import { getPreceptStatus } from '../systems/precepts.js';
 import { $ } from './dom.js';
 
 const overlay = $('#codexOverlay');
@@ -49,6 +51,19 @@ function render() {
     item.appendChild(el('div', 'codex-pali', open ? t('path.unlocked') : t('path.locked')));
     item.appendChild(el('div', 'codex-name', t(factorNameKey(factor.id))));
     item.appendChild(el('div', 'codex-desc', t(factorDescKey(factor.id))));
+    body.appendChild(item);
+  }
+
+  // ---- The Five Precepts, as broken or kept by this run ------------------
+  body.appendChild(el('div', 'codex-group', t('precept.title')));
+  for (const status of getPreceptStatus()) {
+    const item = el('div', `codex-realm${status.kept ? '' : ' is-broken'}`);
+    const label = status.kept
+      ? t('precept.kept')
+      : t('precept.broken', { count: status.count });
+    item.appendChild(el('div', 'codex-pali', label));
+    item.appendChild(el('div', 'codex-name', t(preceptNameKey(status.id))));
+    item.appendChild(el('div', 'codex-desc', t(preceptDescKey(status.id))));
     body.appendChild(item);
   }
 

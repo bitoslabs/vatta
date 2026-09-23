@@ -207,6 +207,7 @@ export default {
     'ch7.sila.choice.help': '"เข้าไปช่วยเขา"',
     'ch7.sila.choice.pass': '"เดินผ่านไป"',
     'ch7.sila.choice.take': '"หยิบของของเขา"',
+    'ch7.sila.choice.lie': '"โกหกว่าได้ช่วยเขาแล้ว"',
     'ch7.panna.choice.anicca': '"ทุกอย่างเกิดดับ ไม่มีอะไรเป็นของเรา"',
     'ch7.panna.choice.self': '"อย่างน้อยตัวฉันก็ยังอยู่"',
     'ch7.panna.choice.unknown': '"ยังไม่แน่ใจ…"',
@@ -249,6 +250,23 @@ export default {
     'path.sati.desc': 'สติชอบ — ระลึกได้ ใจเย็นเร็วขึ้น',
     'path.samadhi.name': 'สัมมาสมาธิ',
     'path.samadhi.desc': 'สมาธิชอบ — จิตตั้งมั่น ผีสงบง่ายขึ้น',
+
+    'hud.precept.count': 'ศีล 5: {kept}/5',
+    'end.precept.summary': 'ศีลที่รักษาไว้ {kept}/{total}',
+    'precept.title': 'ศีล 5 — ข้อฝึกกาย วาจา ใจ',
+    'precept.kept': 'รักษาไว้',
+    'precept.broken': 'ขาดแล้ว ({count})',
+    'precept.broken.title': 'ศีลข้อหนึ่งขาด',
+    'precept.panatipata.name': 'ปาณาติบาต',
+    'precept.panatipata.desc': 'งดเว้นจากการเบียดเบียนชีวิต — ตอบโต้ด้วยเมตตา ไม่ใช่ด้วยโทสะ',
+    'precept.adinnadana.name': 'อทินนาทาน',
+    'precept.adinnadana.desc': 'งดเว้นจากการถือเอาของที่เขาไม่ได้ให้',
+    'precept.kamesu.name': 'กาเมสุมิจฉาจาร',
+    'precept.kamesu.desc': 'ไม่ล่วงเกินผู้อื่น — ไม่ยึดใครไว้เป็นของเรา',
+    'precept.musavada.name': 'มุสาวาท',
+    'precept.musavada.desc': 'งดเว้นจากการกล่าวเท็จ หลอกตนและผู้อื่น',
+    'precept.surameraya.name': 'สุราเมรัย',
+    'precept.surameraya.desc': 'งดเว้นจากความมัวเมาที่ทำให้ขาดสติ',
   },
 
   lists: {
@@ -474,6 +492,9 @@ export default {
     ],
     'ch7.silaTake': [
       { who: '', text: 'เราหยิบของของเขามา… ใจที่เคยเบา กลับหนักขึ้น' },
+    ],
+    'ch7.silaLie': [
+      { who: '', text: 'เราโกหก… บอกว่าได้ช่วยเขาแล้ว ทั้งที่เดินผ่านไป — คำเท็จนั้นหนักอยู่ในใจยิ่งกว่าความจริง' },
     ],
     'ch7.panna': [
       { who: 'พระเถระ', text: 'ก่อนถึงวัด จงตอบข้าข้อเดียว — อะไรคือ "เรา"' },

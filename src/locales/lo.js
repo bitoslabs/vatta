@@ -207,6 +207,7 @@ export default {
     'ch7.sila.choice.help': '"ເຂົ້າໄປຊ່ວຍເຂົາ"',
     'ch7.sila.choice.pass': '"ຍ່າງຜ່ານໄປ"',
     'ch7.sila.choice.take': '"ຫຍິບຂອງຂອງເຂົາ"',
+    'ch7.sila.choice.lie': '"ຕົວະວ່າໄດ້ຊ່ວຍເຂົາແລ້ວ"',
     'ch7.panna.choice.anicca': '"ທຸກຢ່າງເກີດດັບ ບໍ່ມີຫຍັງເປັນຂອງເຮົາ"',
     'ch7.panna.choice.self': '"ຢ່າງໜ້ອຍໂຕຂ້ອຍກໍຍັງຢູ່"',
     'ch7.panna.choice.unknown': '"ຍັງບໍ່ແນ່ໃຈ…"',
@@ -249,6 +250,23 @@ export default {
     'path.sati.desc': 'ສະຕິຊອບ — ລະລຶກໄດ້ ໃຈເຢັນໄວຂຶ້ນ',
     'path.samadhi.name': 'ສຳມາສະມາທິ',
     'path.samadhi.desc': 'ສະມາທິຊອບ — ຈິດຕັ້ງໝັ້ນ ຜີສະຫງົບງ່າຍຂຶ້ນ',
+
+    'hud.precept.count': 'ສິນ 5: {kept}/5',
+    'end.precept.summary': 'ສິນທີ່ຮັກສາໄວ້ {kept}/{total}',
+    'precept.title': 'ສິນ 5 — ຂໍ້ຝຶກກາຍ ວາຈາ ໃຈ',
+    'precept.kept': 'ຮັກສາໄວ້',
+    'precept.broken': 'ຂາດແລ້ວ ({count})',
+    'precept.broken.title': 'ສິນຂໍ້ໜຶ່ງຂາດ',
+    'precept.panatipata.name': 'ປານາຕິບາດ',
+    'precept.panatipata.desc': 'ງົດເວັ້ນຈາກການບຽດບຽນຊີວິດ — ຕອບໂຕ້ດ້ວຍເມດຕາ ບໍ່ແມ່ນດ້ວຍໂທສະ',
+    'precept.adinnadana.name': 'ອະທິນນາທານ',
+    'precept.adinnadana.desc': 'ງົດເວັ້ນຈາກການຖືເອົາຂອງທີ່ເຂົາບໍ່ໄດ້ໃຫ້',
+    'precept.kamesu.name': 'ກາເມສຸມິຈຉາຈານ',
+    'precept.kamesu.desc': 'ບໍ່ລ່ວງເກີນຜູ້ອື່ນ — ບໍ່ຍຶດໃຜໄວ້ເປັນຂອງເຮົາ',
+    'precept.musavada.name': 'ມຸສາວາດ',
+    'precept.musavada.desc': 'ງົດເວັ້ນຈາກການກ່າວເທັດ ຫຼອກຕົນແລະຜູ້ອື່ນ',
+    'precept.surameraya.name': 'ສຸຣາເມຣັຍ',
+    'precept.surameraya.desc': 'ງົດເວັ້ນຈາກຄວາມມົວເມົາທີ່ເຮັດໃຫ້ຂາດສະຕິ',
   },
 
   lists: {
@@ -474,6 +492,9 @@ export default {
     ],
     'ch7.silaTake': [
       { who: '', text: 'ເຮົາຫຍິບຂອງຂອງເຂົາມາ… ໃຈທີ່ເຄີຍເບົາ ກັບໜັກຂຶ້ນ' },
+    ],
+    'ch7.silaLie': [
+      { who: '', text: 'ເຮົາຕົວະ… ບອກວ່າໄດ້ຊ່ວຍເຂົາແລ້ວ ທັງທີ່ຍ່າງຜ່ານໄປ — ຄຳຕົວະນັ້ນໜັກຢູ່ໃນໃຈກວ່າຄວາມຈິງ' },
     ],
     'ch7.panna': [
       { who: 'ພະເຖລະ', text: 'ກ່ອນຮອດວັດ ຈົ່ງຕອບຂ້າຂໍ້ດຽວ — ອັນໃດຄື "ເຮົາ"' },

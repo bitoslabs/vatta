@@ -62,6 +62,7 @@ function stationSila() {
         { t: t('ch7.sila.choice.help') },
         { t: t('ch7.sila.choice.pass') },
         { t: t('ch7.sila.choice.take') },
+        { t: t('ch7.sila.choice.lie') },
       ],
       (index) => {
         if (index === 0) {
@@ -70,6 +71,9 @@ function stationSila() {
         } else if (index === 2) {
           recordKarma('steal');
           say('ch7.silaTake');
+        } else if (index === 3) {
+          recordKarma('lie');
+          say('ch7.silaLie');
         } else {
           say('ch7.silaPass');
         }

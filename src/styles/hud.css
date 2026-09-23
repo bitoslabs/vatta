@@ -50,7 +50,8 @@
 
 #karmaReadout,
 #realmReadout,
-#pathReadout {
+#pathReadout,
+#preceptReadout {
   margin-top: 10px;
   font-size: 11px;
   letter-spacing: 0.06em;
@@ -66,4 +67,9 @@
 #pathReadout {
   margin-top: 4px;
   color: #7f8f7a;
+}
+
+#preceptReadout {
+  margin-top: 4px;
+  color: #8f8272;
 }

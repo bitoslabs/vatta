@@ -83,3 +83,9 @@
   padding-left: 10px;
   background: rgba(201, 182, 132, 0.05);
 }
+
+.codex-realm.is-broken {
+  border-left: 3px solid #8a4a42;
+  padding-left: 10px;
+  background: rgba(138, 74, 66, 0.06);
+}

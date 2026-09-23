@@ -35,4 +35,6 @@ export const EVENTS = Object.freeze({
   REBIRTH: 'samsara:rebirth',
   /** Payload: the Noble Eightfold Path factor id that was just unlocked. */
   PATH_UNLOCKED: 'path:unlocked',
+  /** Payload: the precept id that was just broken for the first time. */
+  PRECEPT_BROKEN: 'precept:broken',
 });

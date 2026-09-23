@@ -14,6 +14,7 @@ import { getKarma } from '../systems/karma.js';
 import { resolveRebirth } from '../systems/rebirth.js';
 import { enterRealm } from '../systems/samsara.js';
 import { evaluatePath } from '../systems/path.js';
+import { evaluatePrecepts } from '../systems/precepts.js';
 
 /**
  * Chapter catalogue. Everything scene-specific (start point, HUD meter label,
@@ -242,6 +243,7 @@ export function loadChapter(id) {
   enterRealm(resolveRebirth(getKarma()).realmId);
   // Conduct so far may have opened further factors of the path.
   evaluatePath();
+  evaluatePrecepts();
 
   player.x = def.start.x;
   player.y = def.start.y;

@@ -6,6 +6,7 @@ import { on, EVENTS } from '../core/events.js';
 import { playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { getKarma, activeRoots } from '../systems/karma.js';
+import { keptPreceptCount } from '../systems/precepts.js';
 import { resolveRebirth } from '../systems/rebirth.js';
 import { realmById } from '../content/realms.js';
 import { chapterById, loadChapter, nextChapterId } from '../game/chapters.js';
@@ -22,6 +23,7 @@ const realmPali = $('#realmPali');
 const realmDesc = $('#realmDesc');
 const realmReason = $('#realmReason');
 const karmaSummary = $('#karmaSummary');
+const preceptSummary = $('#preceptSummary');
 
 const FALLBACK_END = {
   titleKey: 'end.title',
@@ -65,6 +67,10 @@ function renderRebirth() {
     demerit: karma.demerit,
     kusala: karma.kusala,
     akusala: karma.akusala,
+  });
+  preceptSummary.textContent = t('end.precept.summary', {
+    kept: keptPreceptCount(),
+    total: 5,
   });
 
   if (state.liberated) {
