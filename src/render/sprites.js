@@ -140,8 +140,49 @@ export function drawPrompt(label) {
   ctx.textAlign = 'left';
 }
 
-export function drawTemple(dawn) {
-  const T = TEMPLE;
+/** A glittering pile of treasure — bait for the greed ghost. */
+export function drawLure(lure) {
+  const t = performance.now() * 0.003;
+  const shimmer = 0.5 + Math.sin(t + lure.x * 0.01) * 0.3;
+  const greed = 1 + (lure.greed || 1) * 0.6;
+
+  ctx.fillStyle = 'rgba(0,0,0,.4)';
+  ctx.beginPath();
+  ctx.ellipse(lure.x, lure.y + 7, 15 * greed, 6 * greed, 0, 0, TAU);
+  ctx.fill();
+
+  ctx.fillStyle = `rgba(255,214,120,${0.14 * shimmer * greed})`;
+  ctx.beginPath();
+  ctx.arc(lure.x, lure.y, 24 * greed, 0, TAU);
+  ctx.fill();
+
+  // Mound of coins.
+  ctx.fillStyle = '#c9a24a';
+  ctx.beginPath();
+  ctx.ellipse(lure.x, lure.y, 13 * greed, 8 * greed, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = '#e9c46a';
+  ctx.beginPath();
+  ctx.ellipse(lure.x, lure.y - 4, 10 * greed, 6 * greed, 0, 0, TAU);
+  ctx.fill();
+
+  for (let i = 0; i < 3; i++) {
+    const a = t + i * 2.1;
+    ctx.fillStyle = '#ffe9a8';
+    ctx.beginPath();
+    ctx.arc(lure.x + Math.cos(a) * 9 * greed, lure.y - 6 + Math.sin(a) * 5, 1.6, 0, TAU);
+    ctx.fill();
+  }
+
+  // Rising sparkle.
+  const rise = (t * 22 + lure.y) % 30;
+  ctx.fillStyle = `rgba(255,240,190,${0.7 - rise / 42})`;
+  ctx.beginPath();
+  ctx.arc(lure.x + Math.sin(t * 2) * 6, lure.y - 12 - rise, 1.8, 0, TAU);
+  ctx.fill();
+}
+
+export function drawTemple(dawn) {  const T = TEMPLE;
   const now = performance.now();
 
   ctx.fillStyle = dawn ? '#33271a' : '#1c1410';

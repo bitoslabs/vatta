@@ -37,8 +37,7 @@ export const CHAPTERS = [
   },
   {
     id: 2,
-    nameKey: 'chapter2.name',
-    subtitleKey: 'chapter2.subtitle',
+    nameKey: 'chapter2.name',    subtitleKey: 'chapter2.subtitle',
     meterKey: 'hud.agitation',
     mindHintKey: 'hud.mind.anger',
     start: { x: SALA.x - 60, y: SALA.y + 150 },
@@ -61,6 +60,63 @@ export const CHAPTERS = [
       nameKey: 'ch2.end.name',
       lessonKey: 'ch2.end.lesson',
       statsKey: 'ch2.end.stats',
+    },
+  },
+  {
+    id: 3,
+    nameKey: 'chapter3.name',
+    subtitleKey: 'chapter3.subtitle',
+    meterKey: 'hud.craving',
+    mindHintKey: 'hud.mind.craving',
+    start: { x: GATE_OUT.x + 40, y: GATE_OUT.y },
+    checkpoint: GATE_OUT,
+    ghost: {
+      mindDissolve: true,
+      respawnOnFade: false,
+      tint: 'rgba(232,196,106,.55)',
+      profile: {
+        baseSpeed: 130,
+        fearSpeedBonus: 90,
+        mindSpeedBase: 50,
+        mindSpeedFearBonus: 55,
+        mindDissolveTime: 3.0,
+        enrageSpeedFactor: 1.5,
+      },
+    },
+    end: {
+      titleKey: 'ch3.end.title',
+      nameKey: 'ch3.end.name',
+      lessonKey: 'ch3.end.lesson',
+      statsKey: 'ch3.end.stats',
+    },
+  },
+  {
+    id: 4,
+    nameKey: 'chapter4.name',
+    subtitleKey: 'chapter4.subtitle',
+    meterKey: 'hud.clinging',
+    mindHintKey: 'hud.mind.clinging',
+    start: { x: SALA.x - 60, y: SALA.y + 150 },
+    checkpoint: { x: SALA.x - 60, y: SALA.y + 150 },
+    ghost: {
+      mindDissolve: false,
+      respawnOnFade: false,
+      tint: 'rgba(226,214,240,.55)',
+      profile: {
+        baseSpeed: 92,
+        fearSpeedBonus: 40,
+        mindSpeedBase: 60,
+        mindSpeedFearBonus: 30,
+        mindDissolveTime: 99,
+        enrageSpeedFactor: 1.2,
+        standOff: 190,
+      },
+    },
+    end: {
+      titleKey: 'ch4.end.title',
+      nameKey: 'ch4.end.name',
+      lessonKey: 'ch4.end.lesson',
+      statsKey: 'ch4.end.stats',
     },
   },
 ];
@@ -99,7 +155,7 @@ export function loadChapter(id) {
   state.dialogueOpen = false;
   state.choiceOpen = false;
   state.checkpoint = { ...(def.checkpoint || def.start) };
-  state.stats = { caught: 0, lost: 0, time: 0, retaliations: 0 };
+  state.stats = { caught: 0, lost: 0, time: 0, retaliations: 0, looted: 0, clung: 0 };
   resetStoryFlags();
   resetGhost(def.ghost || {});
   resetRelease();

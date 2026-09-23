@@ -16,7 +16,8 @@ import { ghost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { updateHud } from '../ui/hud.js';
 import { renderLighting, shakeOffset } from './lighting.js';
-import { drawGhost, drawPlayer, drawPrompt, drawSala, drawTemple, drawTree } from './sprites.js';
+import { drawGhost, drawLure, drawPlayer, drawPrompt, drawSala, drawTemple, drawTree } from './sprites.js';
+import { getLures } from '../game/lures.js';
 
 function drawPath(points, width, color) {
   ctx.strokeStyle = color;
@@ -48,6 +49,7 @@ export function renderWorld() {
   drawSala(dawn);
   drawLightGates(mind);
   drawSparks();
+  drawLures();
   drawEntities(dawn);
   drawInteractionPrompt();
 
@@ -152,6 +154,14 @@ function drawSparks() {
     ctx.beginPath();
     ctx.arc(spark.x, spark.y, 1.5 + alpha * 2, 0, TAU);
     ctx.fill();
+  }
+}
+
+/** Treasure lures exist only in chapter 3 (the craving chapter). */
+function drawLures() {
+  if (state.chapter !== 3) return;
+  for (const lure of getLures()) {
+    if (!lure.taken) drawLure(lure);
   }
 }
 

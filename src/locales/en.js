@@ -99,6 +99,49 @@ export default {
     'ch2.end.name': 'The Fire Within',
     'ch2.end.lesson': '<span style="color:#d9c58c">Loving-kindness</span> — anger is never quenched by anger<br><br><span style="color:#d9c58c">Not retaliating</span> — the one who burns you is burning in their own fire',
     'ch2.end.stats': 'Swallowed by anger {caught} times · Retaliated {retaliations} times<br>Practice time {time}',
+
+    'chapter3.name': 'Treasure in the Forest',
+    'chapter3.subtitle': 'Chapter Three — Craving',
+    'hud.craving': 'C R A V I N G',
+    'prompt.loot': 'Take the treasure',
+    'prompt.drop': 'Let it go',
+    'lure.coins.name': 'Ancient coins',
+    'lure.ring.name': 'Gold ring',
+    'lure.gem.name': 'Jewel',
+    'lure.idol.name': 'Golden idol',
+    'lure.chest.name': 'Treasure chest',
+    'ch3.toast.start.title': 'Treasure in the Forest',
+    'ch3.toast.start.sub': 'Chapter Three — Craving',
+    'ch3.floater.awake': 'Craving awakens… the more you take, the faster it moves',
+    'ch3.floater.looted': 'The more you take, the more you want',
+    'ch3.floater.dropped': 'Set down… the heart grows light',
+    'ch3.toast.dropped.title': 'Letting go',
+    'ch3.toast.dropped.sub': 'What is set down only lightens',
+    'ch3.toast.clean.title': 'You took nothing',
+    'ch3.toast.clean.sub': 'The road is clear, with no one following',
+    'ch3.choice.drop': '"Put it all down — I am done"',
+    'ch3.choice.keep': '"Hold on for now — this is mine"',
+    'ch3.end.title': 'Chapter Three Complete',
+    'ch3.end.name': 'Treasure in the Forest',
+    'ch3.end.lesson': '<span style="color:#d9c58c">Generosity (cāga)</span> — the more you grasp, the heavier; the more you release, the lighter.<br><br><span style="color:#d9c58c">Craving (taṇhā)</span> — a fire that grows the more you feed it.',
+    'ch3.end.stats': 'Treasures taken {looted} · Swallowed {caught} times<br>Practice time {time}',
+
+    'chapter4.name': 'Who in the Mirror',
+    'chapter4.subtitle': 'Chapter Four — Impermanence',
+    'hud.clinging': 'C L I N G I N G',
+    'prompt.embrace': 'Hold it close',
+    'ch4.toast.start.title': 'Who in the Mirror',
+    'ch4.toast.start.sub': 'Chapter Four — Impermanence',
+    'ch4.toast.release.title': 'Released',
+    'ch4.toast.release.sub': 'Able to love, without keeping',
+    'ch4.floater.embrace': 'The tighter you hold, the more it hurts — it is not the same any more',
+    'ch4.choice.keep': '"I want it to stay exactly as it was"',
+    'ch4.choice.accept': '"I accept that everything has changed"',
+    'ch4.choice.unknown': '"I still cannot let myself…"',
+    'ch4.end.title': 'Chapter Four Complete',
+    'ch4.end.name': 'Who in the Mirror',
+    'ch4.end.lesson': '<span style="color:#d9c58c">Impermanence (anicca)</span> — all things change; nothing stays the same.<br><br><span style="color:#d9c58c">True love</span> — let them be what they are.',
+    'ch4.end.stats': 'Held on to the past {clung} times · Swallowed {caught} times<br>Practice time {time}',
   },
 
   lists: {
@@ -130,6 +173,16 @@ export default {
       '"Answer anger with anger — let them feel it too"',
       '"Do not retaliate — see that they too are suffering"',
       '"Run far away — I want no part of it"',
+    ],
+    'hud.mind.craving': [
+      'Wanting… know that you are wanting',
+      'Not taking… just noticing',
+      'Set down… the heart grows light',
+    ],
+    'hud.mind.clinging': [
+      'Clinging… know that you are clinging',
+      'Seeing that it has changed…',
+      'Released… the heart is open',
     ],
   },
 
@@ -202,6 +255,51 @@ export default {
     'ch2.answerWarm': [
       { who: '', text: 'We lowered our hand… and saw that their fire is already burning them, so we passed none on.' },
       { who: '', text: 'The anger settles into ash… something in the chest grows light. Not gone — released.' },
+    ],
+    'ch3.intro': [
+      { who: '', text: 'Out of the temple at night once more — this time the road runs far to the sala, and something glitters along the way.' },
+      { who: '', text: 'This ghost does not chase us; it lays bait — coins, rings, jewels, gold, everything the heart wants.' },
+      { who: '', text: 'The more we take, the closer it follows. The way through is to take nothing — or, having taken, to know how to put it down (press X).' },
+    ],
+    'ch3.clean': [
+      { who: '', text: 'We passed every piece without taking it… the road is open, and no shadow follows.' },
+      { who: '', text: 'A craving never kindled needs no quenching — the heart is light from the very start.' },
+    ],
+    'ch3.hoard': [
+      { who: 'Greed ghost', text: 'You carried all this… will you truly put it down? You want it, do you not?' },
+      { who: 'A voice within', text: 'Set it down… or hold it tighter still.' },
+    ],
+    'ch3.answerDrop': [
+      { who: '', text: 'We set each piece down upon the ground… the clenched hand loosened, and the heart grew light.' },
+      { who: '', text: 'The greed ghost drifted away… for there was nothing left for it to feed on.' },
+    ],
+    'ch3.answerKeep': [
+      { who: '', text: 'We gripped the gold tighter… and its shadow drew closer than before.' },
+      { who: '', text: 'The more you grasp, the heavier — and craving is never full.' },
+    ],
+    'ch4.intro': [
+      { who: '', text: 'Leaving the sala, on the road home, a familiar shadow walks behind us — a figure like the mother who passed.' },
+      { who: '', text: 'It means no harm; it only wants to be near. Yet every time we go to it, the heart grows heavier.' },
+      { who: '', text: 'The more we cling, the more it hurts. Step away, then hold SPACE — and know that everything has changed.' },
+    ],
+    'ch4.release': [
+      { who: '', text: 'We saw clearly that the shadow is not her. Nothing is the same as before… and we need not force it to be.' },
+      { who: '', text: 'The shadow slowly faded — not gone, but returned to the heart, as it should be.' },
+    ],
+    'ch4.final': [
+      { who: 'Elder Monk', text: 'You have returned… and this time you came back light, with nothing gripped in your hands.' },
+      { who: 'Elder Monk', text: 'To love without holding — you have seen impermanence, have you not?' },
+    ],
+    'ch4.answerCold': [
+      { who: '', text: 'We gripped the past tighter still… and the shadow returned, heavier than before.' },
+      { who: "Mother's voice", text: 'Child… holding the past like this, you will never meet us as we truly are.' },
+    ],
+    'ch4.answerWarm': [
+      { who: '', text: 'We let go… and the love did not vanish; it became lighter and wider than before.' },
+      { who: '', text: 'Mother smiled, and left in peace — no need to grieve, being here now.' },
+    ],
+    'ch4.answerCool': [
+      { who: "Mother's voice", text: 'If you cannot yet accept it, that is all right… simply seeing that all things change is already a beginning.' },
     ],
   },
 };

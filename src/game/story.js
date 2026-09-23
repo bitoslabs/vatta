@@ -6,6 +6,8 @@ import { advanceDialogue } from '../ui/dialogue.js';
 import { updateChapter } from './chapters.js';
 import './story-chapter1.js';
 import './story-chapter2.js';
+import './story-chapter3.js';
+import './story-chapter4.js';
 
 /** Route the generic "action" event to dialogue or the current interaction. */
 function onAction() {

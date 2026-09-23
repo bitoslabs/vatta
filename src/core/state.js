@@ -39,6 +39,8 @@ export const state = {
     lost: 0,
     time: 0,
     retaliations: 0,
+    looted: 0,
+    clung: 0,
   },
 };
 

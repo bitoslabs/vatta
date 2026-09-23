@@ -21,6 +21,8 @@ export const DEFAULT_GHOST_PROFILE = Object.freeze({
   mindSpeedFearBonus: GHOST.mindSpeedFearBonus,
   mindDissolveTime: 2.8,
   enrageSpeedFactor: 1.6,
+  /** >0 makes the spirit hold its distance instead of chasing to the catch. */
+  standOff: 0,
 });
 
 /**
@@ -155,10 +157,20 @@ export function updateGhost(dt, mind, frozen) {
     const dx = player.x - ghost.x;
     const dy = player.y - ghost.y;
     const dd = Math.hypot(dx, dy);
-    if (dd < 760) {
+    if (dd > 0.001 && dd < 760) {
       ghost.x -= (dx / dd) * 60 * dt;
       ghost.y -= (dy / dd) * 60 * dt;
     }
+    return;
+  }
+
+  // A spirit that keeps its distance (attachment) never closes in to catch you.
+  if (ghost.profile.standOff > 0 && d <= ghost.profile.standOff) {
+    const away = Math.atan2(ghost.y - player.y, ghost.x - player.x);
+    ghost.x += Math.cos(away) * 18 * dt;
+    ghost.y += Math.sin(away) * 18 * dt;
+    ghost.trail.unshift({ x: ghost.x, y: ghost.y });
+    if (ghost.trail.length > 10) ghost.trail.pop();
     return;
   }
 

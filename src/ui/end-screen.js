@@ -43,10 +43,10 @@ function renderEndText() {
 
   const minutes = Math.floor(state.stats.time / 60);
   const seconds = Math.floor(state.stats.time % 60);
+  // Spread every stat so any chapter's stats line can use them (caught, lost,
+  // retaliations, looted, clung, ...) without touching this renderer again.
   endStats.innerHTML = t(end.statsKey, {
-    caught: state.stats.caught,
-    lost: state.stats.lost,
-    retaliations: state.stats.retaliations,
+    ...state.stats,
     time: `${minutes}:${String(seconds).padStart(2, '0')}`,
   });
 
