@@ -49,3 +49,12 @@ export function markEchoFired(id) {
 export function resetEchoes() {
   fired.clear();
 }
+
+export function exportEchoes() {
+  return [...fired];
+}
+
+export function importEchoes(ids) {
+  fired.clear();
+  if (Array.isArray(ids)) for (const id of ids) fired.add(id);
+}

@@ -40,6 +40,7 @@ src/
 │   ├── path.js            มรรค 8 — เปิดตามการปฏิบัติ + รวมผลต่อการรับรู้
 │   ├── precepts.js        ศีล 5 — สถานะตามการกระทำ (ไม่ตัดสิน)
 │   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
+│   ├── save.js            บันทึก/โหลดรอบเล่น (autosave + เล่นต่อ)
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
 │   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES
@@ -67,7 +68,7 @@ src/
 │   ├── language-switcher.js
 │   └── touch.js           joystick + ปุ่มสัมผัส
 ├── game/                  การประสานฉาก
-│   ├── chapters.js        ทะเบียนบท + loadChapter/updateChapter
+│   ├── chapters.js        ทะเบียนบท + loadChapter/updateChapter (+ autosave)
 │   ├── story.js           router → story-chapterN
 │   ├── story-chapter1.js  ป่าเสียงเรียก (ความกลัว)
 │   ├── story-chapter2.js  ไฟในใจ (ความโกรธ)

@@ -74,3 +74,46 @@ export function activeRoots() {
     .filter((root) => root.count > 0)
     .sort((a, b) => b.count - a.count);
 }
+
+/** Serialise / restore the whole ledger (used by systems/save.js). */
+export function exportKarma() {
+  return {
+    merit: ledger.merit,
+    demerit: ledger.demerit,
+    kusala: ledger.kusala,
+    akusala: ledger.akusala,
+    roots: { ...ledger.roots },
+    tendencies: { ...ledger.tendencies },
+    actions: ledger.actions.map((entry) => ({ ...entry })),
+  };
+}
+
+export function importKarma(data) {
+  if (!data || typeof data !== 'object') return false;
+
+  ledger.merit = Number(data.merit) || 0;
+  ledger.demerit = Number(data.demerit) || 0;
+  ledger.kusala = Number(data.kusala) || 0;
+  ledger.akusala = Number(data.akusala) || 0;
+
+  ledger.roots = emptyRoots();
+  for (const [root, value] of Object.entries(data.roots || {})) {
+    if (ledger.roots[root] !== undefined) ledger.roots[root] = Number(value) || 0;
+  }
+
+  ledger.tendencies = emptyTendencies();
+  for (const [tendency, value] of Object.entries(data.tendencies || {})) {
+    if (ledger.tendencies[tendency] !== undefined) ledger.tendencies[tendency] = Number(value) || 0;
+  }
+
+  ledger.actions = Array.isArray(data.actions)
+    ? data.actions.filter((entry) => entry && typeof entry.actionId === 'string').map((entry) => ({
+      actionId: entry.actionId,
+      times: Number(entry.times) || 1,
+      at: Number(entry.at) || 0,
+    }))
+    : [];
+
+  emit(EVENTS.KARMA_CHANGED, 'import');
+  return true;
+}

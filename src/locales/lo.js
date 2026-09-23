@@ -20,6 +20,7 @@ export default {
     'title.keys.mind': 'ກົດຄ້າງ = ຕັ້ງສະຕິ',
     'title.keys.act': 'ໂຕ້ຕອບ',
     'title.start': 'ເລີ່ມພາວະນາ',
+    'title.continue': 'ຫຼິ້ນຕໍ່',
     'title.note': 'ແນະນຳໃຫ້ໃສ່ຫູຟັງ · ກົດ M ເພື່ອເປີດ/ປິດສຽງ',
     'title.language': 'ພາສາ',
 

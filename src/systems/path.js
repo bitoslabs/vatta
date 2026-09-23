@@ -48,4 +48,14 @@ export function getPathModifiers() {
   return modifiers;
 }
 
+export function exportPath() {
+  return [...unlocked];
+}
+
+export function importPath(ids) {
+  unlocked.clear();
+  if (!Array.isArray(ids)) return;
+  for (const id of ids) if (FACTORS.some((factor) => factor.id === id)) unlocked.add(id);
+}
+
 on(EVENTS.KARMA_CHANGED, evaluatePath);

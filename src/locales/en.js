@@ -20,6 +20,7 @@ export default {
     'title.keys.mind': 'Hold = mindfulness',
     'title.keys.act': 'Interact',
     'title.start': 'Begin the practice',
+    'title.continue': 'Continue',
     'title.note': 'Headphones recommended · Press M to mute',
     'title.language': 'Language',
 

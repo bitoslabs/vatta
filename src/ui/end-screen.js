@@ -7,6 +7,7 @@ import { playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { getKarma, activeRoots } from '../systems/karma.js';
 import { keptPreceptCount } from '../systems/precepts.js';
+import { saveRun } from '../systems/save.js';
 import { resolveRebirth } from '../systems/rebirth.js';
 import { realmById } from '../content/realms.js';
 import { chapterById, loadChapter, nextChapterId } from '../game/chapters.js';
@@ -104,6 +105,7 @@ export function showEndScreen() {
 
   endScreen.classList.remove('hidden');
   playBell();
+  saveRun();
 }
 
 export function initEndScreen() {

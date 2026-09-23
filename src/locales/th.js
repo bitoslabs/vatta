@@ -20,6 +20,7 @@ export default {
     'title.keys.mind': 'ค้าง = ตั้งสติ',
     'title.keys.act': 'โต้ตอบ',
     'title.start': 'เริ่มภาวนา',
+    'title.continue': 'เล่นต่อ',
     'title.note': 'หูฟังแนะนำ · กด M เพื่อเปิด/ปิดเสียง',
     'title.language': 'ภาษา',
 

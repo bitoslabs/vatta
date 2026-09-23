@@ -15,6 +15,7 @@ import { resolveRebirth } from '../systems/rebirth.js';
 import { enterRealm } from '../systems/samsara.js';
 import { evaluatePath } from '../systems/path.js';
 import { evaluatePrecepts } from '../systems/precepts.js';
+import { saveRun } from '../systems/save.js';
 
 /**
  * Chapter catalogue. Everything scene-specific (start point, HUD meter label,
@@ -248,7 +249,7 @@ export function nextChapterId(id) {
 }
 
 /** Reset run state and enter a chapter in the world scene. */
-export function loadChapter(id) {
+export function loadChapter(id, { autosave = true } = {}) {
   const def = chapterById(id);
   if (!def) return false;
 
@@ -301,6 +302,9 @@ export function loadChapter(id) {
 
   const handler = handlers.get(id);
   if (handler && handler.start) handler.start(def);
+
+  // Autosave at every chapter start so a run can be continued later.
+  if (autosave) saveRun();
   return true;
 }
 

@@ -39,4 +39,14 @@ export function resetPrecepts() {
   broken.clear();
 }
 
+export function exportPrecepts() {
+  return [...broken];
+}
+
+export function importPrecepts(ids) {
+  broken.clear();
+  if (!Array.isArray(ids)) return;
+  for (const id of ids) if (PRECEPTS.some((precept) => precept.id === id)) broken.add(id);
+}
+
 on(EVENTS.KARMA_CHANGED, evaluatePrecepts);
