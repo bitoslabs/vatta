@@ -197,7 +197,7 @@ function drawEntities(dawn) {
   drawPlayer(dawn);
   for (const tree of treesNear) if (tree.y >= player.y - 6) drawTree(tree, dawn);
 
-  for (const spirit of ghosts) if (spirit.active) drawGhost(spirit);
+  if (!state.teacher) for (const spirit of ghosts) if (spirit.active) drawGhost(spirit);
 }
 
 function drawInteractionPrompt() {

@@ -369,6 +369,17 @@ export default {
     'ch12.end.name': 'The Dividing Spirit',
     'ch12.end.lesson': '<span style="color:#d9c58c">Suppression</span> — a defilement held down grows manifold.<br><br><span style="color:#d9c58c">Seeing from a distance</span> — no fighting, no pressing; seen clearly, the whole swarm thins.',
     'ch12.end.stats': 'Swallowed {caught} times · Swarmed {retaliations} times<br>Practice time {time}',
+    'teacher.title': 'Teacher mode — a walk through the planes',
+    'teacher.toggle.on': 'Teacher mode: on',
+    'teacher.toggle.off': 'Teacher mode: off',
+    'teacher.hint': 'Free roam, no spirits, no failure · press T to toggle',
+    'teacher.note.forest': 'The wide forest is an untrained mind — the dim shapes afar are what the heart does not yet know.',
+    'teacher.note.path': 'The true path has glowing footprints — one who is mindful sees a road others cannot.',
+    'teacher.note.temple': 'The temple is a safe zone, but not the final refuge — ghosts stay out, yet fear within remains.',
+    'teacher.note.bodhi': 'Beneath the bodhi tree is awakening — concentration and wisdom arise where the mind stops grasping.',
+    'teacher.note.sala': 'The sala is a place of rest and practice — look first: is the mind truly calm, or merely pausing?',
+    'teacher.note.gate': 'False light gates appear when fear is high — the more afraid, the clearer the false road.',
+    'teacher.note.guardian': 'The guardian does not judge — it only reflects what the walker has done.',
   },
 
   lists: {

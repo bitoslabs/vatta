@@ -16,6 +16,8 @@ export const state = {
   luresVisible: false,
   /** Set on the final chapter when the run leaves the cycle (nibbāna). */
   liberated: false,
+  /** Classroom mode: no spirits, free-roam commentary. */
+  teacher: false,
   /** Locale key for the HUD meter label and the mindfulness hints. */
   meterKey: 'hud.fear',
   mindHintKey: 'hud.mind',

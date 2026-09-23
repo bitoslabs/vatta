@@ -14,6 +14,7 @@ import { cam } from './camera.js';
 import { updateEchoes } from './echoes.js';
 import { updateGuardian } from './npc.js';
 import { updateStory } from './story.js';
+import { updateTeacherPanel } from '../ui/teacher-panel.js';
 
 let heartCd = 0;
 
@@ -24,6 +25,15 @@ export function updateWorld(dt) {
   const mind = isMindful();
 
   const { running } = updatePlayer(dt);
+
+  // Classroom mode: free roam, no spirits, no fail states — just the map.
+  if (state.teacher) {
+    updateTeacherPanel();
+    updateCamera(dt);
+    updateEffects(dt);
+    return;
+  }
+
   updateFear(dt, { frozen, mind, running });
   updateHeartbeat(dt);
 

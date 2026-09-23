@@ -41,6 +41,7 @@ src/
 │   ├── precepts.js        ศีล 5 — สถานะตามการกระทำ (ไม่ตัดสิน)
 │   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
 │   ├── save.js            บันทึก/โหลดรอบเล่น (autosave + เล่นต่อ)
+│   ├── teacher.js         โหมดครู — เปิด/ปิด + คำบรรยายตามจุดสำคัญ
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
 │   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES
@@ -65,6 +66,7 @@ src/
 │   ├── codex.js           ธรรมะโคเด็กซ์: กรรม + ภูมิ 31
 │   ├── rebirth-interlude.js  การ์ดจุติ–ปฏิสนธิเมื่อตาย
 │   ├── path-notice.js     แจ้งเตือนเมื่อมรรคข้อใหม่เปิด
+│   ├── teacher-panel.js   แผงคำบรรยายโหมดครู
 │   ├── language-switcher.js
 │   └── touch.js           joystick + ปุ่มสัมผัส
 ├── game/                  การประสานฉาก
@@ -129,6 +131,8 @@ MEMORY      → renderMemoryScene(dt)
 | `karma:changed` | actionId | karma → path (ประเมินมรรค 8 ใหม่) |
 | `samsara:rebirth` | realmId | samsara → UI |
 | `path:unlocked` | factorId | path → path-notice |
+| `teacher:key` | — | input → teacher (T) |
+| `teacher:toggle` | boolean | teacher → panel/title |
 | `precept:broken` | preceptId | precepts → path-notice |
 
 ## 5. Chapter system

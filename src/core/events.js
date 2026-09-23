@@ -37,4 +37,8 @@ export const EVENTS = Object.freeze({
   PATH_UNLOCKED: 'path:unlocked',
   /** Payload: the precept id that was just broken for the first time. */
   PRECEPT_BROKEN: 'precept:broken',
+  /** Payload: the T key was pressed (request to toggle classroom mode). */
+  TEACHER_KEY: 'teacher:key',
+  /** Payload: whether classroom mode is now on. */
+  TEACHER_TOGGLE: 'teacher:toggle',
 });

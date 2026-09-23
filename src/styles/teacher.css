@@ -1,0 +1,36 @@
+/* ---------- Classroom / teacher mode ---------- */
+#teacherPanel {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 34;
+  width: min(360px, 52vw);
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--gold-dim);
+  background: rgba(6, 11, 8, 0.88);
+  pointer-events: none;
+}
+
+.teacher-title {
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  color: var(--gold);
+  margin-bottom: 7px;
+}
+
+.teacher-text {
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.teacher-hint {
+  margin-top: 9px;
+  padding-top: 7px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
