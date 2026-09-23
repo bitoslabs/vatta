@@ -12,6 +12,8 @@ export const state = {
   chapter: 1,
   /** Realm the player is currently born into (see content/realms.js). */
   realmId: 'manussa',
+  /** Whether treasure lures are currently placed/visible in the world. */
+  luresVisible: false,
   /** Locale key for the HUD meter label and the mindfulness hints. */
   meterKey: 'hud.fear',
   mindHintKey: 'hud.mind',

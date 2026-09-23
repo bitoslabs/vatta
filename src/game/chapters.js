@@ -148,6 +148,35 @@ export const CHAPTERS = [
       statsKey: 'ch5.end.stats',
     },
   },
+  {
+    id: 6,
+    nameKey: 'chapter6.name',
+    subtitleKey: 'chapter6.subtitle',
+    meterKey: 'hud.suffering',
+    mindHintKey: 'hud.mind.wheel',
+    start: { x: GATE_OUT.x + 40, y: GATE_OUT.y },
+    checkpoint: GATE_OUT,
+    ghost: {
+      mindDissolve: false,
+      respawnOnFade: false,
+      tint: 'rgba(200,180,200,.5)',
+      profile: {
+        baseSpeed: 150,
+        fearSpeedBonus: 130,
+        mindSpeedBase: 60,
+        mindSpeedFearBonus: 60,
+        mindDissolveTime: 3.2,
+        enrageSpeedFactor: 1.5,
+        standOff: 0,
+      },
+    },
+    end: {
+      titleKey: 'ch6.end.title',
+      nameKey: 'ch6.end.name',
+      lessonKey: 'ch6.end.lesson',
+      statsKey: 'ch6.end.stats',
+    },
+  },
 ];
 
 const handlers = new Map();
@@ -181,6 +210,7 @@ export function loadChapter(id) {
   state.mindHintKey = def.mindHintKey || 'hud.mind';
   state.fear = 0;
   state.interact = null;
+  state.luresVisible = false;
   state.dialogueOpen = false;
   state.choiceOpen = false;
   state.checkpoint = { ...(def.checkpoint || def.start) };

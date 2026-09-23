@@ -34,6 +34,7 @@ let ch3 = { awakened: false, resolved: false, ended: false };
 export function startChapter3() {
   ch3 = { awakened: false, resolved: false, ended: false };
   resetLures();
+  state.luresVisible = true;
   state.stats.looted = 0;
   say('ch3.intro', () => toast(t('ch3.toast.start.title'), t('ch3.toast.start.sub')));
 }
@@ -121,6 +122,7 @@ function askCraving() {
 function finish() {
   if (ch3.ended) return;
   ch3.ended = true;
+  state.luresVisible = false;
   showEndScreen();
 }
 

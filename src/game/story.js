@@ -9,6 +9,7 @@ import './story-chapter2.js';
 import './story-chapter3.js';
 import './story-chapter4.js';
 import './story-chapter5.js';
+import './story-chapter6.js';
 
 /** Route the generic "action" event to dialogue or the current interaction. */
 function onAction() {

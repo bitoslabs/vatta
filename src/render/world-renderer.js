@@ -157,9 +157,9 @@ function drawSparks() {
   }
 }
 
-/** Treasure lures exist only in chapter 3 (the craving chapter). */
+/** Treasure lures appear when a chapter enables them (3 and 6). */
 function drawLures() {
-  if (state.chapter !== 3) return;
+  if (!state.luresVisible) return;
   for (const lure of getLures()) {
     if (!lure.taken) drawLure(lure);
   }

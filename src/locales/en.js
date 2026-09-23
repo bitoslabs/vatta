@@ -175,6 +175,28 @@ export default {
     'q.q4.a0': 'I practise',
     'q.q4.a1': 'Practice arises on its own, when conditions are ready',
     'q.q4.a2': 'I cannot answer yet',
+
+    'chapter6.name': 'The Wheel',
+    'chapter6.subtitle': 'Chapter Six — The Four Noble Truths',
+    'hud.suffering': 'S U F F E R I N G',
+    'hud.cessation': 'C E S S A T I O N',
+    'hud.path': 'T H E  P A T H',
+    'ch6.phase.dukkha.title': 'Suffering',
+    'ch6.phase.dukkha.sub': 'The unease that must be seen first',
+    'ch6.phase.samudaya.title': 'Its Origin',
+    'ch6.phase.samudaya.sub': 'Craving that lures you to grasp',
+    'ch6.phase.nirodha.title': 'Cessation',
+    'ch6.phase.nirodha.sub': 'When released, suffering ceases',
+    'ch6.phase.magga.title': 'The Path',
+    'ch6.phase.magga.sub': 'Walk back with a clear mind',
+    'ch6.floater.looted': 'Grasping again… suffering forms',
+    'ch6.choice.wrong': '"Suffering comes from bad luck"',
+    'ch6.choice.right': '"Suffering comes from craving, and ceases by the Path"',
+    'ch6.choice.unknown': '"I still do not understand…"',
+    'ch6.end.title': 'Chapter Six Complete',
+    'ch6.end.name': 'The Wheel',
+    'ch6.end.lesson': '<span style="color:#d9c58c">The Four Noble Truths</span> — suffering, its origin, its cessation, the path.<br><br>See suffering → abandon the cause → realise cessation → cultivate the path.',
+    'ch6.end.stats': 'Grasped {looted} times · Swallowed {caught} times<br>Practice time {time}',
   },
 
   lists: {
@@ -221,6 +243,11 @@ export default {
       'Calling it "me"… noticing',
       'Seeing only conditions…',
       'Lighter… no one left to cling',
+    ],
+    'hud.mind.wheel': [
+      'Seeing suffering… knowing it',
+      'Seeing its cause…',
+      'Seeing the way it ceases… the mind brightens',
     ],
   },
 
@@ -358,6 +385,26 @@ export default {
     ],
     'ch5.answerUnknown': [
       { who: 'The voice', text: 'Not knowing, you cannot answer… yet admitting you do not know is the beginning of wisdom.' },
+    ],
+    'ch6.intro': [
+      { who: '', text: 'The wheel turns to the last chapter of this part — the same road we have walked four times, with fear, anger, craving and clinging.' },
+      { who: '', text: 'Now we walk it again as one who knows: suffering, its origin, its cessation, the path — all on a single road.' },
+      { who: '', text: 'Begin by seeing suffering. Do not run from it; know that you are suffering, and keep walking.' },
+    ],
+    'ch6.arrive': [
+      { who: 'Elder Monk', text: 'You have walked all four upon one road. Now tell me: what are the Four Noble Truths?' },
+      { who: '', text: 'We stopped, and gathered all that we had seen along the way.' },
+    ],
+    'ch6.answerWrong': [
+      { who: '', text: 'We took suffering for bad luck, wishing it gone without looking at its cause — and the wheel kept turning.' },
+      { who: 'Elder Monk', text: 'Suffering has its cause. You must see the cause to end it.' },
+    ],
+    'ch6.answerRight': [
+      { who: '', text: 'Suffering is to be seen; craving is to be abandoned; cessation is to be realised; the path is to be cultivated.' },
+      { who: '', text: 'We spoke all four… and for the first time the wheel stood still — not because it could not turn, but because no one pushed it any more.' },
+    ],
+    'ch6.answerUnknown': [
+      { who: 'Elder Monk', text: 'Not knowing is not yet wrong… but look at the road you have just walked; it has already told you the answer.' },
     ],
   },
 };
