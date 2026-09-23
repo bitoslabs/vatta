@@ -41,6 +41,7 @@ export const state = {
     retaliations: 0,
     looted: 0,
     clung: 0,
+    selfish: 0,
   },
 };
 

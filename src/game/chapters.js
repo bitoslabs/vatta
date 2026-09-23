@@ -119,6 +119,35 @@ export const CHAPTERS = [
       statsKey: 'ch4.end.stats',
     },
   },
+  {
+    id: 5,
+    nameKey: 'chapter5.name',
+    subtitleKey: 'chapter5.subtitle',
+    meterKey: 'hud.self',
+    mindHintKey: 'hud.mind.self',
+    start: { x: PLAYER.x, y: PLAYER.y },
+    checkpoint: GATE_OUT,
+    ghost: {
+      mindDissolve: true,
+      respawnOnFade: false,
+      tint: 'rgba(150,150,178,.5)',
+      profile: {
+        baseSpeed: 118,
+        fearSpeedBonus: 70,
+        mindSpeedBase: 55,
+        mindSpeedFearBonus: 45,
+        mindDissolveTime: 2.6,
+        enrageSpeedFactor: 1.4,
+        standOff: 0,
+      },
+    },
+    end: {
+      titleKey: 'ch5.end.title',
+      nameKey: 'ch5.end.name',
+      lessonKey: 'ch5.end.lesson',
+      statsKey: 'ch5.end.stats',
+    },
+  },
 ];
 
 const handlers = new Map();
@@ -155,7 +184,9 @@ export function loadChapter(id) {
   state.dialogueOpen = false;
   state.choiceOpen = false;
   state.checkpoint = { ...(def.checkpoint || def.start) };
-  state.stats = { caught: 0, lost: 0, time: 0, retaliations: 0, looted: 0, clung: 0 };
+  state.stats = {
+    caught: 0, lost: 0, time: 0, retaliations: 0, looted: 0, clung: 0, selfish: 0,
+  };
   resetStoryFlags();
   resetGhost(def.ghost || {});
   resetRelease();

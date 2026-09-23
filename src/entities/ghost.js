@@ -43,6 +43,8 @@ export const ghost = {
   mode: STATUS.HUNT,
   enraged: 0,
   pacified: false,
+  /** Visual size multiplier — the "self" grows as ego grows. */
+  scale: 1,
   mindDissolve: true,
   respawnOnFade: true,
   tint: null,
@@ -64,6 +66,7 @@ export function resetGhost(options = {}) {
   ghost.mode = STATUS.HUNT;
   ghost.enraged = 0;
   ghost.pacified = false;
+  ghost.scale = 1;
   ghost.mindDissolve = options.mindDissolve !== false;
   ghost.respawnOnFade = options.respawnOnFade !== false;
   ghost.tint = options.tint || null;

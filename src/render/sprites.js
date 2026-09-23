@@ -80,11 +80,11 @@ export function drawGhost() {
 
   const gx = ghost.x;
   const gy = ghost.y + Math.sin(t * 2.2) * 4;
-  const shrink = isMindful() ? 0.82 : 1;
+  const scale = (isMindful() ? 0.82 : 1) * (ghost.scale || 1);
 
   ctx.save();
   ctx.translate(gx, gy);
-  ctx.scale(shrink, shrink);
+  ctx.scale(scale, scale);
   ctx.globalAlpha = alpha;
 
   ctx.fillStyle = 'rgba(200,235,225,.16)';

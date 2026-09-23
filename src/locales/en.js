@@ -142,6 +142,39 @@ export default {
     'ch4.end.name': 'Who in the Mirror',
     'ch4.end.lesson': '<span style="color:#d9c58c">Impermanence (anicca)</span> — all things change; nothing stays the same.<br><br><span style="color:#d9c58c">True love</span> — let them be what they are.',
     'ch4.end.stats': 'Held on to the past {clung} times · Swallowed {caught} times<br>Practice time {time}',
+
+    'chapter5.name': 'The Mouthless Voice',
+    'chapter5.subtitle': 'Chapter Five — Non-Self',
+    'hud.self': 'S E L F',
+    'ch5.toast.start.title': 'The Mouthless Voice',
+    'ch5.toast.start.sub': 'Chapter Five — Non-Self',
+    'ch5.floater.self': 'The more you call it "me", the larger it grows',
+    'ch5.floater.notSelf': 'Seeing only conditions… the shadow thins',
+    'ch5.floater.neutral': 'Not yet clear… it remains',
+    'ch5.choice.self': '"I am the one who is running"',
+    'ch5.choice.notSelf': '"There is running, but no runner"',
+    'ch5.choice.unknown': '"I cannot answer yet…"',
+    'ch5.end.title': 'Chapter Five Complete',
+    'ch5.end.name': 'The Mouthless Voice',
+    'ch5.end.lesson': '<span style="color:#d9c58c">Non-self (anattā)</span> — what we call "I" is a meeting of conditions.<br><br><span style="color:#d9c58c">The runner</span> — when there is no one to cling, there is no fear.',
+    'ch5.end.stats': 'Claimed a self {selfish} times · Swallowed {caught} times<br>Practice time {time}',
+
+    'q.q1.text': 'Whose voice is this?',
+    'q.q1.a0': 'It is mine',
+    'q.q1.a1': "No one's — it arises and ceases",
+    'q.q1.a2': "I don't know, but I hear it",
+    'q.q2.text': 'Who is running?',
+    'q.q2.a0': 'I am running',
+    'q.q2.a1': 'There is running, but no runner',
+    'q.q2.a2': 'I am not sure',
+    'q.q3.text': 'Are you afraid to die?',
+    'q.q3.a0': 'Yes — I want to live',
+    'q.q3.a1': 'What is born must cease; that is natural',
+    'q.q3.a2': 'Afraid — but I know that I am afraid',
+    'q.q4.text': 'If there is no "I", who practises?',
+    'q.q4.a0': 'I practise',
+    'q.q4.a1': 'Practice arises on its own, when conditions are ready',
+    'q.q4.a2': 'I cannot answer yet',
   },
 
   lists: {
@@ -183,6 +216,11 @@ export default {
       'Clinging… know that you are clinging',
       'Seeing that it has changed…',
       'Released… the heart is open',
+    ],
+    'hud.mind.self': [
+      'Calling it "me"… noticing',
+      'Seeing only conditions…',
+      'Lighter… no one left to cling',
     ],
   },
 
@@ -300,6 +338,26 @@ export default {
     ],
     'ch4.answerCool': [
       { who: "Mother's voice", text: 'If you cannot yet accept it, that is all right… simply seeing that all things change is already a beginning.' },
+    ],
+    'ch5.intro': [
+      { who: '', text: 'We are back at the temple, yet one voice is not silent — it has no mouth, no body, only questions.' },
+      { who: '', text: 'It asks, "Who is it that is running?" Every answer that builds a "me" makes its shadow grow.' },
+      { who: '', text: 'Walk to the sala and answer by seeing truly, not by grasping.' },
+    ],
+    'ch5.arrive': [
+      { who: 'The voice', text: 'Before you reach the sala… answer me plainly — who is it that has walked here?' },
+      { who: '', text: 'We stopped, and looked deeply within.' },
+    ],
+    'ch5.answerSelf': [
+      { who: '', text: 'We answered "I" — and the shadow swelled to fill the sky, and fear returned full in the chest.' },
+      { who: 'The voice', text: 'If there truly is a "you", then you must truly be afraid — forever.' },
+    ],
+    'ch5.answerNotSelf': [
+      { who: '', text: 'We saw that what we call "I" is a meeting of body, mind, cause and effect — no one is actually there.' },
+      { who: '', text: 'The voice fell silent — not because we won, but because there is no one to call a loser.' },
+    ],
+    'ch5.answerUnknown': [
+      { who: 'The voice', text: 'Not knowing, you cannot answer… yet admitting you do not know is the beginning of wisdom.' },
     ],
   },
 };
