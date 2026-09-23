@@ -177,6 +177,22 @@ export const CHAPTERS = [
       statsKey: 'ch6.end.stats',
     },
   },
+  {
+    id: 7,
+    nameKey: 'chapter7.name',
+    subtitleKey: 'chapter7.subtitle',
+    meterKey: 'hud.path',
+    mindHintKey: 'hud.mind.wheel',
+    start: { x: SALA.x - 60, y: SALA.y + 150 },
+    checkpoint: { x: SALA.x - 60, y: SALA.y + 150 },
+    ghost: { mindDissolve: false, respawnOnFade: false, tint: null },
+    end: {
+      titleKey: 'ch7.end.title',
+      nameKey: 'ch7.end.name',
+      lessonKey: 'ch7.end.lesson',
+      statsKey: 'ch7.end.stats',
+    },
+  },
 ];
 
 const handlers = new Map();
@@ -211,6 +227,7 @@ export function loadChapter(id) {
   state.fear = 0;
   state.interact = null;
   state.luresVisible = false;
+  state.liberated = false;
   state.dialogueOpen = false;
   state.choiceOpen = false;
   state.checkpoint = { ...(def.checkpoint || def.start) };

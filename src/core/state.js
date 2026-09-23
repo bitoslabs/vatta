@@ -14,6 +14,8 @@ export const state = {
   realmId: 'manussa',
   /** Whether treasure lures are currently placed/visible in the world. */
   luresVisible: false,
+  /** Set on the final chapter when the run leaves the cycle (nibbāna). */
+  liberated: false,
   /** Locale key for the HUD meter label and the mindfulness hints. */
   meterKey: 'hud.fear',
   mindHintKey: 'hud.mind',

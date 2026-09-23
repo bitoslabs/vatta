@@ -197,6 +197,29 @@ export default {
     'ch6.end.name': 'The Wheel',
     'ch6.end.lesson': '<span style="color:#d9c58c">The Four Noble Truths</span> — suffering, its origin, its cessation, the path.<br><br>See suffering → abandon the cause → realise cessation → cultivate the path.',
     'ch6.end.stats': 'Grasped {looted} times · Swallowed {caught} times<br>Practice time {time}',
+
+    'chapter7.name': 'The Way Beyond',
+    'chapter7.subtitle': 'Chapter Seven — Virtue, Concentration, Wisdom',
+    'ch7.toast.sila.title': 'Virtue (sīla)',
+    'ch7.toast.sila.sub': 'Not harming',
+    'ch7.toast.samadhi.title': 'Concentration (samādhi)',
+    'ch7.toast.samadhi.sub': 'The last sitting',
+    'ch7.sila.choice.help': '"Go and help him"',
+    'ch7.sila.choice.pass': '"Walk on by"',
+    'ch7.sila.choice.take': '"Take what is his"',
+    'ch7.panna.choice.anicca': '"All things arise and cease; nothing is ours"',
+    'ch7.panna.choice.self': '"At least this self still exists"',
+    'ch7.panna.choice.unknown': '"I am not sure…"',
+    'ch7.final.choice.stay': '"I want to be born again"',
+    'ch7.final.choice.free': '"Release it all — no more birth for my own sake"',
+    'ch7.final.choice.unknown': '"I am not sure…"',
+    'ch7.end.title': 'The Final Chapter',
+    'ch7.end.name': 'The Way Beyond',
+    'ch7.end.lesson': '<span style="color:#d9c58c">Virtue (sīla)</span> — not harming · <span style="color:#d9c58c">Concentration (samādhi)</span> — a steady mind · <span style="color:#d9c58c">Wisdom (paññā)</span> — seeing things as they are.',
+    'ch7.end.stats': 'Merit {merit} · Demerit {demerit} · Kusala {kusala} · Akusala {akusala}<br>Total practice time {time}',
+    'ch7.nibbana.name': 'Nibbāna',
+    'ch7.nibbana.desc': 'Utter cessation — no more wandering on.',
+    'ch7.nibbana.reason': 'Because kamma is ended and no tendency remains, the mind is freed from the wheel.',
   },
 
   lists: {
@@ -405,6 +428,53 @@ export default {
     ],
     'ch6.answerUnknown': [
       { who: 'Elder Monk', text: 'Not knowing is not yet wrong… but look at the road you have just walked; it has already told you the answer.' },
+    ],
+    'ch7.intro': [
+      { who: '', text: 'From the sala back to the temple — the road that was long and dark is now quiet and bright. No ghost remains at all.' },
+      { who: '', text: 'The last chapter is not a flight but a test of three things: virtue, concentration, wisdom.' },
+      { who: '', text: 'Walk back with a light body, a peaceful word, and a knowing mind.' },
+    ],
+    'ch7.sila': [
+      { who: '', text: 'Beside the road an injured man lies; his belongings are scattered around him.' },
+    ],
+    'ch7.silaHelp': [
+      { who: '', text: 'We went to help… expecting nothing in return — this precept is fulfilled by kindness.' },
+    ],
+    'ch7.silaPass': [
+      { who: '', text: 'We walked on… we did not harm, yet we did not give.' },
+    ],
+    'ch7.silaTake': [
+      { who: '', text: 'We took what was his… and the heart that was light grew heavy.' },
+    ],
+    'ch7.panna': [
+      { who: 'Elder Monk', text: 'Before you reach the temple, answer me one thing — what is "self"?' },
+      { who: '', text: 'We looked deeply within… and answered.' },
+    ],
+    'ch7.pannaWarm': [
+      { who: '', text: 'We saw that all things arise and cease; nothing is ours — even "self" is only a stream flowing on.' },
+      { who: '', text: 'A mind that sees this need not cling, and need not fear.' },
+    ],
+    'ch7.pannaCold': [
+      { who: '', text: 'We still held that "I" truly exists — and fear quietly returned.' },
+      { who: 'Elder Monk', text: 'Not yet wrong… but keep looking, until you see that no one is there.' },
+    ],
+    'ch7.pannaCool': [
+      { who: '', text: 'Not sure… that is all right; there is still road to walk.' },
+    ],
+    'ch7.final': [
+      { who: 'Elder Monk', text: 'Here is the last fork — will you keep wandering on, or set the wheel down?' },
+      { who: '', text: 'We looked back over every chapter: fear, anger, craving, clinging, and the seeing that there is no self.' },
+    ],
+    'ch7.answerCold': [
+      { who: '', text: 'We still want to be born again… and the wheel turns on, by its own causes and effects.' },
+      { who: '', text: 'There is no judgement — only the fruit of a mind not yet ready to let go.' },
+    ],
+    'ch7.answerWarm': [
+      { who: '', text: 'We set the wheel down — not from weariness with birth, but because no one is left to be born for their own sake.' },
+      { who: '', text: 'The silence that follows is not emptiness — it is liberation.' },
+    ],
+    'ch7.answerUnknown': [
+      { who: 'Elder Monk', text: 'Unsure, you cannot answer… but honesty with your own heart is the first wisdom.' },
     ],
   },
 };

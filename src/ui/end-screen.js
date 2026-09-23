@@ -43,32 +43,44 @@ function renderEndText() {
 
   const minutes = Math.floor(state.stats.time / 60);
   const seconds = Math.floor(state.stats.time % 60);
-  // Spread every stat so any chapter's stats line can use them (caught, lost,
-  // retaliations, looted, clung, ...) without touching this renderer again.
+  const karma = getKarma();
+  // Spread every stat + kamma tally so any chapter's stats line can use them.
   endStats.innerHTML = t(end.statsKey, {
     ...state.stats,
+    merit: karma.merit,
+    demerit: karma.demerit,
+    kusala: karma.kusala,
+    akusala: karma.akusala,
     time: `${minutes}:${String(seconds).padStart(2, '0')}`,
   });
 
   renderRebirth();
 }
 
-/** Show where this run's accumulated karma would lead. */
+/** Show where this run's accumulated karma would lead — or that it is freed. */
 function renderRebirth() {
   const karma = getKarma();
-  const { realmId, reasonKey } = resolveRebirth(karma);
-  const realm = realmById(realmId);
-
-  realmName.textContent = realm ? t(realm.nameKey) : '';
-  realmPali.textContent = realm ? realm.pali : '';
-  realmDesc.textContent = realm ? t(realm.descKey) : '';
-  realmReason.textContent = t(reasonKey);
   karmaSummary.textContent = t('hud.karma', {
     merit: karma.merit,
     demerit: karma.demerit,
     kusala: karma.kusala,
     akusala: karma.akusala,
   });
+
+  if (state.liberated) {
+    realmName.textContent = t('ch7.nibbana.name');
+    realmPali.textContent = 'Nibbāna';
+    realmDesc.textContent = t('ch7.nibbana.desc');
+    realmReason.textContent = t('ch7.nibbana.reason');
+    return;
+  }
+
+  const { realmId, reasonKey } = resolveRebirth(karma);
+  const realm = realmById(realmId);
+  realmName.textContent = realm ? t(realm.nameKey) : '';
+  realmPali.textContent = realm ? realm.pali : '';
+  realmDesc.textContent = realm ? t(realm.descKey) : '';
+  realmReason.textContent = t(reasonKey);
 
   const roots = activeRoots();
   if (roots.length) {

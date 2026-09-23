@@ -46,6 +46,8 @@ export const med = {
 
 let holdingInput = false;
 let hushTimer = null;
+/** Called when the meditation completes; defaults to chapter 1's memory scene. */
+let completion = startMemory;
 
 const disturbCard = $('#disturbCard');
 const disturbText = $('#disturbText');
@@ -63,7 +65,8 @@ export function initMeditation() {
   });
 }
 
-export function startMeditation() {
+export function startMeditation(options = {}) {
+  completion = options.onComplete || startMemory;
   state.story.meditated = true;
   fade(true, () => {
     state.mode = MODE.MEDITATION;
@@ -181,9 +184,9 @@ function completeMeditation() {
     fade(true, () => {
       medOverlay.classList.add('hidden');
       playBell();
-      startMemory();
-      // The screen was faded to black for the transition; bring the memory
-      // scene back into view (without this the whole scene stays black).
+      // Chapter 1 continues into the memory scene; other chapters resume the world.
+      completion();
+      // The screen was faded to black for the transition; bring the scene back.
       fade(false);
     });
   }, 700);
