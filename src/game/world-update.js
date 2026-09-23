@@ -12,6 +12,7 @@ import { ghost, updateGhost } from '../entities/ghost.js';
 import { inSafeZone, player, updatePlayer } from '../entities/player.js';
 import { cam } from './camera.js';
 import { updateEchoes } from './echoes.js';
+import { updateGuardian } from './npc.js';
 import { updateStory } from './story.js';
 
 let heartCd = 0;
@@ -29,6 +30,7 @@ export function updateWorld(dt) {
   if (!state.story.released) updateGhost(dt, mind, frozen);
 
   updateStory(dt);
+  updateGuardian();
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);

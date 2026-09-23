@@ -16,8 +16,9 @@ import { ghost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { updateHud } from '../ui/hud.js';
 import { renderLighting, shakeOffset } from './lighting.js';
-import { drawGhost, drawLure, drawPlayer, drawPrompt, drawSala, drawTemple, drawTree } from './sprites.js';
+import { drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, drawTemple, drawTree } from './sprites.js';
 import { getLures } from '../game/lures.js';
+import { GUARDIAN } from '../game/npc.js';
 
 function drawPath(points, width, color) {
   ctx.strokeStyle = color;
@@ -50,6 +51,7 @@ export function renderWorld() {
   drawLightGates(mind);
   drawSparks();
   drawLures();
+  drawGuardian(GUARDIAN.x, GUARDIAN.y);
   drawEntities(dawn);
   drawInteractionPrompt();
 

@@ -39,6 +39,7 @@ src/
 │   ├── karma-memory.js    กรรมในอดีต → "ความจำ" ที่โลกตอบสนอง
 │   ├── path.js            มรรค 8 — เปิดตามการปฏิบัติ + รวมผลต่อการรับรู้
 │   ├── precepts.js        ศีล 5 — สถานะตามการกระทำ (ไม่ตัดสิน)
+│   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
 │   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES
@@ -74,6 +75,7 @@ src/
 │   ├── memory.js          ฉากความทรงจำ + คำถาม
 │   ├── release.js         ลำดับปลดปล่อย
 │   ├── echoes.js          เหตุการณ์กรรมย้อนหลังตามตำแหน่งบนทาง
+│   ├── npc.js             ธรรมบาล — ยืนกลางทาง ทักทายตามสิ่งที่ทำ
 │   ├── world-update.js    อัปเดตโลกต่อเฟรม (fear, ghost, story, camera)
 │   ├── camera.js          กล้อง + shake
 │   └── loop.js            requestAnimationFrame เดียว

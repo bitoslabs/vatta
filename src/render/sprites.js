@@ -182,6 +182,47 @@ export function drawLure(lure) {
   ctx.fill();
 }
 
+/** A still figure on the road: the Dharma guardian with a lantern. */
+export function drawGuardian(x, y) {
+  const t = performance.now() * 0.0015;
+  const glow = 0.55 + Math.sin(t) * 0.2;
+
+  ctx.fillStyle = 'rgba(0,0,0,.4)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + 12, 15, 5, 0, 0, TAU);
+  ctx.fill();
+
+  ctx.fillStyle = `rgba(190,220,200,${glow * 0.14})`;
+  ctx.beginPath();
+  ctx.arc(x - 16, y - 18, 26, 0, TAU);
+  ctx.fill();
+
+  ctx.fillStyle = '#2a2f2c';
+  ctx.beginPath();
+  ctx.moveTo(x - 13, y + 12);
+  ctx.quadraticCurveTo(x - 15, y - 14, x, y - 20);
+  ctx.quadraticCurveTo(x + 15, y - 14, x + 13, y + 12);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#6f6a5b';
+  ctx.beginPath();
+  ctx.arc(x, y - 26, 8, 0, TAU);
+  ctx.fill();
+
+  ctx.strokeStyle = '#4a4033';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x + 12, y - 34);
+  ctx.lineTo(x + 12, y + 14);
+  ctx.stroke();
+
+  ctx.fillStyle = `rgba(210,230,205,${glow})`;
+  ctx.beginPath();
+  ctx.arc(x - 16, y - 18, 3.2, 0, TAU);
+  ctx.fill();
+}
+
 export function drawTemple(dawn) {  const T = TEMPLE;
   const now = performance.now();
 

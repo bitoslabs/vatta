@@ -267,6 +267,9 @@ export default {
     'precept.musavada.desc': 'Abstaining from false speech that deceives self and others.',
     'precept.surameraya.name': 'Sobriety',
     'precept.surameraya.desc': 'Abstaining from intoxication that scatters mindfulness.',
+
+    'npc.guardian': 'Dhammapāla',
+    'prompt.talkGuardian': 'Speak with the guardian',
   },
 
   lists: {
@@ -525,6 +528,42 @@ export default {
     ],
     'ch7.answerUnknown': [
       { who: 'Elder Monk', text: 'Unsure, you cannot answer… but honesty with your own heart is the first wisdom.' },
+    ],
+    'greet.full': [
+      { who: 'The Guardian', text: 'You have come this far… all eight factors of the path are open in you now.' },
+      { who: 'The Guardian', text: 'I have nothing left to give — only this: the road is walked alone, yet there was never a walker.' },
+    ],
+    'greet.heavy': [
+      { who: 'The Guardian', text: 'You have carried something heavy the whole way… I have seen it.' },
+      { who: 'The Guardian', text: 'Set some of it down — that weight was not given to you; you were carrying it yourself.' },
+    ],
+    'greet.harmed': [
+      { who: 'The Guardian', text: 'You once struck back in anger… I remember.' },
+      { who: 'The Guardian', text: 'Anger never ends by anger — return to the breath, and you will see whom that fire burned.' },
+    ],
+    'greet.took': [
+      { who: 'The Guardian', text: 'Your hand is used to taking what is not yours.' },
+      { who: 'The Guardian', text: 'What is gained without giving grows heavier the more you hold it — try setting one piece down.' },
+    ],
+    'greet.clung': [
+      { who: 'The Guardian', text: 'You hold something so tightly… I can see your hand clenched.' },
+      { who: 'The Guardian', text: 'It was never yours; it is only a stream flowing past.' },
+    ],
+    'greet.practice': [
+      { who: 'The Guardian', text: 'You have given, and you have released — I remember both.' },
+      { who: 'The Guardian', text: 'Your road is not wrong. Walk on, without heedlessness.' },
+    ],
+    'greet.gave': [
+      { who: 'The Guardian', text: 'The hand you once reached out to give… I still remember it.' },
+      { who: 'The Guardian', text: 'Giving without expecting lights the way home.' },
+    ],
+    'greet.released': [
+      { who: 'The Guardian', text: 'You once let something go… I remember.' },
+      { who: 'The Guardian', text: 'That release was a beginning, not an end — keep letting go.' },
+    ],
+    'greet.empty': [
+      { who: 'The Guardian', text: 'You have nothing yet for me to remember… the road is still waiting.' },
+      { who: 'The Guardian', text: 'Walk on, and your actions will tell me who you are.' },
     ],
   },
 };
