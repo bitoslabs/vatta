@@ -351,6 +351,24 @@ export default {
     'ch11.end.name': 'The Pair',
     'ch11.end.lesson': '<span style="color:#d9c58c">Two tendencies</span> — defilements never come alone; seeing must see the whole set.<br><br><span style="color:#d9c58c">One root</span> — when the shared root is seen, both shadows thin together.',
     'ch11.end.stats': 'Swallowed {caught} times<br>Practice time {time}',
+
+    'chapter12.name': 'The Dividing Spirit',
+    'chapter12.subtitle': 'Chapter Twelve — Part Two · Suppression multiplies',
+    'hud.swarm': 'D I V I D I N G',
+    'ch12.toast.start.title': 'The Dividing Spirit',
+    'ch12.toast.start.sub': 'Chapter Twelve — Part Two',
+    'ch12.toast.release.title': 'The whole swarm thins',
+    'ch12.toast.release.sub': 'Seen from a distance, not pressed from up close',
+    'ch12.floater.split': 'Pressed up close… it divides into {n}',
+    'ch12.floater.strike': 'The more you fight, the more it multiplies',
+    'ch12.floater.blocked': 'It has not thinned — step far away, and notice it',
+    'ch12.choice.suppress': '"Hold it down so it cannot grow — force it"',
+    'ch12.choice.distance': '"Pressing only multiplies — step back and see it from afar"',
+    'ch12.choice.unsure': '"I am not sure…"',
+    'ch12.end.title': 'Chapter Twelve Complete',
+    'ch12.end.name': 'The Dividing Spirit',
+    'ch12.end.lesson': '<span style="color:#d9c58c">Suppression</span> — a defilement held down grows manifold.<br><br><span style="color:#d9c58c">Seeing from a distance</span> — no fighting, no pressing; seen clearly, the whole swarm thins.',
+    'ch12.end.stats': 'Swallowed {caught} times · Swarmed {retaliations} times<br>Practice time {time}',
   },
 
   lists: {
@@ -443,6 +461,12 @@ export default {
       '"One is me, so the other is me too"',
       '"Both are only conditions I have accumulated"',
       '"I do not know"',
+    ],
+
+    'hud.mind.swarm': [
+      'Pressing multiplies it… step back first',
+      'Seeing it from a distance…',
+      'The whole swarm thins together',
     ],
   },
 
@@ -767,6 +791,27 @@ export default {
     ],
     'ch11.answerCool': [
       { who: 'The two shadows', text: 'Not knowing is all right… but we two will always be standing on either side of your road.' },
+    ],
+
+    'ch12.intro': [
+      { who: '', text: 'Tonight one spirit is unlike the others — the closer you hold it down, the more it divides: two, three, four.' },
+      { who: '', text: 'Suppression is not cessation, and fighting only adds to its number.' },
+      { who: '', text: 'There is one way: step far away, then hold SPACE and look at it from a distance — the whole swarm thins together.' },
+    ],
+    'ch12.arrive': [
+      { who: '', text: 'At the sala the swarm has faded… and we have just learned that what we held down had never gone anywhere.' },
+      { who: '', text: 'We asked ourselves what made it multiply — the pressing, or ourselves.' },
+    ],
+    'ch12.answerCold': [
+      { who: '', text: 'We answered, "it must be held down" — and the shadows began to gather again, closer than before.' },
+      { who: 'The swarm', text: 'We live in the clenched hand; the tighter the grip, the more of us there are.' },
+    ],
+    'ch12.answerWarm': [
+      { who: '', text: 'We saw it is not pressing but seeing from a distance — when it is seen clearly, nothing needs to be held down.' },
+      { who: '', text: 'The swarm faded at once — not defeated, but with nothing left to press against.' },
+    ],
+    'ch12.answerCool': [
+      { who: 'The swarm', text: 'Being unsure is all right… but remember: every time you press, one more of us appears.' },
     ],
   },
 };

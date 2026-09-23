@@ -79,6 +79,10 @@ export function renderWorld() {
     // Two-tinted dusk for the pair.
     ctx.fillStyle = 'rgba(70,45,70,.07)';
     ctx.fillRect(0, 0, W, H);
+  } else if (state.chapter === 12) {
+    // Cold steel for the dividing spirit.
+    ctx.fillStyle = 'rgba(45,55,75,.07)';
+    ctx.fillRect(0, 0, W, H);
   }
   drawFog();
   drawFloaters();

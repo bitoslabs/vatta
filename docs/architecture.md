@@ -81,6 +81,7 @@ src/
 │   ├── story-chapter9.js  อนุสัยที่เหลือ — ผีเดินตามรอยเดิม (replay)
 │   ├── story-chapter10.js เงาที่โตขึ้น — โตตามการทำซ้ำ หดเมื่อรู้ทัน
 │   ├── story-chapter11.js ผีคู่ — สองอนุสัยพร้อมกัน (ghosts collection)
+│   ├── story-chapter12.js ผีที่แบ่งตัว — กดแล้วเพิ่ม ถอยห่างแล้วจาง
 │   ├── world-update.js    อัปเดตโลกต่อเฟรม (fear, ghost, story, camera)
 │   ├── camera.js          กล้อง + shake
 │   └── loop.js            requestAnimationFrame เดียว

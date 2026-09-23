@@ -315,6 +315,36 @@ export const CHAPTERS = [
       statsKey: 'ch11.end.stats',
     },
   },
+  {
+    id: 12,
+    nameKey: 'chapter12.name',
+    subtitleKey: 'chapter12.subtitle',
+    meterKey: 'hud.swarm',
+    mindHintKey: 'hud.mind.swarm',
+    start: { x: GATE_OUT.x + 40, y: GATE_OUT.y },
+    checkpoint: GATE_OUT,
+    ghost: {
+      mindDissolve: false,
+      respawnOnFade: false,
+      tint: 'rgba(180,180,200,.5)',
+      profile: {
+        baseSpeed: 126,
+        fearSpeedBonus: 45,
+        mindSpeedBase: 62,
+        mindSpeedFearBonus: 30,
+        mindDissolveTime: 99,
+        enrageSpeedFactor: 1.2,
+        standOff: 0,
+        replay: false,
+      },
+    },
+    end: {
+      titleKey: 'ch12.end.title',
+      nameKey: 'ch12.end.name',
+      lessonKey: 'ch12.end.lesson',
+      statsKey: 'ch12.end.stats',
+    },
+  },
 ];
 
 const handlers = new Map();
