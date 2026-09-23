@@ -9,6 +9,7 @@ import { initCodex } from './ui/codex.js';
 import { initDialogue } from './ui/dialogue.js';
 import { initEndScreen } from './ui/end-screen.js';
 import { initLanguageSwitcher } from './ui/language-switcher.js';
+import { initPathNotice } from './ui/path-notice.js';
 import { initTitleScreen } from './ui/title-screen.js';
 import { initTouchControls } from './ui/touch.js';
 import { initTextures } from './world/textures.js';
@@ -30,6 +31,7 @@ function bootstrap() {
   initTitleScreen();
   initEndScreen();
   initLanguageSwitcher();
+  initPathNotice();
   initCodex();
   startLoop();
 }

@@ -13,6 +13,7 @@ import { resetRelease } from './release.js';
 import { getKarma } from '../systems/karma.js';
 import { resolveRebirth } from '../systems/rebirth.js';
 import { enterRealm } from '../systems/samsara.js';
+import { evaluatePath } from '../systems/path.js';
 
 /**
  * Chapter catalogue. Everything scene-specific (start point, HUD meter label,
@@ -239,6 +240,8 @@ export function loadChapter(id) {
   resetRelease();
   // You are reborn into this chapter in the plane your kamma has earned.
   enterRealm(resolveRebirth(getKarma()).realmId);
+  // Conduct so far may have opened further factors of the path.
+  evaluatePath();
 
   player.x = def.start.x;
   player.y = def.start.y;

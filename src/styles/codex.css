@@ -77,3 +77,9 @@
   color: #9a9482;
   line-height: 1.65;
 }
+
+.codex-realm.is-unlocked {
+  border-left: 3px solid var(--gold-dim);
+  padding-left: 10px;
+  background: rgba(201, 182, 132, 0.05);
+}

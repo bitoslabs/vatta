@@ -1,9 +1,11 @@
 'use strict';
 
 import { KARMA_ACTIONS, KARMA_ROOTS } from '../content/karma-actions.js';
+import { FACTORS, factorDescKey, factorNameKey } from '../content/factors.js';
 import { REALM_GROUPS, realmsByGroup } from '../content/realms.js';
 import { on, EVENTS } from '../core/events.js';
 import { t } from '../systems/i18n.js';
+import { isUnlocked } from '../systems/path.js';
 import { $ } from './dom.js';
 
 const overlay = $('#codexOverlay');
@@ -37,6 +39,17 @@ function render() {
   body.appendChild(el('div', 'codex-group', t('karma.rootLabel')));
   for (const root of Object.values(KARMA_ROOTS)) {
     body.appendChild(row('', t(root.labelKey), ''));
+  }
+
+  // ---- The Noble Eightfold Path, as unlocked by this run -----------------
+  body.appendChild(el('div', 'codex-group', t('path.title')));
+  for (const factor of FACTORS) {
+    const open = isUnlocked(factor.id);
+    const item = el('div', `codex-realm${open ? ' is-unlocked' : ''}`);
+    item.appendChild(el('div', 'codex-pali', open ? t('path.unlocked') : t('path.locked')));
+    item.appendChild(el('div', 'codex-name', t(factorNameKey(factor.id))));
+    item.appendChild(el('div', 'codex-desc', t(factorDescKey(factor.id))));
+    body.appendChild(item);
   }
 
   // ---- The 31 planes of existence ---------------------------------------

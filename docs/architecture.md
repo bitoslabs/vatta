@@ -26,6 +26,7 @@ src/
 │   └── state.js           mutable state ข้ามฉาก (mode, chapter, fear, story, stats)
 ├── content/               "ข้อมูลคำสอน" ล้วน ๆ
 │   ├── karma-actions.js   11 กรรม + กุศล/อกุศล + มูล 6
+│   ├── factors.js         มรรค 8 + เงื่อนไขเปิด + ผล
 │   └── realms.js          ภูมิ 31 (ไตรภูมิ)
 ├── systems/               กลไกที่ใช้ซ้ำได้
 │   ├── viewport.js        canvas, DPR, resize, light buffer
@@ -35,6 +36,7 @@ src/
 │   ├── effects.js         floaters / sparks / screen notes
 │   ├── karma.js           บัญชีบุญ–บาป + กุศล–อกุศล + อนุสัย
 │   ├── karma-memory.js    กรรมในอดีต → "ความจำ" ที่โลกตอบสนอง
+│   ├── path.js            มรรค 8 — เปิดตามการปฏิบัติ + รวมผลต่อการรับรู้
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
 │   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES
@@ -58,6 +60,7 @@ src/
 │   ├── end-screen.js      สรุปบท + คติภูมิ (rebirth)
 │   ├── codex.js           ธรรมะโคเด็กซ์: กรรม + ภูมิ 31
 │   ├── rebirth-interlude.js  การ์ดจุติ–ปฏิสนธิเมื่อตาย
+│   ├── path-notice.js     แจ้งเตือนเมื่อมรรคข้อใหม่เปิด
 │   ├── language-switcher.js
 │   └── touch.js           joystick + ปุ่มสัมผัส
 ├── game/                  การประสานฉาก
@@ -113,6 +116,9 @@ MEMORY      → renderMemoryScene(dt)
 | `locale:changed` | code | i18n → hud/screens/codex |
 | `karma:changed` | actionId | karma → interested UI |
 | `ghost:pacified` | `'mind'`\|`'sala'` | ghost → chapter story (บันทึกกรรม) |
+| `karma:changed` | actionId | karma → path (ประเมินมรรค 8 ใหม่) |
+| `samsara:rebirth` | realmId | samsara → UI |
+| `path:unlocked` | factorId | path → path-notice |
 
 ## 5. Chapter system
 

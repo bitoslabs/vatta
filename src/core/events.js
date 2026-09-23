@@ -33,4 +33,6 @@ export const EVENTS = Object.freeze({
   GHOST_PACIFIED: 'ghost:pacified',
   /** Payload: the realm id the player has just been reborn into. */
   REBIRTH: 'samsara:rebirth',
+  /** Payload: the Noble Eightfold Path factor id that was just unlocked. */
+  PATH_UNLOCKED: 'path:unlocked',
 });

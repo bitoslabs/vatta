@@ -5,6 +5,7 @@ import { clamp, dist, lerp } from '../core/math.js';
 import { state } from '../core/state.js';
 import { emit, EVENTS } from '../core/events.js';
 import { recordKarma } from '../systems/karma.js';
+import { getPathModifiers } from '../systems/path.js';
 import { getRealmModifier, rebirth } from '../systems/samsara.js';
 import { fade } from '../ui/feedback.js';
 import { hideRebirthInterlude, showRebirthInterlude } from '../ui/rebirth-interlude.js';
@@ -144,8 +145,10 @@ export function updateGhost(dt, mind, frozen) {
     const away = Math.atan2(ghost.y - player.y, ghost.x - player.x);
     ghost.x += Math.cos(away) * GHOST.retreatSpeed * dt;
     ghost.y += Math.sin(away) * GHOST.retreatSpeed * dt;
-    // Higher planes need less mindfulness to still the ghost; lower planes more.
-    const dissolveTime = ghost.profile.mindDissolveTime * getRealmModifier().mindDissolve;
+    // Higher planes and an unfolding path of practice need less mindfulness.
+    const dissolveTime = ghost.profile.mindDissolveTime
+      * getRealmModifier().mindDissolve
+      * getPathModifiers().mindDissolve;
     if (ghost.mindDissolve && ghost.enraged <= 0 && mindHold > dissolveTime) {
       ghost.mode = STATUS.FADE;
       ghost.fade = GHOST.fadeDuration;

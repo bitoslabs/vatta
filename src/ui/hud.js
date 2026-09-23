@@ -5,6 +5,7 @@ import { state } from '../core/state.js';
 import { t, tList } from '../systems/i18n.js';
 import { getKarma } from '../systems/karma.js';
 import { getRealm } from '../systems/samsara.js';
+import { unlockedCount } from '../systems/path.js';
 import { $ } from './dom.js';
 
 const hudEl = $('#hud');
@@ -13,6 +14,7 @@ const fearFill = $('#fearFill');
 const mindHint = $('#mindHint');
 const karmaReadout = $('#karmaReadout');
 const realmReadout = $('#realmReadout');
+const pathReadout = $('#pathReadout');
 
 const FEAR_LOW = 0.3;
 const FEAR_HIGH = 0.6;
@@ -36,6 +38,7 @@ export function updateHud(mind) {
       akusala: karma.akusala,
     });
     realmReadout.textContent = t('hud.realm', { realm: t(getRealm().nameKey) });
+    pathReadout.textContent = t('hud.path.count', { count: unlockedCount() });
 
     if (mind) {
       const quotes = tList(state.mindHintKey || 'hud.mind');
