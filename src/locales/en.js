@@ -291,6 +291,26 @@ export default {
     'ch8.end.name': 'The Mirror of Kamma',
     'ch8.end.lesson': '<span style="color:#d9c58c">Kamma</span> — whatever we meet is the fruit of what we have done.<br><br><span style="color:#d9c58c">Seeing truly</span> — when it is seen, there is nothing to fight and nothing to flee.',
     'ch8.end.stats': 'Swallowed {caught} times<br>Practice time {time}',
+
+    'chapter9.name': 'The Remaining Tendency',
+    'chapter9.subtitle': 'Chapter Nine — Part Two · What we repeat',
+    'hud.tendency': 'H A B I T',
+    'ch9.toast.start.title': 'The Remaining Tendency',
+    'ch9.toast.start.sub': 'Chapter Nine — Part Two',
+    'ch9.tendency.anger': 'Your tendency is still anger — so it walks the path you already walked',
+    'ch9.tendency.greed': 'Your tendency is still craving — so it still lays bait along the road',
+    'ch9.tendency.delusion': 'Your tendency is still delusion — so it still asks the same questions',
+    'ch9.tendency.clinging': 'Your tendency is still clinging — so it still holds to the old track',
+    'ch9.tendency.balanced': 'Your tendencies have settled — only footprints are left to notice',
+    'ch9.floater.tempted': 'Repeated again… the old track deepens',
+    'ch9.floater.seen': 'Noticed the habit in time… the track fades',
+    'ch9.choice.self': '"What we repeatedly do is who we are"',
+    'ch9.choice.habit': '"It is only a habit — arisen, and ceased"',
+    'ch9.choice.unsure': '"I am not sure…"',
+    'ch9.end.title': 'Chapter Nine Complete',
+    'ch9.end.name': 'The Remaining Tendency',
+    'ch9.end.lesson': '<span style="color:#d9c58c">Tendency (anusaya)</span> — what we repeat becomes habit, and habit becomes a realm.<br><br><span style="color:#d9c58c">Noticing</span> — seeing the habit is the beginning of freedom from it.',
+    'ch9.end.stats': 'Swallowed {caught} times<br>Practice time {time}',
   },
 
   lists: {
@@ -351,6 +371,16 @@ export default {
     'ch8.question': [
       '"This shadow is mine"',
       '"It is only conditions I have accumulated"',
+      '"I do not know"',
+    ],
+    'hud.mind.tendency': [
+      'Seeing the habit… noticing',
+      'The old track is fading…',
+      'No need to repeat… the mind is free',
+    ],
+    'ch9.question': [
+      '"I have always been like this"',
+      '"A habit arises and ceases"',
       '"I do not know"',
     ],
   },
@@ -615,6 +645,26 @@ export default {
     ],
     'ch8.answerCool': [
       { who: 'The voice in the mirror', text: 'If you dare not look yet, that is all right… but the mirror will always be waiting here.' },
+    ],
+    'ch9.intro': [
+      { who: '', text: 'Deeper into Part Two. The same road is here, but this time something walks in our footprints.' },
+      { who: '', text: 'This spirit does not chase us; it walks the track we have just made — the things we keep repeating.' },
+      { who: '', text: 'If we stop repeating, it has no track to walk. Notice your own habits.' },
+    ],
+    'ch9.arrive': [
+      { who: 'The habit spirit', text: 'Do you see me yet — I am what you have been, over and over, the whole way.' },
+      { who: '', text: 'We stopped, and asked ourselves: is what we repeat really "us"?' },
+    ],
+    'ch9.answerCold': [
+      { who: '', text: 'We answered, "this is just how I am" — and the old track deepened, as if struck again.' },
+      { who: 'The habit spirit', text: 'If you are me, then you must walk this track forever.' },
+    ],
+    'ch9.answerWarm': [
+      { who: '', text: 'We saw that it is only a habit, arisen from conditions and ceased — no one is standing there.' },
+      { who: '', text: 'When the track is noticed, it fades, and the spirit has nowhere left to walk.' },
+    ],
+    'ch9.answerCool': [
+      { who: 'The habit spirit', text: 'Being unsure is all right… but the old track will always be waiting for you.' },
     ],
   },
 };

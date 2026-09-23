@@ -24,6 +24,8 @@ export const DEFAULT_GHOST_PROFILE = Object.freeze({
   enrageSpeedFactor: 1.6,
   /** >0 makes the spirit hold its distance instead of chasing to the catch. */
   standOff: 0,
+  /** When true the spirit retraces a recorded path (ghost.replayTarget) instead of chasing. */
+  replay: false,
 });
 
 /**
@@ -46,6 +48,8 @@ export const ghost = {
   pacified: false,
   /** Visual size multiplier — the "self" grows as ego grows. */
   scale: 1,
+  /** Destination used when profile.replay is set (habit walks the old path). */
+  replayTarget: null,
   mindDissolve: true,
   respawnOnFade: true,
   tint: null,
@@ -68,6 +72,7 @@ export function resetGhost(options = {}) {
   ghost.enraged = 0;
   ghost.pacified = false;
   ghost.scale = 1;
+  ghost.replayTarget = null;
   ghost.mindDissolve = options.mindDissolve !== false;
   ghost.respawnOnFade = options.respawnOnFade !== false;
   ghost.tint = options.tint || null;
@@ -186,8 +191,19 @@ export function updateGhost(dt, mind, frozen) {
   if (ghost.enraged > 0) speed *= ghost.profile.enrageSpeedFactor;
 
   const ang = Math.atan2(player.y - ghost.y, player.x - ghost.x);
-  ghost.x += Math.cos(ang) * speed * dt;
-  ghost.y += Math.sin(ang) * speed * dt;
+
+  if (ghost.profile.replay && ghost.replayTarget) {
+    // Habit: it walks the path you already walked, not the one you are on.
+    const tx = ghost.replayTarget.x - ghost.x;
+    const ty = ghost.replayTarget.y - ghost.y;
+    const td = Math.hypot(tx, ty) || 1;
+    const step = Math.min(td, speed * dt);
+    ghost.x += (tx / td) * step;
+    ghost.y += (ty / td) * step;
+  } else {
+    ghost.x += Math.cos(ang) * speed * dt;
+    ghost.y += Math.sin(ang) * speed * dt;
+  }
 
   for (const tree of TREES) {
     const td = dist(ghost.x, ghost.y, tree.x, tree.y);
@@ -198,7 +214,8 @@ export function updateGhost(dt, mind, frozen) {
     }
   }
 
-  if (d > 1400) {
+  // Never let it fall impossibly far behind (chasing spirits only).
+  if (d > 1400 && !ghost.profile.replay) {
     ghost.x = player.x - Math.cos(ang) * 900;
     ghost.y = player.y - Math.sin(ang) * 900;
   }

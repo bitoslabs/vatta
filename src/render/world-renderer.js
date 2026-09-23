@@ -67,6 +67,10 @@ export function renderWorld() {
     // Indigo veil for the mirror chapter (Part 2).
     ctx.fillStyle = 'rgba(40,50,90,.07)';
     ctx.fillRect(0, 0, W, H);
+  } else if (state.chapter === 9) {
+    // Dusky violet for the habit chapter.
+    ctx.fillStyle = 'rgba(60,50,80,.07)';
+    ctx.fillRect(0, 0, W, H);
   }
   drawFog();
   drawFloaters();
