@@ -39,3 +39,11 @@ function pick(index) {
 export function initChoices() {
   on(EVENTS.CHOICE_PICK, pick);
 }
+
+/** Discard any open choice list (used when switching chapters). */
+export function resetChoices() {
+  current = [];
+  callback = null;
+  state.choiceOpen = false;
+  box.classList.add('hidden');
+}

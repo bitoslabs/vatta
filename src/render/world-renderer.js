@@ -53,6 +53,11 @@ export function renderWorld() {
   ctx.restore();
 
   renderLighting(mind);
+  if (state.chapter === 2) {
+    // Ember veil for the anger chapter.
+    ctx.fillStyle = 'rgba(120,30,20,.05)';
+    ctx.fillRect(0, 0, W, H);
+  }
   drawFog();
   drawFloaters();
   drawScreenNotes();
@@ -98,7 +103,8 @@ function drawFootprints(mind) {
 }
 
 function drawLightGates(mind) {
-  if (state.story.released) return;
+  // The illusory gates belong to chapter one only.
+  if (state.chapter !== 1 || state.story.released) return;
   const now = performance.now();
 
   for (const gate of GATES) {

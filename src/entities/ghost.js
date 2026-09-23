@@ -1,6 +1,6 @@
 'use strict';
 
-import { GATE_OUT, GHOST, SALA, WORLD } from '../core/constants.js';
+import { GHOST, WORLD } from '../core/constants.js';
 import { clamp, dist, lerp } from '../core/math.js';
 import { state } from '../core/state.js';
 import { fade, toast } from '../ui/feedback.js';
@@ -10,7 +10,22 @@ import { cam } from '../game/camera.js';
 import { STATUS } from './ghost-status.js';
 import { inSafeZone, player } from './player.js';
 
-/** The haunting spirit that chases the player. */
+/** Default chase tuning; chapters may override any field. */
+export const DEFAULT_GHOST_PROFILE = Object.freeze({
+  baseSpeed: GHOST.baseSpeed,
+  fearSpeedBonus: GHOST.fearSpeedBonus,
+  mindSpeedBase: GHOST.mindSpeedBase,
+  mindSpeedFearBonus: GHOST.mindSpeedFearBonus,
+  mindDissolveTime: 2.8,
+  enrageSpeedFactor: 1.6,
+});
+
+/**
+ * The haunting spirit. Its behaviour is configured per chapter:
+ * - `mindDissolve`   — sustained mindfulness can dissolve it
+ * - `respawnOnFade`  — respawn in the forest after dissolving/caught
+ * - `enraged`        — temporary speed surge (chapter 2's retaliation)
+ */
 export const ghost = {
   active: false,
   x: 0,
@@ -20,24 +35,67 @@ export const ghost = {
   fade: 0,
   trail: [],
   respawn: 0,
-  mode: 'hunt',
+  mode: STATUS.HUNT,
+  enraged: 0,
+  pacified: false,
+  mindDissolve: true,
+  respawnOnFade: true,
+  tint: null,
+  profile: { ...DEFAULT_GHOST_PROFILE },
 };
 
 let mindHold = 0;
 let mindHoldPrev = false;
 
-export function spawnGhostNearPlayer(offsetX = 820, offsetY = -80) {
+export function resetGhost(options = {}) {
+  ghost.active = false;
+  ghost.x = 0;
+  ghost.y = 0;
+  ghost.alpha = 0;
+  ghost.stun = 0;
+  ghost.fade = 0;
+  ghost.trail = [];
+  ghost.respawn = 0;
+  ghost.mode = STATUS.HUNT;
+  ghost.enraged = 0;
+  ghost.pacified = false;
+  ghost.mindDissolve = options.mindDissolve !== false;
+  ghost.respawnOnFade = options.respawnOnFade !== false;
+  ghost.tint = options.tint || null;
+  ghost.profile = { ...DEFAULT_GHOST_PROFILE, ...(options.profile || {}) };
+  mindHold = 0;
+  mindHoldPrev = false;
+}
+
+function place(x, y) {
   ghost.active = true;
   ghost.mode = STATUS.HUNT;
   ghost.alpha = 0;
-  ghost.x = clamp(player.x + offsetX, 100, WORLD.w - 100);
-  ghost.y = clamp(player.y + offsetY, 100, WORLD.h - 100);
+  ghost.stun = 0;
+  ghost.enraged = 0;
+  ghost.pacified = false;
+  ghost.x = clamp(x, 100, WORLD.w - 100);
+  ghost.y = clamp(y, 100, WORLD.h - 100);
+}
+
+export function spawnGhostNearPlayer(offsetX = 820, offsetY = -80) {
+  place(player.x + offsetX, player.y + offsetY);
+}
+
+export function placeGhost(x, y) {
+  place(x, y);
+}
+
+export function enrageGhost(seconds) {
+  if (!ghost.active) return;
+  ghost.enraged = Math.max(ghost.enraged, seconds);
+  ghost.stun = 0;
 }
 
 export function updateGhost(dt, mind, frozen) {
   if (ghost.respawn > 0) {
     ghost.respawn -= dt;
-    if (ghost.respawn <= 0 && !state.story.salaReached) spawnGhostNearPlayer();
+    if (ghost.respawn <= 0) spawnGhostNearPlayer();
     return;
   }
 
@@ -50,19 +108,22 @@ export function updateGhost(dt, mind, frozen) {
     if (ghost.fade <= 0) {
       ghost.active = false;
       ghost.alpha = 0;
-      if (!state.story.salaReached) ghost.respawn = GHOST.respawnDelay;
+      ghost.pacified = true;
+      if (ghost.respawnOnFade) ghost.respawn = GHOST.respawnDelay;
       return;
     }
   }
 
   if (frozen) return;
 
+  if (ghost.enraged > 0) ghost.enraged = Math.max(0, ghost.enraged - dt);
+
   const d = dist(player.x, player.y, ghost.x, ghost.y);
   const playerSafe = inSafeZone(player.x, player.y);
 
-  // The first moment of mindfulness staggers the ghost.
+  // The first moment of mindfulness staggers the ghost (unless it is enraged).
   const justMindful = mind && !mindHoldPrev;
-  if (justMindful && d < 560) ghost.stun = GHOST.stunDuration;
+  if (justMindful && d < 560 && ghost.enraged <= 0) ghost.stun = GHOST.stunDuration;
   mindHoldPrev = mind;
   if (ghost.stun > 0) {
     ghost.stun -= dt;
@@ -75,7 +136,7 @@ export function updateGhost(dt, mind, frozen) {
     const away = Math.atan2(ghost.y - player.y, ghost.x - player.x);
     ghost.x += Math.cos(away) * GHOST.retreatSpeed * dt;
     ghost.y += Math.sin(away) * GHOST.retreatSpeed * dt;
-    if (mindHold > 2.8 && !state.story.salaReached) {
+    if (ghost.mindDissolve && ghost.enraged <= 0 && mindHold > ghost.profile.mindDissolveTime) {
       ghost.mode = STATUS.FADE;
       ghost.fade = GHOST.fadeDuration;
       mindHold = 0;
@@ -95,9 +156,11 @@ export function updateGhost(dt, mind, frozen) {
     return;
   }
 
-  // Chase speed scales with the player's own fear.
-  let speed = GHOST.baseSpeed + state.fear * GHOST.fearSpeedBonus;
-  if (mind) speed = GHOST.mindSpeedBase + state.fear * GHOST.mindSpeedFearBonus;
+  // Chase speed scales with the player's own agitation.
+  let speed = ghost.profile.baseSpeed + state.fear * ghost.profile.fearSpeedBonus;
+  if (mind) speed = ghost.profile.mindSpeedBase + state.fear * ghost.profile.mindSpeedFearBonus;
+  if (ghost.enraged > 0) speed *= ghost.profile.enrageSpeedFactor;
+
   const ang = Math.atan2(player.y - ghost.y, player.x - ghost.x);
   ghost.x += Math.cos(ang) * speed * dt;
   ghost.y += Math.sin(ang) * speed * dt;
@@ -126,9 +189,7 @@ function onCaught() {
   state.stats.caught++;
   fade(true, () => {
     toast(t('toast.caught.title'), t('toast.caught.sub'));
-    const checkpoint = state.story.salaReached
-      ? { x: SALA.x - 90, y: SALA.y + 110 }
-      : GATE_OUT;
+    const checkpoint = state.checkpoint;
     player.x = checkpoint.x;
     player.y = checkpoint.y;
     state.fear = 0.92;
@@ -137,6 +198,7 @@ function onCaught() {
     ghost.x = clamp(player.x + 850, 100, WORLD.w - 100);
     ghost.y = player.y - 70;
     ghost.stun = 1.6;
+    ghost.enraged = 0;
     setTimeout(() => fade(false), 1200);
   });
 }

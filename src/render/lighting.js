@@ -41,7 +41,7 @@ export function renderLighting(mind) {
   punch(TEMPLE.x, TEMPLE.y, TEMPLE.r + 120, 0.96);
   punch(SALA.x, SALA.y, 340, 0.9);
 
-  if (!dawn) {
+  if (!dawn && state.chapter === 1) {
     for (const gate of GATES) {
       punch(gate.x, gate.y, clamp((state.fear - 0.42) * 260, 0, 150), clamp((state.fear - 0.42) * 2, 0, 0.7));
     }

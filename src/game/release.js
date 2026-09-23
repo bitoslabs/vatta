@@ -20,6 +20,11 @@ const SPARK_COUNT = 46;
 
 let releaseSeq = null;
 
+/** Cancel any in-flight liberation sequence (used when loading a chapter). */
+export function resetRelease() {
+  releaseSeq = null;
+}
+
 /** Begin the liberation sequence in the world scene. */
 export function startRelease() {
   state.mode = MODE.WORLD;

@@ -16,7 +16,7 @@
 
   <!-- ============ HUD ============ -->
   <div id="hud" class="hidden">
-    <div id="fearLabel" data-i18n="hud.fear">จ ต</div>
+    <div id="fearLabel">จ ต</div>
     <div id="fearBar"><div id="fearFill"></div></div>
     <div id="mindHint"></div>
   </div>
@@ -55,6 +55,10 @@
       </div>
       <button class="btn" id="startBtn" data-i18n="title.start">เริ่มภาวนา</button>
       <div class="small" data-i18n="title.note">หูฟังแนะนำ · กด M เพื่อเปิด/ปิดเสียง</div>
+      <div class="chapters">
+        <div class="chapter-label" data-i18n="title.chapters">เลือกบท</div>
+        <div id="chapterSelect" class="chapter-list"></div>
+      </div>
     </div>
   </div>
 
@@ -85,11 +89,12 @@
   <!-- ============ End screen ============ -->
   <div id="endScreen" class="hidden">
     <div class="panel panel--end">
-      <h2 data-i18n="end.title">จบบทปฐม</h2>
-      <h1 data-i18n="end.name">ป่าเสียงเรียก</h1>
+      <h2 id="endTitle">จบบทปฐม</h2>
+      <h1 id="endName">ป่าเสียงเรียก</h1>
       <div class="rule"></div>
-      <p class="lesson" data-i18n-html="end.lesson"><span style="color:#d9c58c">สัมมาสติ</span> — ท่ามกลางความกลัว รู้กาย รู้ใจ รู้ลมหายใจ<br><br><span style="color:#d9c58c">อนิจจัง</span> — รักได้ โดยไม่ต้องเก็บไว้ตลอดไป</p>
+      <p id="endLesson" class="lesson"><span style="color:#d9c58c">สัมมาสติ</span> — ท่ามกลางความกลัว รู้กาย รู้ใจ รู้ลมหายใจ<br><br><span style="color:#d9c58c">อนิจจัง</span> — รักได้ โดยไม่ต้องเก็บไว้ตลอดไป</p>
       <p id="endStats" class="stats"></p>
+      <button class="btn hidden" id="nextBtn" data-i18n="end.next">ไปบทต่อไป</button>
       <button class="btn" id="restartBtn" data-i18n="end.restart">ภาวนาอีกครั้ง</button>
     </div>
   </div>

@@ -8,6 +8,13 @@ import { MODE } from './constants.js';
  */
 export const state = {
   mode: MODE.TITLE,
+  /** Active chapter id (see game/chapters.js). */
+  chapter: 1,
+  /** Locale key for the HUD meter label and the mindfulness hints. */
+  meterKey: 'hud.fear',
+  mindHintKey: 'hud.mind',
+  /** Respawn point used when fear swallows the player. */
+  checkpoint: { x: 1120, y: 1560 },
   fear: 0,
   dialogueOpen: false,
   choiceOpen: false,
@@ -29,5 +36,22 @@ export const state = {
     caught: 0,
     lost: 0,
     time: 0,
+    retaliations: 0,
   },
 };
+
+/** Reset the chapter-1 story flags (called when a chapter loads). */
+export function resetStoryFlags() {
+  Object.assign(state.story, {
+    talked: false,
+    left: false,
+    call: false,
+    salaReached: false,
+    meditated: false,
+    released: false,
+    releaseDone: false,
+    ended: false,
+    hintLoop: false,
+    hintSati: false,
+  });
+}

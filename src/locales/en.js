@@ -64,6 +64,29 @@ export default {
     'hint.loop': 'Stop (hold SPACE), then look for the glowing footprints',
     'voice.callShort': '"Come here, child…"',
     'voice.callHome': '"Come home, my child…"',
+
+    'title.chapters': 'Chapters',
+    'end.next': 'Next chapter',
+
+    'chapter1.name': 'The Forest Call',
+    'chapter1.subtitle': 'Chapter One — Fear',
+    'chapter2.name': 'The Fire Within',
+    'chapter2.subtitle': 'Chapter Two — Anger',
+
+    'hud.agitation': 'A N G E R',
+    'prompt.retaliate': 'Retaliate',
+
+    'ch2.toast.start.title': 'The Fire Within',
+    'ch2.toast.start.sub': 'Chapter Two — Anger',
+    'ch2.floater.retaliate': 'The more you strike, the brighter it burns',
+    'ch2.hint.endure': 'Anger is met by not striking — hold SPACE and let the fire burn out',
+    'ch2.toast.pacified.title': 'Anger has settled',
+    'ch2.toast.pacified.sub': 'Walk back to the bodhi tree',
+    'ch2.floater.angerReturns': 'The fire returns… step back into the forest and let it be',
+    'ch2.end.title': 'Chapter Two Complete',
+    'ch2.end.name': 'The Fire Within',
+    'ch2.end.lesson': '<span style="color:#d9c58c">Loving-kindness</span> — anger is never quenched by anger<br><br><span style="color:#d9c58c">Not retaliating</span> — the one who burns you is burning in their own fire',
+    'ch2.end.stats': 'Swallowed by anger {caught} times · Retaliated {retaliations} times<br>Practice time {time}',
   },
 
   lists: {
@@ -85,6 +108,16 @@ export default {
       '"It must be so… if I let go, love means nothing"',
       '"Not necessarily… you can love without holding on forever"',
       '"I don\'t know… only that it hurts"',
+    ],
+    'hud.mind.anger': [
+      'Angry… know that you are angry',
+      'Not retaliating… just noticing',
+      'The breath cools… the fire slowly fades',
+    ],
+    'ch2.question': [
+      '"Answer anger with anger — let them feel it too"',
+      '"Do not retaliate — see that they too are suffering"',
+      '"Run far away — I want no part of it"',
     ],
   },
 
@@ -132,6 +165,31 @@ export default {
       { who: '', text: 'The calling has fallen silent… the scent of wet earth drifts on the dawn wind.' },
       { who: '', text: 'The forest that was pitch dark last night is clear now — one path, the same one we walked in.' },
       { who: '', text: 'Let us walk back to the temple, following our own footprints.' },
+    ],
+    'ch2.intro': [
+      { who: '', text: 'Morning at the sala… the light is thin, but the chest still burns. The anger we carry has not consented to go out.' },
+      { who: '', text: 'On the way back to the temple, something follows — not the ghost of fear, but our own anger.' },
+      { who: '', text: 'It grows every time we strike back. Walk to the bodhi tree, and do not let the fire rise again.' },
+    ],
+    'ch2.pacified': [
+      { who: '', text: 'When we do not retaliate… the fire has no fuel. The flame of anger dims into ash.' },
+      { who: '', text: 'Walk back to the bodhi tree. Only a settled mind can see the answer waiting there.' },
+    ],
+    'ch2.bodhi': [
+      { who: 'Elder Monk', text: 'Sit beneath the bodhi tree… anger does not live in others; it lives in the mind that still clings.' },
+      { who: 'Elder Monk', text: 'The one who harmed us is burning in their own fire as well — what will you choose?' },
+    ],
+    'ch2.answerCold': [
+      { who: '', text: 'We raised our hand… the fire floods the chest again. It did not hurt them. It never ends.' },
+      { who: "Anger's voice", text: 'Good… keep fighting, and we will burn together forever.' },
+    ],
+    'ch2.answerCool': [
+      { who: 'Elder Monk', text: 'Fleeing anger is not quenching it — it only carries it everywhere with you.' },
+      { who: 'Elder Monk', text: 'Sit down once more… and see clearly whom you are truly angry with.' },
+    ],
+    'ch2.answerWarm': [
+      { who: '', text: 'We lowered our hand… and saw that their fire is already burning them, so we passed none on.' },
+      { who: '', text: 'The anger settles into ash… something in the chest grows light. Not gone — released.' },
     ],
   },
 };

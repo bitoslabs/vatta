@@ -180,6 +180,9 @@ function completeMeditation() {
       medOverlay.classList.add('hidden');
       playBell();
       startMemory();
+      // The screen was faded to black for the transition; bring the memory
+      // scene back into view (without this the whole scene stays black).
+      fade(false);
     });
   }, 700);
 }

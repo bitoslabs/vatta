@@ -1,24 +1,40 @@
 'use strict';
 
-import { MODE } from '../core/constants.js';
-import { state } from '../core/state.js';
+import { EVENTS, on } from '../core/events.js';
 import { initAudio, playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
+import { CHAPTERS, chapterById, loadChapter } from '../game/chapters.js';
 import { $ } from './dom.js';
-import { say } from './dialogue.js';
-import { toast } from './feedback.js';
+
+function startChapter(id) {
+  initAudio();
+  playBell();
+  loadChapter(id);
+}
 
 export function initTitleScreen() {
-  const button = $('#startBtn');
+  const startButton = $('#startBtn');
+  startButton.addEventListener('click', () => startChapter(CHAPTERS[0].id));
+  startButton.addEventListener('click', (e) => e.target.blur());
 
-  button.addEventListener('click', () => {
-    initAudio();
-    $('#titleScreen').classList.add('hidden');
-    $('#ctrlHint').classList.remove('hidden');
-    state.mode = MODE.WORLD;
-    playBell();
-    say('intro', () => toast(t('toast.night.title'), t('toast.night.sub')));
+  const select = $('#chapterSelect');
+  for (const def of CHAPTERS) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'chapter-btn';
+    button.dataset.chapter = String(def.id);
+    button.textContent = t(def.nameKey);
+    button.title = t(def.subtitleKey);
+    button.addEventListener('click', () => startChapter(def.id));
+    select.appendChild(button);
+  }
+
+  on(EVENTS.LOCALE_CHANGED, () => {
+    select.querySelectorAll('.chapter-btn').forEach((button) => {
+      const def = chapterById(Number(button.dataset.chapter));
+      if (!def) return;
+      button.textContent = t(def.nameKey);
+      button.title = t(def.subtitleKey);
+    });
   });
-
-  button.addEventListener('click', (e) => e.target.blur());
 }

@@ -61,3 +61,15 @@ export function initDialogue() {
   box.addEventListener('click', advanceDialogue);
   on(EVENTS.DIALOGUE_ADVANCE, advanceDialogue);
 }
+
+/** Discard any open dialogue (used when switching chapters). */
+export function resetDialogue() {
+  dlg.open = false;
+  dlg.lines = [];
+  dlg.index = 0;
+  dlg.shown = '';
+  dlg.full = '';
+  dlg.cb = null;
+  state.dialogueOpen = false;
+  box.classList.add('hidden');
+}

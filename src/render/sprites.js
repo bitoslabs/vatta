@@ -92,7 +92,7 @@ export function drawGhost() {
   ctx.arc(0, -6, 34, 0, TAU);
   ctx.fill();
 
-  ctx.fillStyle = 'rgba(208,238,228,.5)';
+  ctx.fillStyle = ghost.tint || 'rgba(208,238,228,.5)';
   ctx.beginPath();
   ctx.moveTo(-13, 26);
   ctx.quadraticCurveTo(-16, -10, -11, -22);

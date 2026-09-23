@@ -1,0 +1,138 @@
+'use strict';
+
+import { GATE_OUT, MODE, PLAYER, SALA } from '../core/constants.js';
+import { resetStoryFlags, state } from '../core/state.js';
+import { floaters, screenNotes, sparks } from '../systems/effects.js';
+import { $ } from '../ui/dom.js';
+import { resetChoices } from '../ui/choices.js';
+import { resetDialogue } from '../ui/dialogue.js';
+import { resetGhost } from '../entities/ghost.js';
+import { player } from '../entities/player.js';
+import { cam } from './camera.js';
+import { resetRelease } from './release.js';
+
+/**
+ * Chapter catalogue. Everything scene-specific (start point, HUD meter label,
+ * ghost tuning, end-screen copy) lives here so new chapters are data, not forks.
+ */
+export const CHAPTERS = [
+  {
+    id: 1,
+    nameKey: 'chapter1.name',
+    subtitleKey: 'chapter1.subtitle',
+    meterKey: 'hud.fear',
+    mindHintKey: 'hud.mind',
+    start: { x: PLAYER.x, y: PLAYER.y },
+    checkpoint: GATE_OUT,
+    ghost: { mindDissolve: true, respawnOnFade: true },
+    end: {
+      titleKey: 'end.title',
+      nameKey: 'end.name',
+      lessonKey: 'end.lesson',
+      statsKey: 'end.stats',
+    },
+  },
+  {
+    id: 2,
+    nameKey: 'chapter2.name',
+    subtitleKey: 'chapter2.subtitle',
+    meterKey: 'hud.agitation',
+    mindHintKey: 'hud.mind.anger',
+    start: { x: SALA.x - 60, y: SALA.y + 150 },
+    checkpoint: { x: SALA.x - 60, y: SALA.y + 150 },
+    ghost: {
+      mindDissolve: true,
+      respawnOnFade: false,
+      tint: 'rgba(226,166,138,.55)',
+      profile: {
+        baseSpeed: 140,
+        fearSpeedBonus: 120,
+        mindSpeedBase: 55,
+        mindSpeedFearBonus: 70,
+        mindDissolveTime: 3.2,
+        enrageSpeedFactor: 1.7,
+      },
+    },
+    end: {
+      titleKey: 'ch2.end.title',
+      nameKey: 'ch2.end.name',
+      lessonKey: 'ch2.end.lesson',
+      statsKey: 'ch2.end.stats',
+    },
+  },
+];
+
+const handlers = new Map();
+
+/** Story modules register their `{ start, update }` handler for a chapter. */
+export function registerChapterHandler(id, handler) {
+  handlers.set(id, handler);
+}
+
+export function chapterById(id) {
+  return CHAPTERS.find((chapter) => chapter.id === id) || null;
+}
+
+export function chapterCount() {
+  return CHAPTERS.length;
+}
+
+export function nextChapterId(id) {
+  const index = CHAPTERS.findIndex((chapter) => chapter.id === id);
+  if (index < 0 || index >= CHAPTERS.length - 1) return null;
+  return CHAPTERS[index + 1].id;
+}
+
+/** Reset run state and enter a chapter in the world scene. */
+export function loadChapter(id) {
+  const def = chapterById(id);
+  if (!def) return false;
+
+  state.chapter = id;
+  state.meterKey = def.meterKey || 'hud.fear';
+  state.mindHintKey = def.mindHintKey || 'hud.mind';
+  state.fear = 0;
+  state.interact = null;
+  state.dialogueOpen = false;
+  state.choiceOpen = false;
+  state.checkpoint = { ...(def.checkpoint || def.start) };
+  state.stats = { caught: 0, lost: 0, time: 0, retaliations: 0 };
+  resetStoryFlags();
+  resetGhost(def.ghost || {});
+  resetRelease();
+
+  player.x = def.start.x;
+  player.y = def.start.y;
+  player.face = 1;
+  player.moving = false;
+  player.bob = 0;
+  cam.x = player.x;
+  cam.y = player.y;
+  cam.shake = 0;
+
+  floaters.length = 0;
+  sparks.length = 0;
+  screenNotes.length = 0;
+
+  resetDialogue();
+  resetChoices();
+  $('#titleScreen').classList.add('hidden');
+  $('#endScreen').classList.add('hidden');
+  $('#medOverlay').classList.add('hidden');
+  $('#memOverlay').classList.add('hidden');
+  $('#disturbCard').classList.add('hidden');
+  $('#hud').classList.remove('hidden');
+  $('#ctrlHint').classList.remove('hidden');
+
+  state.mode = MODE.WORLD;
+
+  const handler = handlers.get(id);
+  if (handler && handler.start) handler.start(def);
+  return true;
+}
+
+/** Run the active chapter's per-frame story logic. */
+export function updateChapter(dt) {
+  const handler = handlers.get(state.chapter);
+  if (handler && handler.update) handler.update(dt);
+}
