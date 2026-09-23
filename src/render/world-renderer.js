@@ -63,6 +63,10 @@ export function renderWorld() {
     // Ember veil for the anger chapter.
     ctx.fillStyle = 'rgba(120,30,20,.05)';
     ctx.fillRect(0, 0, W, H);
+  } else if (state.chapter === 8) {
+    // Indigo veil for the mirror chapter (Part 2).
+    ctx.fillStyle = 'rgba(40,50,90,.07)';
+    ctx.fillRect(0, 0, W, H);
   }
   drawFog();
   drawFloaters();

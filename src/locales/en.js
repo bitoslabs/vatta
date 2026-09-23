@@ -270,6 +270,26 @@ export default {
 
     'npc.guardian': 'Dhammapāla',
     'prompt.talkGuardian': 'Speak with the guardian',
+
+    'chapter8.name': 'The Mirror of Kamma',
+    'chapter8.subtitle': 'Chapter Eight — Part Two · Seeing your own kamma',
+    'hud.mirror': 'M I R R O R',
+    'ch8.toast.start.title': 'The Mirror of Kamma',
+    'ch8.toast.start.sub': 'Chapter Eight — Part Two',
+    'ch8.mirror.anger': 'The mirror shows your anger — the shadow you once struck',
+    'ch8.mirror.greed': 'The mirror shows your craving — the hand you once reached with',
+    'ch8.mirror.delusion': 'The mirror shows your delusion — the words you once lied to yourself',
+    'ch8.mirror.clinging': 'The mirror shows your clinging — the hand you still hold clenched',
+    'ch8.mirror.balanced': 'The mirror shows no evil — only a mind that must stay aware',
+    'ch8.floater.tempted': 'You slipped again… the shadow grows',
+    'ch8.floater.seen': 'Seen in time… the shadow thins',
+    'ch8.choice.aversion': '"I see my own shadow, and want to fight it"',
+    'ch8.choice.insight': '"It is only conditions I have accumulated"',
+    'ch8.choice.afraid': '"I dare not look yet…"',
+    'ch8.end.title': 'Chapter Eight Complete',
+    'ch8.end.name': 'The Mirror of Kamma',
+    'ch8.end.lesson': '<span style="color:#d9c58c">Kamma</span> — whatever we meet is the fruit of what we have done.<br><br><span style="color:#d9c58c">Seeing truly</span> — when it is seen, there is nothing to fight and nothing to flee.',
+    'ch8.end.stats': 'Swallowed {caught} times<br>Practice time {time}',
   },
 
   lists: {
@@ -321,6 +341,16 @@ export default {
       'Seeing suffering… knowing it',
       'Seeing its cause…',
       'Seeing the way it ceases… the mind brightens',
+    ],
+    'hud.mind.mirror': [
+      'Seeing my own shadow… noticing',
+      'Knowing it is only conditions…',
+      'The shadow thins… the mind clears',
+    ],
+    'ch8.question': [
+      '"This shadow is mine"',
+      '"It is only conditions I have accumulated"',
+      '"I do not know"',
     ],
   },
 
@@ -564,6 +594,26 @@ export default {
     'greet.empty': [
       { who: 'The Guardian', text: 'You have nothing yet for me to remember… the road is still waiting.' },
       { who: 'The Guardian', text: 'Walk on, and your actions will tell me who you are.' },
+    ],
+    'ch8.intro': [
+      { who: '', text: 'The wheel turns into Part Two. At the temple gate stands a mirror — no frame, and no reflection of the body.' },
+      { who: '', text: 'When you look in, it shows what you have done, not what you wish to be.' },
+      { who: '', text: 'What you meet today will be the shadow of your own kamma — know it, without fighting and without fleeing.' },
+    ],
+    'ch8.arrive': [
+      { who: '', text: 'We have reached the sala, yet the mirror follows… it will not fade until we truly look at it.' },
+      { who: 'The voice in the mirror', text: 'Will you fight me, or admit that you are the one who made me?' },
+    ],
+    'ch8.answerCold': [
+      { who: '', text: 'We raised a hand against our own shadow… the more we fought, the more we saw only ourselves, reflecting endlessly.' },
+      { who: 'The voice in the mirror', text: 'I am you; I can never lose to you.' },
+    ],
+    'ch8.answerWarm': [
+      { who: '', text: 'We saw that the shadow is neither us nor an enemy — only the fruit of causes we once gathered.' },
+      { who: '', text: 'Seeing that, the shadow faded — not because it was defeated, but because there was nothing left to reflect.' },
+    ],
+    'ch8.answerCool': [
+      { who: 'The voice in the mirror', text: 'If you dare not look yet, that is all right… but the mirror will always be waiting here.' },
     ],
   },
 };
