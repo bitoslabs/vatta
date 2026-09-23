@@ -1,0 +1,68 @@
+/* ---------- Touch controls ---------- */
+#touchUI {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  pointer-events: none;
+}
+
+#joyZone {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 46%;
+  height: 60%;
+  pointer-events: auto;
+}
+
+#joyBase {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  border: 1px solid rgba(232, 226, 208, 0.25);
+  border-radius: 50%;
+  display: none;
+}
+
+#joyKnob {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: rgba(232, 226, 208, 0.3);
+  border-radius: 50%;
+  display: none;
+}
+
+.tbtn {
+  position: absolute;
+  pointer-events: auto;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 226, 208, 0.35);
+  background: rgba(8, 12, 10, 0.55);
+  color: #d8d0b8;
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+.tbtn:active {
+  background: rgba(214, 180, 120, 0.4);
+}
+
+#btnRun {
+  right: 104px;
+  bottom: 120px;
+}
+
+#btnSati {
+  right: 26px;
+  bottom: 170px;
+}
+
+#btnAct {
+  right: 26px;
+  bottom: 80px;
+  border-color: var(--line-strong);
+}

@@ -1,0 +1,87 @@
+'use strict';
+
+import { MODE, PATH_WIDTH, PLAYER, TEMPLE, SALA, WORLD } from '../core/constants.js';
+import { clamp, dist, distToPoly } from '../core/math.js';
+import { state } from '../core/state.js';
+import { input, isMindful } from '../systems/input.js';
+import { FALSE_A, FALSE_B, PATH as TRUE_PATH, TREES } from '../world/world-data.js';
+
+export const player = {
+  x: PLAYER.x,
+  y: PLAYER.y,
+  vx: 0,
+  vy: 0,
+  face: 1,
+  moving: false,
+  bob: 0,
+};
+
+export function inSafeZone(x, y) {
+  return dist(x, y, TEMPLE.x, TEMPLE.y) < TEMPLE.r || dist(x, y, SALA.x, SALA.y) < SALA.r;
+}
+
+function isFrozen() {
+  return state.dialogueOpen || state.mode === MODE.TITLE;
+}
+
+function isRunning(mind) {
+  return (input.keys['shift'] || input.run) && !mind && !isFrozen();
+}
+
+/**
+ * Advance player movement and collisions.
+ * @returns {{ frozen: boolean, mind: boolean, running: boolean, speed: number }}
+ */
+export function updatePlayer(dt) {
+  const frozen = isFrozen();
+  const mind = isMindful();
+  const running = isRunning(mind);
+
+  let ax = 0;
+  let ay = 0;
+  if (!frozen) {
+    if (input.keys['w'] || input.keys['arrowup']) ay -= 1;
+    if (input.keys['s'] || input.keys['arrowdown']) ay += 1;
+    if (input.keys['a'] || input.keys['arrowleft']) ax -= 1;
+    if (input.keys['d'] || input.keys['arrowright']) ax += 1;
+    ax += input.joy.dx;
+    ay += input.joy.dy;
+  }
+
+  const magnitude = Math.hypot(ax, ay);
+  if (magnitude > 1) {
+    ax /= magnitude;
+    ay /= magnitude;
+  }
+
+  const onPath = distToPoly(TRUE_PATH, player.x, player.y) < PATH_WIDTH.trueWidth
+    || distToPoly(FALSE_A, player.x, player.y) < PATH_WIDTH.falseWidth
+    || distToPoly(FALSE_B, player.x, player.y) < PATH_WIDTH.falseWidth;
+
+  let speed = PLAYER.walkSpeed;
+  if (running) speed = PLAYER.runSpeed;
+  if (mind) speed = PLAYER.mindSpeed;
+  if (!onPath) speed *= PLAYER.offPathSpeedFactor;
+
+  player.x = clamp(player.x + ax * speed * dt, PLAYER.margin, WORLD.w - PLAYER.margin);
+  player.y = clamp(player.y + ay * speed * dt, PLAYER.margin, WORLD.h - PLAYER.margin);
+  if (ax) player.face = ax > 0 ? 1 : -1;
+  player.moving = magnitude > 0.1;
+  if (player.moving) player.bob += dt * (running ? 11 : 6);
+
+  resolveTreeCollisions();
+
+  return { frozen, mind, running, speed };
+}
+
+/** Push the player out of any overlapping tree trunk. */
+function resolveTreeCollisions() {
+  for (const tree of TREES) {
+    const d = dist(player.x, player.y, tree.x, tree.y);
+    const minDist = tree.r + PLAYER.radius;
+    if (d < minDist && d > 0) {
+      player.x += ((player.x - tree.x) / d) * (minDist - d);
+      player.y += ((player.y - tree.y) / d) * (minDist - d);
+    }
+  }
+}

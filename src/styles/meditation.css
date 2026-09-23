@@ -1,0 +1,159 @@
+/* ---------- Meditation ---------- */
+#medOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 48;
+  background: #020403;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#medTop {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+#medTop .lbl {
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: #9a9482;
+}
+
+#mindBar {
+  width: 220px;
+  height: 3px;
+  background: rgba(232, 226, 208, 0.12);
+  margin: 9px auto 0;
+}
+
+#mindFill {
+  height: 100%;
+  width: 32%;
+  background: var(--gold);
+}
+
+#breathDots {
+  display: flex;
+  gap: 9px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+#breathDots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(232, 226, 208, 0.15);
+}
+
+#breathDots span.on {
+  background: var(--gold-bright);
+}
+
+#medStage {
+  position: relative;
+  width: 520px;
+  height: 520px;
+  max-width: 90vw;
+  max-height: 58vh;
+}
+
+#tgtOut,
+#tgtIn,
+#bRing {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+
+#tgtOut {
+  width: 320px;
+  height: 320px;
+  border: 1px dashed rgba(217, 197, 140, 0.4);
+}
+
+#tgtIn {
+  width: 128px;
+  height: 128px;
+  border: 1px dashed rgba(217, 197, 140, 0.3);
+}
+
+#bRing {
+  width: 80px;
+  height: 80px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 0 0 26px rgba(233, 217, 160, 0.12) inset;
+}
+
+#medMsg {
+  position: absolute;
+  bottom: -64px;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 300;
+  color: #c4bda6;
+  letter-spacing: 0.04em;
+}
+
+#medQuote {
+  position: absolute;
+  bottom: -96px;
+  width: 100%;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+#breathBtn {
+  margin-top: 120px;
+  padding: 13px 42px;
+  border: 1px solid #7a7461;
+  background: transparent;
+  color: #cfc8ad;
+  font-family: var(--font-body);
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+}
+
+#breathBtn:hover {
+  border-color: #c9b684;
+}
+
+#disturbCard {
+  position: absolute;
+  top: 14%;
+  right: 8%;
+  max-width: 250px;
+  padding: 16px 18px;
+  background: rgba(12, 8, 10, 0.95);
+  border: 1px solid rgba(160, 90, 90, 0.4);
+  border-left: 3px solid #8a4a42;
+  transition: opacity 0.8s;
+}
+
+#disturbText {
+  font-size: 14.5px;
+  font-weight: 300;
+  color: #cbb8a8;
+  line-height: 1.7;
+  font-style: italic;
+}
+
+#disturbHint {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #8a5a50;
+  letter-spacing: 0.12em;
+  animation: blink 1.2s infinite;
+}

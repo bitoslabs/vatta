@@ -1,0 +1,43 @@
+/* ---------- Fade / toast ---------- */
+#fade {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.9s ease;
+  z-index: 60;
+}
+
+#toast {
+  position: fixed;
+  top: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 0.8s;
+  pointer-events: none;
+}
+
+#toastTitle {
+  font-family: var(--font-display);
+  font-size: 38px;
+  color: #e9d9a8;
+  letter-spacing: 0.06em;
+}
+
+#toastSub {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+  font-weight: 300;
+  letter-spacing: 0.28em;
+}
+
+@keyframes blink {
+  0%,
+  100% { opacity: 0.2; }
+  50% { opacity: 0.9; }
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="description" content="วิมุตติ — ป่าเสียงเรียก · a contemplative 2D prototype">
+  <title>วิมุตติ — ป่าเสียงเรียก</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=Bai+Jamjuree:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/styles/main.css">
+</head>
+<body>
+  <canvas id="cv"></canvas>
+
+  <!-- ============ HUD ============ -->
+  <div id="hud" class="hidden">
+    <div id="fearLabel" data-i18n="hud.fear">จ ต</div>
+    <div id="fearBar"><div id="fearFill"></div></div>
+    <div id="mindHint"></div>
+  </div>
+  <div id="ctrlHint" class="hidden" data-i18n="hud.controls">WASD เดิน · SHIFT วิ่ง · SPACE ค้าง ตั้งสติ · E โต้ตอบ · M เสียง</div>
+
+  <!-- ============ Feedback ============ -->
+  <div id="toast" aria-live="polite">
+    <div id="toastTitle"></div>
+    <div id="toastSub"></div>
+  </div>
+  <div id="fade"></div>
+
+  <!-- ============ Dialogue & choices ============ -->
+  <div id="dlgBox" class="hidden">
+    <div id="dlgWho"></div>
+    <div id="dlgText"></div>
+    <div id="dlgNext" data-i18n="dialogue.next">กดเพื่อไปต่อ</div>
+  </div>
+  <div id="choiceBox" class="hidden"></div>
+
+  <!-- ============ Language switcher ============ -->
+  <div id="langSwitch" role="group" data-i18n-attr="aria-label|title.language"></div>
+
+  <!-- ============ Title screen ============ -->
+  <div id="titleScreen">
+    <div class="panel">
+      <h1 data-i18n="title.name">วิมุตติ</h1>
+      <h2 data-i18n="title.subtitle">ป่าเสียงเรียก — บทปฐม</h2>
+      <div class="rule"></div>
+      <p data-i18n-html="title.tagline">คืนที่ฝนเพิ่งหยุด เสียงใดเรียกเราอยู่ปลายป่า<br>ผีที่ไล่เรา ไม่ได้อยู่ข้างหลัง… แต่อยู่ในใจ<br>หนีให้รอดไม่พอ — ต้องรู้ว่ากำลังหนีอะไร</p>
+      <div class="keys">
+        <span><b>WASD</b><span data-i18n="title.keys.move">เดิน</span></span>
+        <span><b>SHIFT</b><span data-i18n="title.keys.run">วิ่ง</span></span>
+        <span><b>SPACE</b><span data-i18n="title.keys.mind">ค้าง = ตั้งสติ</span></span>
+        <span><b>E</b><span data-i18n="title.keys.act">โต้ตอบ</span></span>
+      </div>
+      <button class="btn" id="startBtn" data-i18n="title.start">เริ่มภาวนา</button>
+      <div class="small" data-i18n="title.note">หูฟังแนะนำ · กด M เพื่อเปิด/ปิดเสียง</div>
+    </div>
+  </div>
+
+  <!-- ============ Meditation ============ -->
+  <div id="medOverlay" class="hidden">
+    <div id="medTop">
+      <div class="lbl" data-i18n="meditation.label">ส ม า ธ ิ</div>
+      <div id="mindBar"><div id="mindFill"></div></div>
+      <div id="breathDots">
+        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+    <div id="medStage">
+      <div id="tgtOut"></div><div id="tgtIn"></div><div id="bRing"></div>
+      <div id="medMsg"></div>
+      <div id="medQuote" data-i18n="meditation.quote">รู้ว่ากำลังหายใจเข้า · รู้ว่ากำลังหายใจออก</div>
+    </div>
+    <button id="breathBtn" data-i18n="meditation.start">กดค้าง — หายใจเข้า</button>
+    <div id="disturbCard" class="hidden">
+      <div id="disturbText"></div>
+      <div id="disturbHint" data-i18n="meditation.disturbHint">กด X — ไล่มันออกไป</div>
+    </div>
+  </div>
+
+  <!-- ============ Memory scene ============ -->
+  <div id="memOverlay" class="hidden"><canvas id="memCv"></canvas></div>
+
+  <!-- ============ End screen ============ -->
+  <div id="endScreen" class="hidden">
+    <div class="panel panel--end">
+      <h2 data-i18n="end.title">จบบทปฐม</h2>
+      <h1 data-i18n="end.name">ป่าเสียงเรียก</h1>
+      <div class="rule"></div>
+      <p class="lesson" data-i18n-html="end.lesson"><span style="color:#d9c58c">สัมมาสติ</span> — ท่ามกลางความกลัว รู้กาย รู้ใจ รู้ลมหายใจ<br><br><span style="color:#d9c58c">อนิจจัง</span> — รักได้ โดยไม่ต้องเก็บไว้ตลอดไป</p>
+      <p id="endStats" class="stats"></p>
+      <button class="btn" id="restartBtn" data-i18n="end.restart">ภาวนาอีกครั้ง</button>
+    </div>
+  </div>
+
+  <!-- ============ Touch controls ============ -->
+  <div id="touchUI" class="hidden">
+    <div id="joyZone"><div id="joyBase"></div><div id="joyKnob"></div></div>
+    <button class="tbtn" id="btnRun" data-i18n="touch.run">วิ่ง</button>
+    <button class="tbtn" id="btnSati" data-i18n-html="touch.sati">สติ<br>(ค้าง)</button>
+    <button class="tbtn" id="btnAct" data-i18n="touch.act">E</button>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
