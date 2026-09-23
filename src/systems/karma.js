@@ -117,3 +117,22 @@ export function importKarma(data) {
   emit(EVENTS.KARMA_CHANGED, 'import');
   return true;
 }
+
+const TENDENCY_ORDER = ['anger', 'greed', 'delusion', 'clinging'];
+
+/**
+ * The strongest remaining unwholesome tendency (อนุสัย), or null when none has
+ * been accumulated. Chapters use this to choose the face they show the player.
+ */
+export function dominantTendencyId() {
+  let best = null;
+  let bestValue = 0;
+  for (const key of TENDENCY_ORDER) {
+    const value = Math.max(0, ledger.tendencies[key] || 0);
+    if (value > bestValue) {
+      bestValue = value;
+      best = key;
+    }
+  }
+  return best;
+}

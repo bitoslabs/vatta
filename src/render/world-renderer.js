@@ -71,6 +71,10 @@ export function renderWorld() {
     // Dusky violet for the habit chapter.
     ctx.fillStyle = 'rgba(60,50,80,.07)';
     ctx.fillRect(0, 0, W, H);
+  } else if (state.chapter === 10) {
+    // Rose-grey for the growing shadow.
+    ctx.fillStyle = 'rgba(80,40,60,.07)';
+    ctx.fillRect(0, 0, W, H);
   }
   drawFog();
   drawFloaters();

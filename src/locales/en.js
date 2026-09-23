@@ -311,6 +311,25 @@ export default {
     'ch9.end.name': 'The Remaining Tendency',
     'ch9.end.lesson': '<span style="color:#d9c58c">Tendency (anusaya)</span> — what we repeat becomes habit, and habit becomes a realm.<br><br><span style="color:#d9c58c">Noticing</span> — seeing the habit is the beginning of freedom from it.',
     'ch9.end.stats': 'Swallowed {caught} times<br>Practice time {time}',
+    'chapter10.name': 'The Growing Shadow',
+    'chapter10.subtitle': 'Chapter Ten — Part Two · What grows each time we repeat',
+    'hud.rep': 'R E P E T I T I O N',
+    'ch10.toast.start.title': 'The Growing Shadow',
+    'ch10.toast.start.sub': 'Chapter Ten — Part Two',
+    'ch10.tendency.anger': 'The shadow grows each time you still strike back — notice it',
+    'ch10.tendency.greed': 'The shadow grows each time you still reach out — notice it',
+    'ch10.tendency.delusion': 'The shadow grows each time you still follow the old questions — notice it',
+    'ch10.tendency.clinging': 'The shadow grows each time you still hold on — notice it',
+    'ch10.tendency.balanced': 'The shadow starts small — yet even a little repetition feeds it',
+    'ch10.floater.grown': 'Repetition {reps} — the shadow grows',
+    'ch10.floater.noticed': 'Noticed… the shadow shrinks',
+    'ch10.choice.self': '"We repeat because it is who we are"',
+    'ch10.choice.stop': '"The more it repeats, the larger it grows — noticing stops it"',
+    'ch10.choice.unsure': '"I am not sure…"',
+    'ch10.end.title': 'Chapter Ten Complete',
+    'ch10.end.name': 'The Growing Shadow',
+    'ch10.end.lesson': '<span style="color:#d9c58c">Repetition</span> — what we do often grows in the mind.<br><br><span style="color:#d9c58c">Noticing</span> — when the shadow is seen clearly, it shrinks on its own; no fighting needed.',
+    'ch10.end.stats': 'Repeated {reps} times · Swallowed {caught} times<br>Practice time {time}',
   },
 
   lists: {
@@ -381,6 +400,16 @@ export default {
     'ch9.question': [
       '"I have always been like this"',
       '"A habit arises and ceases"',
+      '"I do not know"',
+    ],
+    'hud.mind.rep': [
+      'Seeing the shadow grow… noticing',
+      'Not repeating… the shadow shrinks',
+      'The more it is seen, the lighter it is',
+    ],
+    'ch10.question': [
+      '"This is just how we must be"',
+      '"It is only repetition, not who we are"',
       '"I do not know"',
     ],
   },
@@ -665,6 +694,26 @@ export default {
     ],
     'ch9.answerCool': [
       { who: 'The habit spirit', text: 'Being unsure is all right… but the old track will always be waiting for you.' },
+    ],
+    'ch10.intro': [
+      { who: '', text: 'This shadow was never this large — it grows each time you do the same thing again.' },
+      { who: '', text: 'But it can shrink as well, when you notice it plainly: no running, no fighting.' },
+      { who: '', text: 'Hold SPACE to notice it — the more clearly you see it, the smaller it becomes.' },
+    ],
+    'ch10.arrive': [
+      { who: 'The shadow', text: 'I grew because you fed me with repetition… will you keep feeding me?' },
+      { who: '', text: 'We looked at the mountain-sized shadow, and asked ourselves what it is we keep repeating.' },
+    ],
+    'ch10.answerCold': [
+      { who: '', text: 'We answered, "this is just how I must be" — and the shadow swallowed the sky.' },
+      { who: 'The shadow', text: 'Good… you have fed me all along; keep feeding until we burn together.' },
+    ],
+    'ch10.answerWarm': [
+      { who: '', text: 'We saw that repetition is not who we are, and that clear seeing stops it — without any fight.' },
+      { who: '', text: 'The shadow shrank to the size of a hand, then vanished — there was no food left for it.' },
+    ],
+    'ch10.answerCool': [
+      { who: 'The shadow', text: 'Being unsure is all right… but every second you keep repeating, I keep growing.' },
     ],
   },
 };

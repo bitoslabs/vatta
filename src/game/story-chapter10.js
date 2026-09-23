@@ -6,8 +6,9 @@ import { state } from '../core/state.js';
 import { on, EVENTS } from '../core/events.js';
 import { playChime, playThud } from '../systems/audio.js';
 import { addFloater } from '../systems/effects.js';
+import { isMindful } from '../systems/input.js';
 import { t, tList } from '../systems/i18n.js';
-import { dominantTendencyId, getKarma, recordKarma } from '../systems/karma.js';
+import { dominantTendencyId, recordKarma } from '../systems/karma.js';
 import { ghost, placeGhost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { choose } from '../ui/choices.js';
@@ -19,18 +20,23 @@ import { registerChapterHandler } from './chapters.js';
 import { nearestLure, resetLures, takeLure } from './lures.js';
 
 const SALA_TRIGGER = 340;
-const TRAIL_LENGTH = 75;      // ~1.25s of the player's own path
-const QUESTION_INTERVAL = 12;
 const RETALIATE_RANGE = 150;
 const EMBRACE_RANGE = 150;
 const LOOT_RANGE = 90;
+const QUESTION_INTERVAL = 11;
+
+const BASE_SPEED = 120;
+const SPEED_PER_REP = 14;
+const SCALE_PER_REP = 0.18;
+const SCALE_PER_NOTICE = 0.08;
 
 /**
- * Chapter 9 — the remaining tendency (Part 2).
+ * Chapter 10 — the growing shadow.
  *
- * This spirit does not chase: it retraces the path you have already walked.
- * Its rule and its face come from whichever tendency (อนุสัย) is strongest in
- * you, and it is stilled the same way for all — by mindfulness.
+ * This spirit grows larger and faster every time you feed it, and shrinks when
+ * you notice it. The temptation is still chosen from your strongest remaining
+ * tendency, but the lesson is about repetition itself: what we do again, we
+ * become.
  */
 const TENDENCY_RULES = {
   anger: { tint: 'rgba(200,120,110,.55)', temptation: 'retaliate' },
@@ -40,48 +46,40 @@ const TENDENCY_RULES = {
   balanced: { tint: 'rgba(200,235,225,.5)', temptation: null },
 };
 
-let ch9 = { tendency: 'balanced', trail: [], questionTimer: QUESTION_INTERVAL, asked: false, ended: false };
+let ch10 = { tendency: 'balanced', notices: 0, questionTimer: QUESTION_INTERVAL, asked: false, ended: false };
 
-/** Strongest remaining tendency, from the accumulated อนุสัย (not action counts). */
-function dominantTendency() {
-  return dominantTendencyId() || 'balanced';
-}
-
-export function startChapter9() {
-  ch9 = {
-    tendency: dominantTendency(),
-    trail: [],
+export function startChapter10() {
+  ch10 = {
+    tendency: dominantTendencyId() || 'balanced',
+    notices: 0,
     questionTimer: QUESTION_INTERVAL,
     asked: false,
     ended: false,
   };
-  const rule = TENDENCY_RULES[ch9.tendency];
+  state.stats.reps = 0;
+  const rule = TENDENCY_RULES[ch10.tendency];
 
   resetLures();
   state.luresVisible = Boolean(rule.lures);
   ghost.tint = rule.tint;
-  ghost.profile.replay = true;
+  ghost.profile.replay = false;
   ghost.mindDissolve = true;
-  placeGhost(clamp(player.x + 320, 120, 4400), clamp(player.y - 40, 120, 2860));
+  placeGhost(clamp(player.x + 480, 120, 4400), clamp(player.y - 60, 120, 2860));
 
-  say('ch9.intro', () => {
-    toast(t('ch9.toast.start.title'), t('ch9.toast.start.sub'));
-    addFloater(player.x, player.y - 150, t(`ch9.tendency.${ch9.tendency}`), '#c9c2d6', 15);
+  say('ch10.intro', () => {
+    toast(t('ch10.toast.start.title'), t('ch10.toast.start.sub'));
+    addFloater(player.x, player.y - 150, t(`ch10.tendency.${ch10.tendency}`), '#d6c2cd', 15);
   });
 }
 
-export function updateChapter9(dt) {
+export function updateChapter10(dt) {
   if (state.mode !== MODE.WORLD) return;
   state.interact = null;
 
-  // Record the path being walked — the habit retraces it.
-  ch9.trail.push({ x: player.x, y: player.y });
-  if (ch9.trail.length > TRAIL_LENGTH) ch9.trail.shift();
-  ghost.replayTarget = ch9.trail[0];
-
+  applyGrowth(dt);
   if (state.dialogueOpen || state.choiceOpen) return;
 
-  const rule = TENDENCY_RULES[ch9.tendency];
+  const rule = TENDENCY_RULES[ch10.tendency];
   const d = dist(player.x, player.y, ghost.x, ghost.y);
 
   switch (rule.temptation) {
@@ -102,19 +100,40 @@ export function updateChapter9(dt) {
     }
     case 'questions':
       if (ghost.active) {
-        ch9.questionTimer -= dt;
-        if (ch9.questionTimer <= 0) askQuestion();
+        ch10.questionTimer -= dt;
+        if (ch10.questionTimer <= 0) askQuestion();
       }
       break;
     default:
       break;
   }
 
-  if (!ch9.asked && dist(player.x, player.y, SALA.x, SALA.y) < SALA_TRIGGER) {
-    ch9.asked = true;
+  if (!ch10.asked && dist(player.x, player.y, SALA.x, SALA.y) < SALA_TRIGGER) {
+    ch10.asked = true;
     state.luresVisible = false;
-    say('ch9.arrive', askHabit);
+    if (state.stats.reps === 0) recordKarma('precept');
+    say('ch10.arrive', askRepetition);
   }
+}
+
+/** The shadow grows with every repetition and thins as it is noticed. */
+function applyGrowth(dt) {
+  const mind = isMindful();
+  if (mind && ghost.active && dist(player.x, player.y, ghost.x, ghost.y) < 520) {
+    ch10.notices += dt;
+  }
+
+  const reps = state.stats.reps;
+  ghost.scale = clamp(1 + reps * SCALE_PER_REP - ch10.notices * SCALE_PER_NOTICE, 0.7, 2.4);
+  ghost.profile.baseSpeed = BASE_SPEED + reps * SPEED_PER_REP;
+  // Noticing also makes it easier to still.
+  ghost.profile.mindDissolveTime = Math.max(1.6, 3.2 - ch10.notices * 0.25);
+}
+
+function repeat() {
+  state.stats.reps++;
+  ghost.enraged = Math.max(ghost.enraged, 2.5);
+  addFloater(player.x, player.y - 120, t('ch10.floater.grown', { reps: state.stats.reps }), '#d68a9a', 15);
 }
 
 function retaliate() {
@@ -122,11 +141,10 @@ function retaliate() {
   state.stats.retaliations++;
   state.fear = clamp(state.fear + 0.28, 0, 1);
   recordKarma('harm');
-  ghost.enraged = 6;
   ghost.stun = 0;
   cam.shake = 0.5;
   playThud();
-  addFloater(player.x, player.y - 120, t('ch9.floater.tempted'), '#c98a7a', 15);
+  repeat();
 }
 
 function embrace() {
@@ -135,7 +153,7 @@ function embrace() {
   state.fear = clamp(state.fear + 0.3, 0, 1);
   recordKarma('cling');
   playThud();
-  addFloater(player.x, player.y - 120, t('ch9.floater.tempted'), '#c8a2c8', 15);
+  repeat();
 }
 
 function loot(lure) {
@@ -143,52 +161,53 @@ function loot(lure) {
   state.stats.looted++;
   recordKarma('steal');
   playChime();
-  addFloater(player.x, player.y - 120, t('ch9.floater.tempted'), '#e9c46a', 15);
+  repeat();
 }
 
 function askQuestion() {
-  ch9.questionTimer = QUESTION_INTERVAL;
-  const options = tList('ch9.question').map((text) => ({ t: text }));
+  ch10.questionTimer = QUESTION_INTERVAL;
+  const options = tList('ch10.question').map((text) => ({ t: text }));
   choose(options, (choice) => {
     if (choice === 0) {
       state.fear = clamp(state.fear + 0.12, 0, 1);
       recordKarma('cling');
-      addFloater(player.x, player.y - 150, t('ch9.floater.tempted'), '#8f8fb0', 15);
+      repeat();
     } else {
-      addFloater(player.x, player.y - 150, t('ch9.floater.seen'), '#bfd9cd', 15);
+      addFloater(player.x, player.y - 150, t('ch10.floater.noticed'), '#bfd9cd', 15);
     }
   });
 }
 
-function askHabit() {
+function askRepetition() {
   choose(
     [
-      { t: t('ch9.choice.self') },
-      { t: t('ch9.choice.habit') },
-      { t: t('ch9.choice.unsure') },
+      { t: t('ch10.choice.self') },
+      { t: t('ch10.choice.stop') },
+      { t: t('ch10.choice.unsure') },
     ],
     (index) => {
       if (index === 0) {
         recordKarma('cling');
-        say('ch9.answerCold', finish);
+        repeat();
+        say('ch10.answerCold', finish);
       } else if (index === 2) {
-        say('ch9.answerCool', askHabit);
+        say('ch10.answerCool', askRepetition);
       } else {
         recordKarma('letgo');
-        say('ch9.answerWarm', finish);
+        say('ch10.answerWarm', finish);
       }
     },
   );
 }
 
 function finish() {
-  ch9.ended = true;
+  ch10.ended = true;
   state.luresVisible = false;
   showEndScreen();
 }
 
-registerChapterHandler(9, { start: startChapter9, update: updateChapter9 });
+registerChapterHandler(10, { start: startChapter10, update: updateChapter10 });
 
 on(EVENTS.GHOST_PACIFIED, (cause) => {
-  if (state.chapter === 9 && cause === 'mind') recordKarma('mindful');
+  if (state.chapter === 10 && cause === 'mind') recordKarma('mindful');
 });

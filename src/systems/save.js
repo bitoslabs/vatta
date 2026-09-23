@@ -10,7 +10,7 @@ const KEY = 'vimutti.save.v1';
 const VERSION = 1;
 
 function emptyStats() {
-  return { caught: 0, lost: 0, time: 0, retaliations: 0, looted: 0, clung: 0, selfish: 0 };
+  return { caught: 0, lost: 0, time: 0, retaliations: 0, looted: 0, clung: 0, selfish: 0, reps: 0 };
 }
 
 export function snapshot() {
