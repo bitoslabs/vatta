@@ -220,6 +220,13 @@ export default {
     'ch7.nibbana.name': 'Nibbāna',
     'ch7.nibbana.desc': 'Utter cessation — no more wandering on.',
     'ch7.nibbana.reason': 'Because kamma is ended and no tendency remains, the mind is freed from the wheel.',
+
+    'rebirth.interlude.title': 'Passing away & rebirth',
+    'echo.took': 'What you once took… still follows you',
+    'echo.harmed': 'The shadow you once struck still remembers you',
+    'echo.clung': 'The clinging of the past… still whispers',
+    'echo.gave': 'The hand you once reached out… light answers back',
+    'echo.released': 'A heart that once let go… remembers the way back',
   },
 
   lists: {

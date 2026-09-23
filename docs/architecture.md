@@ -34,6 +34,7 @@ src/
 │   ├── i18n.js            t/tList/tDialogue + locale switch + data-i18n
 │   ├── effects.js         floaters / sparks / screen notes
 │   ├── karma.js           บัญชีบุญ–บาป + กุศล–อกุศล + อนุสัย
+│   ├── karma-memory.js    กรรมในอดีต → "ความจำ" ที่โลกตอบสนอง
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
 │   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES
@@ -56,6 +57,7 @@ src/
 │   ├── title-screen.js    เริ่มบท + เลือกบท
 │   ├── end-screen.js      สรุปบท + คติภูมิ (rebirth)
 │   ├── codex.js           ธรรมะโคเด็กซ์: กรรม + ภูมิ 31
+│   ├── rebirth-interlude.js  การ์ดจุติ–ปฏิสนธิเมื่อตาย
 │   ├── language-switcher.js
 │   └── touch.js           joystick + ปุ่มสัมผัส
 ├── game/                  การประสานฉาก
@@ -66,6 +68,7 @@ src/
 │   ├── meditation.js      มินิเกมลมหายใจ
 │   ├── memory.js          ฉากความทรงจำ + คำถาม
 │   ├── release.js         ลำดับปลดปล่อย
+│   ├── echoes.js          เหตุการณ์กรรมย้อนหลังตามตำแหน่งบนทาง
 │   ├── world-update.js    อัปเดตโลกต่อเฟรม (fear, ghost, story, camera)
 │   ├── camera.js          กล้อง + shake
 │   └── loop.js            requestAnimationFrame เดียว
