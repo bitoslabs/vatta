@@ -28,205 +28,225 @@ export const DEFAULT_GHOST_PROFILE = Object.freeze({
   replay: false,
 });
 
-/**
- * The haunting spirit. Its behaviour is configured per chapter:
- * - `mindDissolve`   — sustained mindfulness can dissolve it
- * - `respawnOnFade`  — respawn in the forest after dissolving/caught
- * - `enraged`        — temporary speed surge (chapter 2's retaliation)
- */
-export const ghost = {
-  active: false,
-  x: 0,
-  y: 0,
-  alpha: 0,
-  stun: 0,
-  fade: 0,
-  trail: [],
-  respawn: 0,
-  mode: STATUS.HUNT,
-  enraged: 0,
-  pacified: false,
-  /** Visual size multiplier — the "self" grows as ego grows. */
-  scale: 1,
-  /** Destination used when profile.replay is set (habit walks the old path). */
-  replayTarget: null,
-  mindDissolve: true,
-  respawnOnFade: true,
-  tint: null,
-  profile: { ...DEFAULT_GHOST_PROFILE },
-};
+function createGhostState() {
+  return {
+    active: false,
+    x: 0,
+    y: 0,
+    alpha: 0,
+    stun: 0,
+    fade: 0,
+    trail: [],
+    respawn: 0,
+    mode: STATUS.HUNT,
+    enraged: 0,
+    pacified: false,
+    /** Visual size multiplier — the "self" grows as ego grows. */
+    scale: 1,
+    /** Destination used when profile.replay is set (habit walks the old path). */
+    replayTarget: null,
+    mindDissolve: true,
+    respawnOnFade: true,
+    tint: null,
+    profile: { ...DEFAULT_GHOST_PROFILE },
+    // per-spirit mindfulness bookkeeping
+    mindHold: 0,
+    mindHoldPrev: false,
+  };
+}
 
-let mindHold = 0;
-let mindHoldPrev = false;
+/**
+ * The haunting spirits. `ghost` is the primary and always exists (so chapters
+ * 1–10 keep their simple single-spirit API); `ghosts` also holds any additional
+ * spirits a chapter summons (e.g. the pair in chapter 11).
+ */
+export const ghost = createGhostState();
+export const ghosts = [ghost];
 
 export function resetGhost(options = {}) {
-  ghost.active = false;
-  ghost.x = 0;
-  ghost.y = 0;
-  ghost.alpha = 0;
-  ghost.stun = 0;
-  ghost.fade = 0;
-  ghost.trail = [];
-  ghost.respawn = 0;
-  ghost.mode = STATUS.HUNT;
-  ghost.enraged = 0;
-  ghost.pacified = false;
-  ghost.scale = 1;
-  ghost.replayTarget = null;
-  ghost.mindDissolve = options.mindDissolve !== false;
-  ghost.respawnOnFade = options.respawnOnFade !== false;
-  ghost.tint = options.tint || null;
-  ghost.profile = { ...DEFAULT_GHOST_PROFILE, ...(options.profile || {}) };
-  mindHold = 0;
-  mindHoldPrev = false;
+  const fresh = createGhostState();
+  fresh.mindDissolve = options.mindDissolve !== false;
+  fresh.respawnOnFade = options.respawnOnFade !== false;
+  fresh.tint = options.tint || null;
+  fresh.profile = { ...DEFAULT_GHOST_PROFILE, ...(options.profile || {}) };
+  Object.assign(ghost, fresh);
+  ghosts.length = 1;
 }
 
-function place(x, y) {
-  ghost.active = true;
-  ghost.mode = STATUS.HUNT;
-  ghost.alpha = 0;
-  ghost.stun = 0;
-  ghost.enraged = 0;
-  ghost.pacified = false;
-  ghost.x = clamp(x, 100, WORLD.w - 100);
-  ghost.y = clamp(y, 100, WORLD.h - 100);
+/** Summon an additional spirit; the primary is always index 0. */
+export function addGhost(options = {}) {
+  const extra = createGhostState();
+  extra.mindDissolve = options.mindDissolve !== false;
+  extra.respawnOnFade = false;
+  extra.tint = options.tint || null;
+  extra.profile = { ...DEFAULT_GHOST_PROFILE, ...(options.profile || {}) };
+  ghosts.push(extra);
+  return extra;
 }
 
-export function spawnGhostNearPlayer(offsetX = 820, offsetY = -80) {
-  place(player.x + offsetX, player.y + offsetY);
+export function removeGhost(target) {
+  const index = ghosts.indexOf(target);
+  if (index > 0) ghosts.splice(index, 1);
+}
+
+function placeAt(target, x, y) {
+  target.active = true;
+  target.mode = STATUS.HUNT;
+  target.alpha = 0;
+  target.stun = 0;
+  target.enraged = 0;
+  target.pacified = false;
+  target.x = clamp(x, 100, WORLD.w - 100);
+  target.y = clamp(y, 100, WORLD.h - 100);
 }
 
 export function placeGhost(x, y) {
-  place(x, y);
+  placeAt(ghost, x, y);
 }
 
-export function enrageGhost(seconds) {
-  if (!ghost.active) return;
-  ghost.enraged = Math.max(ghost.enraged, seconds);
-  ghost.stun = 0;
+export function placeGhostAt(target, x, y) {
+  placeAt(target, x, y);
 }
 
-export function updateGhost(dt, mind, frozen) {
-  if (ghost.respawn > 0) {
-    ghost.respawn -= dt;
-    if (ghost.respawn <= 0) spawnGhostNearPlayer();
+export function spawnGhostNearPlayer(offsetX = 820, offsetY = -80) {
+  placeAt(ghost, player.x + offsetX, player.y + offsetY);
+}
+
+export function enrageGhost(seconds, target = ghost) {
+  if (!target.active) return;
+  target.enraged = Math.max(target.enraged, seconds);
+  target.stun = 0;
+}
+
+/** Update every spirit (primary and any summoned extras). */
+export function updateGhosts(dt, mind, frozen) {
+  for (const spirit of [...ghosts]) updateGhost(spirit, dt, mind, frozen);
+}
+
+function updateGhost(g, dt, mind, frozen) {
+  if (g.respawn > 0) {
+    g.respawn -= dt;
+    if (g.respawn <= 0) spawnGhostNearPlayer();
     return;
   }
 
-  if (!ghost.active) return;
+  if (!g.active) return;
 
-  ghost.alpha = lerp(ghost.alpha, ghost.mode === STATUS.FADE ? 0 : 1, dt * 1.4);
+  g.alpha = lerp(g.alpha, g.mode === STATUS.FADE ? 0 : 1, dt * 1.4);
 
-  if (ghost.mode === STATUS.FADE) {
-    ghost.fade -= dt;
-    if (ghost.fade <= 0) {
-      ghost.active = false;
-      ghost.alpha = 0;
-      ghost.pacified = true;
-      if (ghost.respawnOnFade) ghost.respawn = GHOST.respawnDelay;
+  if (g.mode === STATUS.FADE) {
+    g.fade -= dt;
+    if (g.fade <= 0) {
+      g.active = false;
+      g.alpha = 0;
+      g.pacified = true;
+      if (g.respawnOnFade) g.respawn = GHOST.respawnDelay;
       return;
     }
   }
 
   if (frozen) return;
 
-  if (ghost.enraged > 0) ghost.enraged = Math.max(0, ghost.enraged - dt);
+  if (g.enraged > 0) g.enraged = Math.max(0, g.enraged - dt);
 
-  const d = dist(player.x, player.y, ghost.x, ghost.y);
+  const d = dist(player.x, player.y, g.x, g.y);
   const playerSafe = inSafeZone(player.x, player.y);
 
-  // The first moment of mindfulness staggers the ghost (unless it is enraged).
-  const justMindful = mind && !mindHoldPrev;
-  if (justMindful && d < 560 && ghost.enraged <= 0) ghost.stun = GHOST.stunDuration;
-  mindHoldPrev = mind;
-  if (ghost.stun > 0) {
-    ghost.stun -= dt;
+  // The first moment of mindfulness staggers the spirit (unless it is enraged).
+  const justMindful = mind && !g.mindHoldPrev;
+  if (justMindful && d < 560 && g.enraged <= 0) g.stun = GHOST.stunDuration;
+  g.mindHoldPrev = mind;
+  if (g.stun > 0) {
+    g.stun -= dt;
     return;
   }
 
-  // Sustained mindfulness makes the ghost retreat and dissolve.
+  // Sustained mindfulness makes it retreat and dissolve.
   if (mind && d < 520) {
-    mindHold += dt;
-    const away = Math.atan2(ghost.y - player.y, ghost.x - player.x);
-    ghost.x += Math.cos(away) * GHOST.retreatSpeed * dt;
-    ghost.y += Math.sin(away) * GHOST.retreatSpeed * dt;
+    g.mindHold += dt;
+    const away = Math.atan2(g.y - player.y, g.x - player.x);
+    g.x += Math.cos(away) * GHOST.retreatSpeed * dt;
+    g.y += Math.sin(away) * GHOST.retreatSpeed * dt;
     // Higher planes and an unfolding path of practice need less mindfulness.
-    const dissolveTime = ghost.profile.mindDissolveTime
+    const dissolveTime = g.profile.mindDissolveTime
       * getRealmModifier().mindDissolve
       * getPathModifiers().mindDissolve;
-    if (ghost.mindDissolve && ghost.enraged <= 0 && mindHold > dissolveTime) {
-      ghost.mode = STATUS.FADE;
-      ghost.fade = GHOST.fadeDuration;
-      mindHold = 0;
+    if (g.mindDissolve && g.enraged <= 0 && g.mindHold > dissolveTime) {
+      g.mode = STATUS.FADE;
+      g.fade = GHOST.fadeDuration;
+      g.mindHold = 0;
       emit(EVENTS.GHOST_PACIFIED, 'mind');
     }
   } else {
-    mindHold = Math.max(0, mindHold - dt * 2);
+    g.mindHold = Math.max(0, g.mindHold - dt * 2);
   }
 
   if (playerSafe) {
-    const dx = player.x - ghost.x;
-    const dy = player.y - ghost.y;
+    const dx = player.x - g.x;
+    const dy = player.y - g.y;
     const dd = Math.hypot(dx, dy);
     if (dd > 0.001 && dd < 760) {
-      ghost.x -= (dx / dd) * 60 * dt;
-      ghost.y -= (dy / dd) * 60 * dt;
+      g.x -= (dx / dd) * 60 * dt;
+      g.y -= (dy / dd) * 60 * dt;
     }
     return;
   }
 
   // A spirit that keeps its distance (attachment) never closes in to catch you.
-  if (ghost.profile.standOff > 0 && d <= ghost.profile.standOff) {
-    const away = Math.atan2(ghost.y - player.y, ghost.x - player.x);
-    ghost.x += Math.cos(away) * 18 * dt;
-    ghost.y += Math.sin(away) * 18 * dt;
-    ghost.trail.unshift({ x: ghost.x, y: ghost.y });
-    if (ghost.trail.length > 10) ghost.trail.pop();
+  if (g.profile.standOff > 0 && d <= g.profile.standOff) {
+    const away = Math.atan2(g.y - player.y, g.x - player.x);
+    g.x += Math.cos(away) * 18 * dt;
+    g.y += Math.sin(away) * 18 * dt;
+    pushTrail(g);
     return;
   }
 
   // Chase speed scales with the player's own agitation.
-  let speed = ghost.profile.baseSpeed + state.fear * ghost.profile.fearSpeedBonus;
-  if (mind) speed = ghost.profile.mindSpeedBase + state.fear * ghost.profile.mindSpeedFearBonus;
-  if (ghost.enraged > 0) speed *= ghost.profile.enrageSpeedFactor;
+  let speed = g.profile.baseSpeed + state.fear * g.profile.fearSpeedBonus;
+  if (mind) speed = g.profile.mindSpeedBase + state.fear * g.profile.mindSpeedFearBonus;
+  if (g.enraged > 0) speed *= g.profile.enrageSpeedFactor;
 
-  const ang = Math.atan2(player.y - ghost.y, player.x - ghost.x);
+  const ang = Math.atan2(player.y - g.y, player.x - g.x);
 
-  if (ghost.profile.replay && ghost.replayTarget) {
+  if (g.profile.replay && g.replayTarget) {
     // Habit: it walks the path you already walked, not the one you are on.
-    const tx = ghost.replayTarget.x - ghost.x;
-    const ty = ghost.replayTarget.y - ghost.y;
+    const tx = g.replayTarget.x - g.x;
+    const ty = g.replayTarget.y - g.y;
     const td = Math.hypot(tx, ty) || 1;
     const step = Math.min(td, speed * dt);
-    ghost.x += (tx / td) * step;
-    ghost.y += (ty / td) * step;
+    g.x += (tx / td) * step;
+    g.y += (ty / td) * step;
   } else {
-    ghost.x += Math.cos(ang) * speed * dt;
-    ghost.y += Math.sin(ang) * speed * dt;
+    g.x += Math.cos(ang) * speed * dt;
+    g.y += Math.sin(ang) * speed * dt;
   }
 
   for (const tree of TREES) {
-    const td = dist(ghost.x, ghost.y, tree.x, tree.y);
+    const td = dist(g.x, g.y, tree.x, tree.y);
     const minDist = tree.r + 18;
     if (td < minDist && td > 0) {
-      ghost.x += ((ghost.x - tree.x) / td) * (minDist - td) * 0.5;
-      ghost.y += ((ghost.y - tree.y) / td) * (minDist - td) * 0.5;
+      g.x += ((g.x - tree.x) / td) * (minDist - td) * 0.5;
+      g.y += ((g.y - tree.y) / td) * (minDist - td) * 0.5;
     }
   }
 
   // Never let it fall impossibly far behind (chasing spirits only).
-  if (d > 1400 && !ghost.profile.replay) {
-    ghost.x = player.x - Math.cos(ang) * 900;
-    ghost.y = player.y - Math.sin(ang) * 900;
+  if (d > 1400 && !g.profile.replay) {
+    g.x = player.x - Math.cos(ang) * 900;
+    g.y = player.y - Math.sin(ang) * 900;
   }
 
-  ghost.trail.unshift({ x: ghost.x, y: ghost.y });
-  if (ghost.trail.length > 10) ghost.trail.pop();
+  pushTrail(g);
 
-  if (d < GHOST.catchDistance && ghost.mode === STATUS.HUNT) onCaught();
+  if (d < GHOST.catchDistance && g.mode === STATUS.HUNT) onCaught(g);
 }
 
-function onCaught() {
+function pushTrail(g) {
+  g.trail.unshift({ x: g.x, y: g.y });
+  if (g.trail.length > 10) g.trail.pop();
+}
+
+function onCaught(g) {
   state.stats.caught++;
   recordKarma('panic');
 
@@ -241,10 +261,10 @@ function onCaught() {
     state.fear = 0.92;
     cam.x = player.x;
     cam.y = player.y;
-    ghost.x = clamp(player.x + 850, 100, WORLD.w - 100);
-    ghost.y = player.y - 70;
-    ghost.stun = 1.6;
-    ghost.enraged = 0;
+    g.x = clamp(player.x + 850, 100, WORLD.w - 100);
+    g.y = player.y - 70;
+    g.stun = 1.6;
+    g.enraged = 0;
     setTimeout(() => {
       hideRebirthInterlude();
       fade(false);

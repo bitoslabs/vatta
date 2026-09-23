@@ -330,6 +330,27 @@ export default {
     'ch10.end.name': 'The Growing Shadow',
     'ch10.end.lesson': '<span style="color:#d9c58c">Repetition</span> — what we do often grows in the mind.<br><br><span style="color:#d9c58c">Noticing</span> — when the shadow is seen clearly, it shrinks on its own; no fighting needed.',
     'ch10.end.stats': 'Repeated {reps} times · Swallowed {caught} times<br>Practice time {time}',
+
+    'tendency.anger': 'anger',
+    'tendency.greed': 'craving',
+    'tendency.delusion': 'delusion',
+    'tendency.clinging': 'clinging',
+    'tendency.balanced': 'calm',
+    'chapter11.name': 'The Pair',
+    'chapter11.subtitle': 'Chapter Eleven — Part Two · Two tendencies at once',
+    'hud.pair': 'T H E  P A I R',
+    'ch11.toast.start.title': 'The Pair',
+    'ch11.toast.start.sub': 'Chapter Eleven — Part Two',
+    'ch11.pair': 'The two shadows you face: {a} · {b}',
+    'ch11.floater.tempted': 'You fed one of them again…',
+    'ch11.floater.seen': 'Both seen at once… both shadows thin',
+    'ch11.choice.one': '"Fight them one at a time — the other still stands"',
+    'ch11.choice.both': '"Both are one set of conditions"',
+    'ch11.choice.unsure': '"I do not know…"',
+    'ch11.end.title': 'Chapter Eleven Complete',
+    'ch11.end.name': 'The Pair',
+    'ch11.end.lesson': '<span style="color:#d9c58c">Two tendencies</span> — defilements never come alone; seeing must see the whole set.<br><br><span style="color:#d9c58c">One root</span> — when the shared root is seen, both shadows thin together.',
+    'ch11.end.stats': 'Swallowed {caught} times<br>Practice time {time}',
   },
 
   lists: {
@@ -410,6 +431,17 @@ export default {
     'ch10.question': [
       '"This is just how we must be"',
       '"It is only repetition, not who we are"',
+      '"I do not know"',
+    ],
+
+    'hud.mind.pair': [
+      'Seeing both… noticing',
+      'No need to fight even one…',
+      'Both thin together',
+    ],
+    'ch11.question': [
+      '"One is me, so the other is me too"',
+      '"Both are only conditions I have accumulated"',
       '"I do not know"',
     ],
   },
@@ -714,6 +746,27 @@ export default {
     ],
     'ch10.answerCool': [
       { who: 'The shadow', text: 'Being unsure is all right… but every second you keep repeating, I keep growing.' },
+    ],
+
+    'ch11.intro': [
+      { who: '', text: 'Tonight two shadows rise together — one from what you still resent, one from what you still want.' },
+      { who: '', text: 'Flee one and the other waits ahead — for neither comes from outside; both come from the same mind.' },
+      { who: '', text: 'Fighting them one by one never ends. Notice both at once, with a single breath.' },
+    ],
+    'ch11.arrive': [
+      { who: '', text: 'At the sala two shadows flank the way… there is no passing between them while the mind is still split in two.' },
+      { who: 'The two shadows', text: 'Will you fight us one at a time, or see that we are the same root?' },
+    ],
+    'ch11.answerCold': [
+      { who: '', text: 'We chose to fight them one by one… the other remained, and the more we fought, the more they took turns growing.' },
+      { who: 'The two shadows', text: 'We two are born of one cause; you cannot kill us all.' },
+    ],
+    'ch11.answerWarm': [
+      { who: '', text: 'We saw that both arise from one set of conditions — our own clinging.' },
+      { who: '', text: 'Seeing the single root, both shadows thinned together, without any fighting at all.' },
+    ],
+    'ch11.answerCool': [
+      { who: 'The two shadows', text: 'Not knowing is all right… but we two will always be standing on either side of your road.' },
     ],
   },
 };

@@ -12,7 +12,7 @@ import { ctx, viewport } from '../systems/viewport.js';
 import { textures } from '../world/textures.js';
 import { FALSE_A, FALSE_B, FOOT, GATES, PATH, TREES } from '../world/world-data.js';
 import { cam } from '../game/camera.js';
-import { ghost } from '../entities/ghost.js';
+import { ghosts } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { updateHud } from '../ui/hud.js';
 import { renderLighting, shakeOffset } from './lighting.js';
@@ -74,6 +74,10 @@ export function renderWorld() {
   } else if (state.chapter === 10) {
     // Rose-grey for the growing shadow.
     ctx.fillStyle = 'rgba(80,40,60,.07)';
+    ctx.fillRect(0, 0, W, H);
+  } else if (state.chapter === 11) {
+    // Two-tinted dusk for the pair.
+    ctx.fillStyle = 'rgba(70,45,70,.07)';
     ctx.fillRect(0, 0, W, H);
   }
   drawFog();
@@ -189,7 +193,7 @@ function drawEntities(dawn) {
   drawPlayer(dawn);
   for (const tree of treesNear) if (tree.y >= player.y - 6) drawTree(tree, dawn);
 
-  if (ghost.active) drawGhost();
+  for (const spirit of ghosts) if (spirit.active) drawGhost(spirit);
 }
 
 function drawInteractionPrompt() {

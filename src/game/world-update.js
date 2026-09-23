@@ -8,7 +8,7 @@ import { updateEffects } from '../systems/effects.js';
 import { isMindful } from '../systems/input.js';
 import { getPathModifiers } from '../systems/path.js';
 import { getRealmModifier } from '../systems/samsara.js';
-import { ghost, updateGhost } from '../entities/ghost.js';
+import { ghost, updateGhosts } from '../entities/ghost.js';
 import { inSafeZone, player, updatePlayer } from '../entities/player.js';
 import { cam } from './camera.js';
 import { updateEchoes } from './echoes.js';
@@ -27,7 +27,7 @@ export function updateWorld(dt) {
   updateFear(dt, { frozen, mind, running });
   updateHeartbeat(dt);
 
-  if (!state.story.released) updateGhost(dt, mind, frozen);
+  if (!state.story.released) updateGhosts(dt, mind, frozen);
 
   updateStory(dt);
   updateGuardian();

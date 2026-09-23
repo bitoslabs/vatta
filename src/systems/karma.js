@@ -120,19 +120,19 @@ export function importKarma(data) {
 
 const TENDENCY_ORDER = ['anger', 'greed', 'delusion', 'clinging'];
 
+/** Unwholesome tendencies accumulated so far, strongest first (only > 0). */
+export function rankedTendencies() {
+  return TENDENCY_ORDER
+    .map((id) => ({ id, value: Math.max(0, ledger.tendencies[id] || 0) }))
+    .filter((entry) => entry.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .map((entry) => entry.id);
+}
+
 /**
  * The strongest remaining unwholesome tendency (อนุสัย), or null when none has
  * been accumulated. Chapters use this to choose the face they show the player.
  */
 export function dominantTendencyId() {
-  let best = null;
-  let bestValue = 0;
-  for (const key of TENDENCY_ORDER) {
-    const value = Math.max(0, ledger.tendencies[key] || 0);
-    if (value > bestValue) {
-      bestValue = value;
-      best = key;
-    }
-  }
-  return best;
+  return rankedTendencies()[0] || null;
 }

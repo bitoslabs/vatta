@@ -47,7 +47,7 @@ src/
 │   └── textures.js        ground/grain patterns
 ├── entities/              สิ่งมีชีวิต
 │   ├── player.js          movement, collision, safe zone
-│   ├── ghost.js           ผี (profile ต่อบท, enraged, pacified)
+│   ├── ghost.js           ผี: `ghost` (ตัวหลัก) + `ghosts` (collection), addGhost/updateGhosts
 │   └── ghost-status.js    HUNT | FADE
 ├── render/                canvas ล้วน
 │   ├── world-renderer.js  ฉากโลก
@@ -80,6 +80,7 @@ src/
 │   ├── story-chapter8.js  กระจกแห่งกรรม — เงาตามอนุสัย (ภาค 2)
 │   ├── story-chapter9.js  อนุสัยที่เหลือ — ผีเดินตามรอยเดิม (replay)
 │   ├── story-chapter10.js เงาที่โตขึ้น — โตตามการทำซ้ำ หดเมื่อรู้ทัน
+│   ├── story-chapter11.js ผีคู่ — สองอนุสัยพร้อมกัน (ghosts collection)
 │   ├── world-update.js    อัปเดตโลกต่อเฟรม (fear, ghost, story, camera)
 │   ├── camera.js          กล้อง + shake
 │   └── loop.js            requestAnimationFrame เดียว

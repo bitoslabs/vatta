@@ -65,22 +65,22 @@ export function drawPlayer(dawn) {
   ctx.fill();
 }
 
-export function drawGhost() {
+export function drawGhost(target = ghost) {
   const t = performance.now() * 0.003;
-  const alpha = ghost.alpha * (ghost.mode === STATUS.FADE ? Math.max(0, Math.min(1, ghost.fade / 1.4)) : 1);
+  const alpha = target.alpha * (target.mode === STATUS.FADE ? Math.max(0, Math.min(1, target.fade / 1.4)) : 1);
   if (alpha <= 0) return;
 
-  ghost.trail.forEach((point, i) => {
-    const trailAlpha = alpha * 0.16 * (1 - i / ghost.trail.length);
+  target.trail.forEach((point, i) => {
+    const trailAlpha = alpha * 0.16 * (1 - i / target.trail.length);
     ctx.fillStyle = `rgba(200,235,220,${trailAlpha})`;
     ctx.beginPath();
     ctx.ellipse(point.x, point.y, 10 - i * 0.5, 16 - i * 0.8, 0, 0, TAU);
     ctx.fill();
   });
 
-  const gx = ghost.x;
-  const gy = ghost.y + Math.sin(t * 2.2) * 4;
-  const scale = (isMindful() ? 0.82 : 1) * (ghost.scale || 1);
+  const gx = target.x;
+  const gy = target.y + Math.sin(t * 2.2) * 4;
+  const scale = (isMindful() ? 0.82 : 1) * (target.scale || 1);
 
   ctx.save();
   ctx.translate(gx, gy);
@@ -92,7 +92,7 @@ export function drawGhost() {
   ctx.arc(0, -6, 34, 0, TAU);
   ctx.fill();
 
-  ctx.fillStyle = ghost.tint || 'rgba(208,238,228,.5)';
+  ctx.fillStyle = target.tint || 'rgba(208,238,228,.5)';
   ctx.beginPath();
   ctx.moveTo(-13, 26);
   ctx.quadraticCurveTo(-16, -10, -11, -22);
@@ -223,7 +223,8 @@ export function drawGuardian(x, y) {
   ctx.fill();
 }
 
-export function drawTemple(dawn) {  const T = TEMPLE;
+export function drawTemple(dawn) {
+  const T = TEMPLE;
   const now = performance.now();
 
   ctx.fillStyle = dawn ? '#33271a' : '#1c1410';
