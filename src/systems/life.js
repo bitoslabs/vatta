@@ -11,6 +11,8 @@ import { CHAPTERS, loadChapter } from '../game/chapters.js';
 
 /** The first prototype slice: three connected lives (design §12). */
 export const PROTOTYPE_LIVES = 3;
+/** After this many lives the courtyard begins advising, without forcing (§8). */
+export const GUIDED_LIVES = 6;
 
 export function isLifeMode() {
   return state.lifeMode === true;
@@ -78,6 +80,35 @@ export function favouriteForm() {
 
 export function isPrototypeComplete() {
   return state.lifeId >= PROTOTYPE_LIVES;
+}
+
+/**
+ * Readiness for the final chapter (design §8): the journey must have *met* fear,
+ * anger, craving and clinging, returned something, helped someone and released
+ * something — not merely accumulated points.
+ */
+export function journeyReadiness() {
+  const memory = getKarmaMemory();
+  const counts = memory.counts || {};
+  const conditions = [
+    { id: 'fear', ok: memory.sat >= 1 || memory.panicked >= 1 },
+    { id: 'anger', ok: memory.harmed >= 1 || (counts.compassion || 0) >= 1 },
+    { id: 'craving', ok: memory.took >= 1 || memory.gave >= 1 },
+    { id: 'clinging', ok: memory.clung >= 1 || memory.released >= 1 },
+    { id: 'returned', ok: memory.gave >= 1 },
+    { id: 'helped', ok: memory.gave >= 2 },
+    { id: 'released', ok: memory.released >= 1 },
+  ];
+  const missing = conditions.filter((condition) => !condition.ok).map((condition) => condition.id);
+  return { conditions, missing, ready: missing.length === 0 };
+}
+
+export function isJourneyComplete() {
+  return state.journeyComplete === true;
+}
+
+export function recordJourneyComplete() {
+  state.journeyComplete = true;
 }
 
 /**

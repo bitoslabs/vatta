@@ -29,6 +29,8 @@ export const state = {
   formHistory: [],
   /** Chosen log of past lives, read by the mirror courtyard. */
   lifeLog: [],
+  /** Set when the main journey is finished; unlocks the exploration mode. */
+  journeyComplete: false,
   /** Things the world remembers across lives (design §3, §12 step 4). */
   world: { bridge: false, cleared: false, removed: [] },
   /** The assembled world for this life/chapter (see systems/worldgen.js). */

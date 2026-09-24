@@ -5,7 +5,9 @@ import { on, EVENTS } from '../core/events.js';
 import { initAudio, playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { formAbilityKey, formNameKey } from '../content/forms.js';
-import { PROTOTYPE_LIVES, advanceLife, isPrototypeComplete, recordLife, startLifeMode, summariseLife } from '../systems/life.js';
+import { PROTOTYPE_LIVES, advanceLife, isJourneyComplete, isPrototypeComplete, recordLife, startLifeMode, summariseLife } from '../systems/life.js';
+import { loadChapter, CHAPTERS } from '../game/chapters.js';
+import { setTeacher } from '../systems/teacher.js';
 import { openMirrorCourt } from './mirror-court.js';
 import { $ } from './dom.js';
 
@@ -72,6 +74,19 @@ function finishJourney() {
 }
 
 export function initLifeSummary() {
+  // Once the journey is complete, the world can be walked again without karma.
+  const exploreButton = $('#exploreBtn');
+  if (exploreButton) {
+    const syncExplore = () => exploreButton.classList.toggle('hidden', !isJourneyComplete());
+    exploreButton.addEventListener('click', (e) => {
+      e.target.blur();
+      setTeacher(true); // no spirits, no failures — a memory walk
+      loadChapter(CHAPTERS[0].id);
+    });
+    on(EVENTS.LOCALE_CHANGED, syncExplore);
+    syncExplore();
+  }
+
   const button = $('#lifeBtn');
   if (button) {
     button.addEventListener('click', (e) => {

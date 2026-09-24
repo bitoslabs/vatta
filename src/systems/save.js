@@ -66,6 +66,7 @@ export function snapshot() {
     lifeLog: state.lifeLog.map((entry) => ({ ...entry })),
     world: { ...state.world },
     liberated: state.liberated,
+    journeyComplete: state.journeyComplete === true,
     stats: { ...state.stats },
     karma: exportKarma(),
     path: exportPath(),
@@ -174,4 +175,5 @@ export function applySaveRuntime(data) {
   };
   state.world.removed = Array.isArray(state.world.removed) ? state.world.removed.filter((i) => Number.isInteger(i)) : [];
   state.liberated = Boolean(data.liberated);
+  state.journeyComplete = Boolean(data.journeyComplete);
 }

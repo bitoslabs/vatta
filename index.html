@@ -80,6 +80,7 @@
       <button type="button" class="link-btn" id="worksheetBtn" data-i18n="ws.title">ใบงานห้องเรียน</button>
       <button type="button" class="link-btn" id="projectorBtn" data-i18n="projector.toggle.off">โหมดฉายภาพ: ปิด</button>
       <button type="button" class="link-btn" id="lifeBtn" data-i18n="life.start">วงจรชีวิต (ต้นแบบ)</button>
+      <button type="button" class="link-btn hidden" id="exploreBtn" data-i18n="life.explore">ย้อนชมความทรงจำ</button>
     </div>
   </div>
 
@@ -179,6 +180,18 @@
   </div>
 
   <!-- ============ Mirror courtyard (end of the life cycle) ============ -->
+  <div id="journeyEnd" class="hidden">
+    <div class="recap-card">
+      <div class="recap-head">
+        <div class="recap-card-title" data-i18n="court.end.title">ลานกระจกหยุดสะท้อน</div>
+      </div>
+      <div id="journeyEndBody" class="recap-body"></div>
+      <div class="life-actions">
+        <button type="button" class="btn" id="journeyEndDone" data-i18n="court.end.done">ปิดฉาก</button>
+      </div>
+    </div>
+  </div>
+
   <div id="mirrorCourt" class="hidden">
     <div class="recap-card">
       <div class="recap-head">
