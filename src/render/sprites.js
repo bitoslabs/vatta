@@ -6,8 +6,8 @@ import { ctx } from '../systems/viewport.js';
 import { STATUS } from '../entities/ghost-status.js';
 import { ghost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
-import { getForm } from '../systems/forms.js';
-import { drawActFlourish, drawChestLight, drawFormBody } from './forms-sprites.js';
+import { getForm, inWater, movementKind } from '../systems/forms.js';
+import { drawActFlourish, drawChestLight, drawFormAura, drawFormBody } from './forms-sprites.js';
 
 export function drawTree(tree, dawn) {
   const sway = Math.sin(performance.now() * 0.0006 + tree.s * 9) * 2;
@@ -39,10 +39,15 @@ export function drawTree(tree, dawn) {
 /** The player, in whatever body this life wears (design §10). */
 export function drawPlayer(dawn) {
   const formId = getForm().id;
+  const kind = movementKind(player.x, player.y);
   const bob = Math.sin(player.bob) * 1.6;
+
+  drawFormAura(ctx, formId, player.x, player.y, player.bob);
   drawFormBody(ctx, formId, player.x, player.y, {
     face: player.face,
     bob,
+    phase: player.bob,
+    kind,
     moving: player.moving,
     act: player.actT,
     dawn,
@@ -50,6 +55,7 @@ export function drawPlayer(dawn) {
   // The shared chest light marks the player in any form.
   drawChestLight(ctx, player.x, player.y - 6, player.actT > 0 ? 1.4 : 0.8);
   if (player.actT > 0) drawActFlourish(ctx, player.x, player.y - 6, player.actT);
+  void inWater;
 }
 
 export function drawGhost(target = ghost) {

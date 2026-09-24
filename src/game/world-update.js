@@ -9,6 +9,8 @@ import { isMindful } from '../systems/input.js';
 import { t } from '../systems/i18n.js';
 import { getPathModifiers } from '../systems/path.js';
 import { getForm } from '../systems/forms.js';
+import { rng } from '../core/rng.js';
+import { addSpark } from '../systems/effects.js';
 import { dynamicFeatures, removeFeature } from '../systems/worldgen.js';
 import { getRealmModifier } from '../systems/samsara.js';
 import { ghost, updateGhosts } from '../entities/ghost.js';
@@ -48,6 +50,7 @@ export function updateWorld(dt) {
   if (!state.story.released) updateGhosts(dt, mind, frozen);
 
   updateStory(dt);
+  leaveLightFootprints();
   clearBouldersForStrongForms();
   updateLifeGoal();
   updateGuardian();
@@ -91,6 +94,20 @@ function updateHeartbeat(dt) {
     playHeart();
     heartCd = lerp(FEAR.heartSlowPeriod, FEAR.heartFastPeriod, state.fear);
   }
+}
+
+/** เทวดา leaves a faint trail of light behind it (design §10). */
+function leaveLightFootprints() {
+  if (getForm().id !== 'deva' || !player.moving) return;
+  if (rng() > 0.18) return;
+  addSpark({
+    x: player.x + (rng() - 0.5) * 12,
+    y: player.y + (rng() - 0.5) * 6,
+    vx: (rng() - 0.5) * 8,
+    vy: -6 - rng() * 8,
+    t: 0,
+    life: 0.9 + rng() * 0.5,
+  });
 }
 
 /** อสุร lifts boulders out of the road — a change later lives inherit. */

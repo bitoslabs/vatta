@@ -35,6 +35,17 @@ export function isWaterBound() {
   return getForm().waterBound === true;
 }
 
+/**
+ * How this body is moving at this point: it flies, it swims, or it walks.
+ * Used by the sprite layer and by tests (design §10).
+ */
+export function movementKind(x, y) {
+  const form = getForm();
+  if (form.abilities && form.abilities.flying) return 'fly';
+  if (inWater(x, y)) return 'swim';
+  return 'walk';
+}
+
 export function formVision() {
   return getForm().vision || 0;
 }
