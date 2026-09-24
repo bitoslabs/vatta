@@ -27,6 +27,10 @@ export const state = {
   lifeId: 1,
   formId: 'human',
   formHistory: [],
+  /** Chosen log of past lives, read by the mirror courtyard. */
+  lifeLog: [],
+  /** Things the world remembers across lives (design §3, §12 step 4). */
+  world: { bridge: false, cleared: false },
   /** Locale key for the HUD meter label and the mindfulness hints. */
   meterKey: 'hud.fear',
   mindHintKey: 'hud.mind',

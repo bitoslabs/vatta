@@ -13,6 +13,7 @@ import { inSafeZone, player, updatePlayer } from '../entities/player.js';
 import { cam } from './camera.js';
 import { updateEchoes } from './echoes.js';
 import { updateGuardian } from './npc.js';
+import { updateWorldMemory } from './world-memory.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
 import { updateTour } from '../systems/teacher.js';
@@ -43,6 +44,7 @@ export function updateWorld(dt) {
 
   updateStory(dt);
   updateGuardian();
+  updateWorldMemory();
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);

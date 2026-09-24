@@ -17,6 +17,7 @@ import { initRecap } from './ui/journey-recap.js';
 import { initSaveSlots } from './ui/save-slots.js';
 import { initWorksheets } from './ui/worksheets.js';
 import { initLifeSummary } from './ui/life-summary.js';
+import { initMirrorCourt } from './ui/mirror-court.js';
 import { initTeacherPanel } from './ui/teacher-panel.js';
 import { initTitleScreen } from './ui/title-screen.js';
 import { initTouchControls } from './ui/touch.js';
@@ -48,6 +49,7 @@ function bootstrap() {
   initRecap();
   initWorksheets();
   initLifeSummary();
+  initMirrorCourt();
   initCodex();
   startLoop();
 }

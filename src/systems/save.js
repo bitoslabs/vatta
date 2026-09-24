@@ -63,6 +63,8 @@ export function snapshot() {
     lifeId: state.lifeId,
     formId: state.formId,
     formHistory: [...state.formHistory],
+    lifeLog: state.lifeLog.map((entry) => ({ ...entry })),
+    world: { ...state.world },
     liberated: state.liberated,
     stats: { ...state.stats },
     karma: exportKarma(),
@@ -163,5 +165,7 @@ export function applySaveRuntime(data) {
   state.lifeId = Number(data.lifeId) || 1;
   if (typeof data.formId === 'string') state.formId = data.formId;
   state.formHistory = Array.isArray(data.formHistory) ? [...data.formHistory] : [];
+  state.lifeLog = Array.isArray(data.lifeLog) ? data.lifeLog.map((entry) => ({ ...entry })) : [];
+  state.world = { bridge: false, cleared: false, ...(data.world || {}) };
   state.liberated = Boolean(data.liberated);
 }

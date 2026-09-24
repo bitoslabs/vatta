@@ -5,8 +5,8 @@ import { on, EVENTS } from '../core/events.js';
 import { initAudio, playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { formAbilityKey, formNameKey } from '../content/forms.js';
-import { PROTOTYPE_LIVES, advanceLife, isPrototypeComplete, startLifeMode, summariseLife } from '../systems/life.js';
-import { showEndScreen } from './end-screen.js';
+import { PROTOTYPE_LIVES, advanceLife, isPrototypeComplete, recordLife, startLifeMode, summariseLife } from '../systems/life.js';
+import { openMirrorCourt } from './mirror-court.js';
 import { $ } from './dom.js';
 
 const overlay = $('#lifeSummary');
@@ -60,15 +60,15 @@ export function renderLifeSummary() {
 }
 
 export function showLifeSummary() {
+  recordLife();
   renderLifeSummary();
   overlay.classList.remove('hidden');
   if (typeof playBell === 'function') playBell();
 }
 
 function finishJourney() {
-  state.lifeMode = false;
   overlay.classList.add('hidden');
-  showEndScreen();
+  openMirrorCourt();
 }
 
 export function initLifeSummary() {

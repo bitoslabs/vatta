@@ -39,6 +39,18 @@ export function summariseLife() {
   };
 }
 
+/** Append this life to the log once, so the mirror courtyard can read it. */
+export function recordLife() {
+  const summary = summariseLife();
+  const already = state.lifeLog.some((entry) => entry.lifeId === summary.lifeId);
+  if (!already) state.lifeLog.push(summary);
+  return summary;
+}
+
+export function getLifeLog() {
+  return state.lifeLog;
+}
+
 export function isPrototypeComplete() {
   return state.lifeId >= PROTOTYPE_LIVES;
 }

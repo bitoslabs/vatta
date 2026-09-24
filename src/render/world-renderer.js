@@ -19,6 +19,7 @@ import { updateHud } from '../ui/hud.js';
 import { renderLighting, shakeOffset } from './lighting.js';
 import { drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, drawTeacherLabel, drawTemple, drawTourMarker, drawTree } from './sprites.js';
 import { getLures } from '../game/lures.js';
+import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
 import { GUARDIAN } from '../game/npc.js';
 
 function drawPath(points, width, color) {
@@ -46,6 +47,7 @@ export function renderWorld() {
 
   drawGround(dawn);
   drawRiver(dawn);
+  drawWorldMemory(dawn);
   drawPaths(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
@@ -107,6 +109,39 @@ export function renderWorld() {
 function drawGround(dawn) {
   ctx.fillStyle = dawn ? textures.groundDawn : textures.groundNight;
   ctx.fillRect(-60, -60, WORLD.w + 120, WORLD.h + 120);
+}
+
+/** A bridge built in an earlier life, and the debris its upkeep left behind. */
+function drawWorldMemory(dawn) {
+  if (!hasBridge()) return;
+  const site = bridgeSite();
+
+  // Planks across the water.
+  ctx.fillStyle = dawn ? '#4a3520' : '#2a1d10';
+  ctx.fillRect(site.x - 78, site.y - 12, 156, 24);
+  ctx.strokeStyle = 'rgba(233,217,160,.35)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(site.x - 78, site.y - 12, 156, 24);
+  for (let i = -3; i <= 3; i++) {
+    ctx.strokeStyle = 'rgba(0,0,0,.28)';
+    ctx.beginPath();
+    ctx.moveTo(site.x + i * 20, site.y - 12);
+    ctx.lineTo(site.x + i * 20, site.y + 12);
+    ctx.stroke();
+  }
+
+  if (!isWaterwayCleared()) {
+    const now = performance.now() * 0.001;
+    for (let i = 0; i < 5; i++) {
+      const a = now + i * 1.7;
+      const px = site.x - 60 + i * 30;
+      const py = site.y + 30 + Math.sin(a) * 6;
+      ctx.fillStyle = 'rgba(70,52,30,.9)';
+      ctx.fillRect(px - 18, py - 4, 36, 8);
+      ctx.fillStyle = 'rgba(110,80,45,.9)';
+      ctx.fillRect(px - 14, py - 7, 28, 5);
+    }
+  }
 }
 
 /** The river: a dark band with a lighter core, crossed by the true path. */
