@@ -35,6 +35,20 @@ export function isWaterBound() {
   return getForm().waterBound === true;
 }
 
+/** The body's own movement tools, as collision and the route checker read them. */
+export function formAbilities() {
+  return { ...(getForm().abilities || {}) };
+}
+
+/**
+ * Soft soil is only a road for a body that can tunnel (docs/animal-lives-story.md
+ * ch.2). Note this is the *body's* tool: a human in a world whose root was
+ * already watered is handled separately, in systems/worldgen.js.
+ */
+export function canBurrow() {
+  return getForm().abilities?.burrow === true;
+}
+
 /**
  * How this body is moving at this point: it flies, it swims, or it walks.
  * Used by the sprite layer and by tests (design §10).

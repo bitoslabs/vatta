@@ -19,6 +19,8 @@ export function currentBiomeId() {
   const form = getForm().id;
   if (form === 'asura') return 'asura-city';
   if (form === 'deva') return 'light-garden';
+  // Tunnelers walk the soil under the great root (docs/animal-lives-story.md ch.2).
+  if (getForm().abilities?.burrow === true) return 'under-root';
 
   const realm = realmById(state.realmId);
   if (realm) {

@@ -2,7 +2,8 @@
 
 import { state } from '../core/state.js';
 import { getKarmaMemory } from './karma-memory.js';
-import { getForm, isWaterBound, nextFormId, setForm } from './forms.js';
+import { getForm, isWaterBound, setForm, canBurrow } from './forms.js';
+import { planNextLife } from './life-route.js';
 import { addFloater } from './effects.js';
 import { goalFor } from './goals.js';
 import { t } from './i18n.js';
@@ -27,6 +28,8 @@ export function startLifeMode(chapterId = CHAPTERS[0].id) {
   state.lifeMode = true;
   state.lifeId = 1;
   state.formHistory = ['human'];
+  state.lifeLog = [];
+  state.journeyComplete = false;
   setForm('human');
   loadChapter(chapterId);
 }
@@ -79,7 +82,12 @@ export function favouriteForm() {
 }
 
 export function isPrototypeComplete() {
-  return state.lifeId >= PROTOTYPE_LIVES;
+  return state.chapter === CHAPTERS.at(-1).id && journeyReadiness().ready;
+}
+
+export function nextLifePlan() {
+  return planNextLife({ chapter: state.chapter, lifeId: state.lifeId,
+    history: state.formHistory, chapterIds: CHAPTERS.map(chapter => chapter.id) });
 }
 
 /**
@@ -116,15 +124,12 @@ export function recordJourneyComplete() {
  * kamma carried across (loadChapter resets per-chapter state, not the ledger).
  */
 export function advanceLife() {
-  if (!isLifeMode()) return false;
-  state.lifeId += 1;
-
-  const next = nextFormId();
-  setForm(next);
-  state.formHistory.push(next);
-
-  const index = (state.lifeId - 1) % CHAPTERS.length;
-  loadChapter(CHAPTERS[index].id);
+  if (!isLifeMode() || state.liberated || state.journeyComplete) return false;
+  const next = nextLifePlan();
+  state.lifeId = next.lifeId;
+  setForm(next.formId);
+  state.formHistory.push(next.formId);
+  loadChapter(next.chapter);
 
   if (isWaterBound()) {
     const goal = goalFor();
@@ -133,6 +138,16 @@ export function advanceLife() {
       Math.min(player.y, goal.y) - 120,
       t('life.goal.water'),
       '#9fc6dd',
+      15,
+    );
+  } else if (canBurrow()) {
+    // A tunnelling body cannot use the road at all: its life ends under the root.
+    const goal = goalFor();
+    addFloater(
+      (player.x + goal.x) / 2,
+      Math.min(player.y, goal.y) - 120,
+      t('life.goal.burrow'),
+      '#c9a97a',
       15,
     );
   }

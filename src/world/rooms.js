@@ -3,7 +3,7 @@
 import { TAU, TEMPLE, SALA, WORLD } from '../core/constants.js';
 import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
-import { PATH, RIVER, RIVER_WIDTH } from './world-data.js';
+import { BURROW, BURROW_KEEPOUT, PATH, RIVER, RIVER_WIDTH } from './world-data.js';
 import { BIOMES } from '../content/biomes.js';
 
 /**
@@ -19,7 +19,14 @@ export const FEATURE_TYPES = Object.freeze(['thicket', 'boulders', 'pond', 'clea
 /** Dressing kinds added by the planes of design §7. */
 export const BIOME_FEATURE_TYPES = Object.freeze(['tower', 'bridge', 'bloom', 'stall', 'weir']);
 
-const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall']);
+/**
+ * Dressing kinds added by the soil under the great root (docs/animal-lives-story.md
+ * ch.2): `rootwall` is hard root nobody passes, `burrow` is soft soil only a
+ * tunnelling body passes, `pebble` is loose stone that blocks no one.
+ */
+export const BURROW_FEATURE_TYPES = Object.freeze(['rootwall', 'burrow', 'pebble']);
+
+const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall']);
 
 function featureRadius(type, rng) {
   if (type === 'boulders') return 36 + rng() * 14;
@@ -30,6 +37,9 @@ function featureRadius(type, rng) {
   if (type === 'bloom') return 30 + rng() * 10;
   if (type === 'stall') return 44 + rng() * 10;
   if (type === 'weir') return 58;
+  if (type === 'rootwall') return BURROW.wallRadius;
+  if (type === 'burrow') return BURROW.gapRadius;
+  if (type === 'pebble') return 18 + rng() * 10;
   return 62;
 }
 
@@ -54,6 +64,7 @@ export function waterAt(features, x, y) {
 export function blockedAt(features, x, y, abilities = {}) {
   if (abilities.flying === true) return false;
   return features.some((feature) => {
+    if (feature.type === 'burrow') return abilities.burrow !== true && featureAt(feature, x, y);
     if (!SOLID_TYPES.has(feature.type)) return false;
     if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
     if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
@@ -67,8 +78,56 @@ function mayPlace(type, x, y, radius) {
   if (dist(x, y, SALA.x, SALA.y) < SALA.r + 60) return false;
   // Never cover the road itself; dressing sits beside it.
   if (distToPoly(PATH, x, y) < radius + MARGIN_FROM_PATH) return false;
+  // Never crowd the root chamber, or a seed could seal its own tunnel.
+  if (dist(x, y, BURROW_KEEPOUT.x, BURROW_KEEPOUT.y) < BURROW_KEEPOUT.r + radius) return false;
   void type;
   return true;
+}
+
+/**
+ * The root chamber (docs/animal-lives-story.md ch.2, "ทางใต้ราก").
+ *
+ * A ring of hard root with one mouth of soft soil, placed so the mouth faces the
+ * way in. It is assembled from the fixed geometry in world/world-data.js rather
+ * than from a seed: the design requires a real burrow with a *verifiable* exit,
+ * so the shape must be the same in every world, and the validator must be able
+ * to prove that only a tunnelling body can reach the seed.
+ */
+export function assembleBurrow() {
+  const { mouth, chamber, ring, walls, wallRadius, gapRadius } = BURROW;
+  const features = [];
+  const gapAngle = Math.atan2(mouth.y - chamber.y, mouth.x - chamber.x);
+  const step = TAU / (walls + 2);
+
+  // Hard root all the way round except the mouth: slots 1.5 .. walls + 0.5.
+  for (let k = 0; k < walls; k++) {
+    const angle = gapAngle + (k + 1.5) * step;
+    features.push({
+      i: features.length,
+      type: 'rootwall',
+      fixed: true,
+      x: chamber.x + Math.cos(angle) * ring,
+      y: chamber.y + Math.sin(angle) * ring,
+      r: wallRadius,
+    });
+  }
+
+  // Soft soil plugs the mouth: three overlapping circles so no walking body can
+  // squeeze through the ~167px opening, while a tunnelling body passes freely.
+  const face = { x: Math.cos(gapAngle), y: Math.sin(gapAngle) };
+  const side = { x: -face.y, y: face.x };
+  for (const offset of [-40, 0, 40]) {
+    features.push({
+      i: features.length,
+      type: 'burrow',
+      fixed: true,
+      x: chamber.x + face.x * ring + side.x * offset,
+      y: chamber.y + face.y * ring + side.y * offset,
+      r: gapRadius,
+    });
+  }
+
+  return features;
 }
 
 /** Assemble the seed's dressing: the plane's own kinds beside the true path. */
@@ -91,10 +150,19 @@ export function assembleRooms(seed, biomeId = 'memory-forest') {
     }
   }
 
+  // The soil under the great root carries the earthworm's first life.
+  if (BIOMES[biomeId] && BIOMES[biomeId].site === 'burrow') {
+    for (const feature of assembleBurrow()) features.push({ ...feature, i: features.length });
+  }
+
   // Occasionally silt builds up in the river — which the route check must catch.
   if (rng() < 0.35) {
     const point = RIVER[1 + ((rng() * (RIVER.length - 2)) | 0)];
-    features.push({ i: features.length, type: 'boulders', x: point[0], y: point[1], r: 60 + rng() * 40 });
+    // Marked as river silt: it is the one dressing every plane inherits.
+    features.push({
+      i: features.length, type: 'boulders', silt: true,
+      x: point[0], y: point[1], r: 60 + rng() * 40,
+    });
   }
 
   return features;
@@ -182,8 +250,66 @@ export function validateRoute(features, formId, abilities = {}) {
   return { ok: false, reachable: visited, cells: cols * rows };
 }
 
-/** Try seeds until one validates for this form; fall back to an empty world. */
-export function buildDynamicWorld(seed, formId, abilities = {}, biomeId = 'memory-forest') {
+/** Can `to` be reached from `from` on the coarse grid, at these abilities? */
+function reachableBetween(features, from, to, abilities) {
+  const pad = 260;
+  const minX = Math.min(from.x, to.x) - pad;
+  const minY = Math.min(from.y, to.y) - pad;
+  const cols = Math.ceil((Math.abs(from.x - to.x) + pad * 2) / GRID_CELL);
+  const rows = Math.ceil((Math.abs(from.y - to.y) + pad * 2) / GRID_CELL);
+
+  const index = (c, r) => r * cols + c;
+  const blocked = new Uint8Array(cols * rows);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = minX + c * GRID_CELL + GRID_CELL / 2;
+      const y = minY + r * GRID_CELL + GRID_CELL / 2;
+      blocked[index(c, r)] = blockedAt(features, x, y, abilities) ? 1 : 0;
+    }
+  }
+
+  const toCell = (point) => ({
+    c: Math.floor((point.x - minX) / GRID_CELL),
+    r: Math.floor((point.y - minY) / GRID_CELL),
+  });
+  const start = nearestFreeCell(blocked, cols, rows, toCell(from));
+  const goal = nearestFreeCell(blocked, cols, rows, toCell(to));
+  if (!start || !goal) return false;
+
+  const seen = new Uint8Array(cols * rows);
+  const queue = [start];
+  seen[index(start.c, start.r)] = 1;
+  while (queue.length) {
+    const cell = queue.shift();
+    if (cell.c === goal.c && cell.r === goal.r) return true;
+    for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const c = cell.c + dc;
+      const r = cell.r + dr;
+      if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
+      const i = index(c, r);
+      if (blocked[i] || seen[i]) continue;
+      seen[i] = 1;
+      queue.push({ c, r });
+    }
+  }
+  return false;
+}
+
+/**
+ * Prove the burrow is a real tunnel (docs/animal-lives-story.md "ทางออกที่ตรวจสอบได้"):
+ * a tunnelling body reaches the seed chamber from the mouth, and a walking body
+ * — same world, same start — cannot, because the root ring is unbroken otherwise.
+ * Flyers are excluded from both runs: a bird may drop in from above, which is a
+ * different road than the soil's.
+ */
+export function validateBurrowExit(features, abilities = {}) {
+  const base = { ...abilities, flying: false };
+  const burrowReaches = reachableBetween(features, BURROW.mouth, BURROW.chamber, { ...base, burrow: true });
+  const walkerReaches = reachableBetween(features, BURROW.mouth, BURROW.chamber, { ...base, burrow: false });
+  return { ok: burrowReaches && !walkerReaches, burrowReaches, walkerReaches };
+}
+
+/** Try seeds until one validates for this form; fall back to an empty world. */export function buildDynamicWorld(seed, formId, abilities = {}, biomeId = 'memory-forest') {
   for (let attempt = 0; attempt < MAX_SEED_TRIES; attempt++) {
     const trySeed = (seed + attempt) >>> 0;
     const features = assembleRooms(trySeed, biomeId);

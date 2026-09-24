@@ -9,6 +9,7 @@ import {
 import { chapterById, CHAPTERS, loadChapter } from '../game/chapters.js';
 import { initAudio, playBell } from '../systems/audio.js';
 import { $ } from './dom.js';
+import { showLifeSummary } from './life-summary.js';
 
 const container = $('#saveSlots');
 
@@ -30,8 +31,10 @@ function openSlot(slot) {
     return;
   }
   applySaveMeta(data);
+  applySaveRuntime(data);
   loadChapter(data.chapter, { autosave: false });
   applySaveRuntime(data);
+  if (data.lifeMode && !data.liberated && data.lifeLog?.some(entry => entry.lifeId === data.lifeId)) showLifeSummary();
 }
 
 export function renderSaveSlots() {

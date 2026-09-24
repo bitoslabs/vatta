@@ -1,11 +1,13 @@
 'use strict';
 
 import { state } from '../core/state.js';
+import { MODE } from '../core/constants.js';
+import { saveRun } from '../systems/save.js';
 import { on, EVENTS } from '../core/events.js';
 import { initAudio, playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { formAbilityKey, formNameKey } from '../content/forms.js';
-import { PROTOTYPE_LIVES, advanceLife, isJourneyComplete, isPrototypeComplete, recordLife, startLifeMode, summariseLife } from '../systems/life.js';
+import { advanceLife, isJourneyComplete, isPrototypeComplete, nextLifePlan, recordLife, startLifeMode, summariseLife } from '../systems/life.js';
 import { loadChapter, CHAPTERS } from '../game/chapters.js';
 import { setTeacher } from '../systems/teacher.js';
 import { openMirrorCourt } from './mirror-court.js';
@@ -14,6 +16,29 @@ import { $ } from './dom.js';
 const overlay = $('#lifeSummary');
 const body = $('#lifeSummaryBody');
 const rebornButton = $('#lifeReborn');
+let timer = null;
+let shownLife = null;
+let seconds = 5;
+let paused = false;
+
+function stopTimer() { clearInterval(timer); timer = null; }
+function continueLife() {
+  if (shownLife !== state.lifeId || overlay.classList.contains('hidden')) return;
+  stopTimer(); shownLife = null;
+  if (isPrototypeComplete()) { finishJourney(); return; }
+  overlay.classList.add('hidden');
+  advanceLife();
+}
+function beginTimer() {
+  stopTimer();
+  timer = setInterval(() => {
+    if (!state.lifeMode || shownLife !== state.lifeId || state.mode !== MODE.END) { stopTimer(); return; }
+    if (document.hidden || paused) return;
+    seconds -= 1;
+    if (seconds <= 0) continueLife();
+    else renderLifeSummary();
+  }, 1000);
+}
 
 function row(label, value) {
   const line = document.createElement('div');
@@ -45,9 +70,15 @@ export function renderLifeSummary() {
   const yesNo = (value) => t(value ? 'life.yes' : 'life.no');
 
   body.appendChild(group(t('life.group.life')));
-  body.appendChild(row(t('life.number'), `${summary.lifeId}/${PROTOTYPE_LIVES}`));
+  body.appendChild(row(t('life.number'), String(summary.lifeId)));
   body.appendChild(row(t('life.form'), t(formNameKey(summary.formId))));
   body.appendChild(row(t('life.ability'), t(formAbilityKey(summary.formId))));
+  if (!isPrototypeComplete()) {
+    const next = nextLifePlan();
+    body.appendChild(row(t('life.next'), `${t(formNameKey(next.formId))} · ${t(`chapter${next.chapter}.name`)}`));
+  }
+  body.appendChild(row(t('life.auto'), paused ? t('life.paused') : t('life.countdown', { seconds })));
+  $('#lifeClose').textContent = t(paused ? 'life.resume' : 'life.pause');
 
   body.appendChild(group(t('life.group.record')));
   body.appendChild(row(t('life.helped'), yesNo(summary.helped)));
@@ -62,10 +93,18 @@ export function renderLifeSummary() {
 }
 
 export function showLifeSummary() {
+  if (!state.lifeMode || state.liberated || state.journeyComplete) return;
+  if (shownLife === state.lifeId && !overlay.classList.contains('hidden')) return;
+  state.mode = MODE.END;
+  state.interact = null;
+  shownLife = state.lifeId;
+  seconds = 5; paused = false;
   recordLife();
+  saveRun();
   renderLifeSummary();
   overlay.classList.remove('hidden');
   if (typeof playBell === 'function') playBell();
+  beginTimer();
 }
 
 function finishJourney() {
@@ -100,17 +139,15 @@ export function initLifeSummary() {
   if (rebornButton) {
     rebornButton.addEventListener('click', (e) => {
       e.target.blur();
-      if (isPrototypeComplete()) {
-        finishJourney();
-        return;
-      }
-      overlay.classList.add('hidden');
-      advanceLife();
+      continueLife();
     });
   }
 
   const close = $('#lifeClose');
-  if (close) close.addEventListener('click', () => overlay.classList.add('hidden'));
+  if (close) close.addEventListener('click', () => {
+    paused = !paused;
+    renderLifeSummary();
+  });
 
   // A water-bound life cannot reach the temple; its river goal ends the life.
   on(EVENTS.LIFE_COMPLETE, () => {

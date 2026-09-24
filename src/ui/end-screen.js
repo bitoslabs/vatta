@@ -98,8 +98,7 @@ function renderRebirth() {
 
 export function showEndScreen() {
   // Multi-life prototype: a chapter does not end the run — the life does.
-  if (state.lifeMode === true) {
-    state.mode = MODE.WORLD;
+  if (state.lifeMode === true && !state.liberated) {
     showLifeSummary();
     return;
   }
@@ -107,7 +106,7 @@ export function showEndScreen() {
   renderEndText();
 
   const next = nextChapterId(state.chapter);
-  nextBtn.classList.toggle('hidden', next === null);
+  nextBtn.classList.toggle('hidden', next === null || state.liberated);
   nextBtn.dataset.next = next === null ? '' : String(next);
 
   endScreen.classList.remove('hidden');

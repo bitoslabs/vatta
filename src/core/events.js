@@ -49,6 +49,8 @@ export const EVENTS = Object.freeze({
   PROJECTOR_TOGGLE: 'projector:toggle',
   /** Payload: the new form id (see content/forms.js). */
   FORM_CHANGED: 'form:changed',
-  /** Payload: the goal kind ('water' | 'land') when a life's goal is reached. */
+  /** Payload: the goal kind ('water' | 'land' | 'burrow') when a life's goal is reached. */
   LIFE_COMPLETE: 'life:complete',
+  /** Payload: the world-effect code a life has just left behind (see systems/world-effects.js). */
+  EFFECT_RECORDED: 'world:effect-recorded',
 });

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="th">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ห้องทดลองตัวละคร · วิมุตติ</title>
+<style>
+  * { box-sizing: border-box; } body { margin: 0; background: #101e1c; color: #f0e8d4; font: 17px/1.7 system-ui,sans-serif; }
+  main { max-width: 1060px; margin: auto; padding: 24px; } h1 { margin-bottom: 4px; font-size: 28px; }
+  p { color: #c1cfc3; } a { color: #efcf8b; } .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
+  select,button { font: inherit; color: inherit; background: #263d35; border: 1px solid #6e8974; border-radius: 10px; padding: 9px 15px; }
+  button { cursor: pointer; touch-action: none; } :focus-visible { outline: 3px solid #edc87e; outline-offset: 3px; }
+  canvas { width: 100%; display: block; background: #e6dec8; border-radius: 18px; touch-action: none; }
+  .pad { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 16px; } .pad button { min-width: 58px; }
+  #status { min-height: 2em; } small { color: #c1cfc3; }
+</style>
+<main>
+  <a href="./index.html">← กลับเกม</a>
+  <h1>ห้องทดลองตัวละคร</h1>
+  <p>ตัวละครแบบเรียบง่าย วาดด้วยเส้นและรูปทรงจากโค้ด · ครบ 18 ร่าง พร้อมท่าทดลองเฉพาะตัว</p>
+  <div class="controls">
+    <label for="form">ร่าง</label><select id="form"></select>
+    <label for="scale">ขนาด</label><select id="scale"><option value="1">จริง ×1</option><option value="2">×2</option><option value="3" selected>×3</option><option value="4">×4</option></select>
+    <label for="ground">พื้น</label><select id="ground"><option value="forest">ลานป่า</option><option value="grid" selected>ตาราง</option></select>
+    <button id="action">กระโดด</button><button id="reset">กลับจุดเริ่ม</button>
+  </div>
+  <p id="description"></p>
+  <small id="asset-status" role="status">ภาพวาดด้วยโค้ด</small>
+  <canvas id="stage" width="960" height="480" tabindex="0" aria-label="พื้นที่ทดลอง ใช้ปุ่มลูกศรหรือ WASD เดิน และ J ทดลองท่าทาง"></canvas>
+  <div class="pad" aria-label="ปุ่มเคลื่อนที่">
+    <button data-key="arrowleft" aria-label="ซ้าย">←</button><button data-key="arrowup" aria-label="ขึ้น">↑</button><button data-key="arrowdown" aria-label="ลง">↓</button><button data-key="arrowright" aria-label="ขวา">→</button>
+  </div>
+  <p id="status" role="status"></p>
+  <small>คลิกพื้นที่ทดลองแล้วใช้ WASD / ลูกศร · J หรือปุ่มท่าพิเศษ · ทุกตัววาดและขยับด้วยโค้ด ไม่ใช้ภาพที่สร้างด้วย AI · ขนาดขยายเพื่อดูรายละเอียด ไม่ใช่สัดส่วนจริงระหว่างชนิด · ท่าพิเศษทดลองเฉพาะในหน้านี้ ยังไม่เชื่อมด่านหลักหรือเซฟเกม</small>
+</main>
+<script type="module" src="./src/prototypes/character-lab.js"></script>
+</html>

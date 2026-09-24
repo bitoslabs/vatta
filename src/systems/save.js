@@ -5,6 +5,7 @@ import { exportKarma, importKarma } from './karma.js';
 import { exportEchoes, importEchoes } from './karma-memory.js';
 import { exportPath, importPath } from './path.js';
 import { exportPrecepts, importPrecepts } from './precepts.js';
+import { sanitiseEffects } from './world-effects.js';
 
 const VERSION = 1;
 const SLOTS = 3;
@@ -64,7 +65,11 @@ export function snapshot() {
     formId: state.formId,
     formHistory: [...state.formHistory],
     lifeLog: state.lifeLog.map((entry) => ({ ...entry })),
-    world: { ...state.world },
+    world: {
+      ...state.world,
+      removed: Array.isArray(state.world.removed) ? [...state.world.removed] : [],
+      effects: sanitiseEffects(state.world.effects),
+    },
     liberated: state.liberated,
     journeyComplete: state.journeyComplete === true,
     stats: { ...state.stats },
@@ -174,6 +179,7 @@ export function applySaveRuntime(data) {
     ...(data.world || {}),
   };
   state.world.removed = Array.isArray(state.world.removed) ? state.world.removed.filter((i) => Number.isInteger(i)) : [];
+  state.world.effects = sanitiseEffects(data.world && data.world.effects);
   state.liberated = Boolean(data.liberated);
   state.journeyComplete = Boolean(data.journeyComplete);
 }

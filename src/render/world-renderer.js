@@ -20,9 +20,10 @@ import { renderLighting, shakeOffset } from './lighting.js';
 import { drawEncounter, drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, drawTeacherLabel, drawTemple, drawTourMarker, drawTree } from './sprites.js';
 import { getLures } from '../game/lures.js';
 import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
+import { burrowSite, rootWatered } from '../game/burrow.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome } from '../systems/biome.js';
-import { getForm, isWaterBound } from '../systems/forms.js';
+import { getForm, isWaterBound, canBurrow } from '../systems/forms.js';
 import { goalFor } from '../systems/goals.js';
 import { GUARDIAN } from '../game/npc.js';
 import { ENCOUNTERS } from '../content/encounters.js';
@@ -55,6 +56,7 @@ export function renderWorld() {
   drawWorldMemory(dawn);
   drawPaths(dawn);
   drawDynamicRooms(dawn);
+  drawBurrow(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -166,6 +168,80 @@ function drawDynamicRooms(dawn) {
       ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.7, 0, 0, TAU);
       ctx.fill();
     }
+  }
+}
+
+/**
+ * The soil under the great root (docs/animal-lives-story.md ch.2): hard root the
+ * road bends around, the soft mouth a tunnelling body passes, loose pebbles, and
+ * the seed inside the chamber that waters the root when it is reached.
+ */
+function drawBurrow(dawn) {
+  const features = dynamicFeatures();
+  // The chamber only exists where the soil is this life's plane.
+  const hasChamber = features.some((feature) => feature.type === 'rootwall' && feature.fixed === true);
+
+  for (const feature of features) {
+    if (feature.type === 'rootwall') {
+      ctx.fillStyle = dawn ? '#4a3620' : '#241a10';
+      ctx.beginPath();
+      ctx.arc(feature.x, feature.y, feature.r, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = dawn ? 'rgba(120,96,58,.5)' : 'rgba(150,116,68,.35)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(feature.x, feature.y, feature.r * 0.72, 0, TAU);
+      ctx.stroke();
+    } else if (feature.type === 'burrow') {
+      ctx.fillStyle = dawn ? 'rgba(58,42,26,.85)' : 'rgba(26,18,10,.9)';
+      ctx.beginPath();
+      ctx.arc(feature.x, feature.y, feature.r, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(190,160,110,.22)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath();
+      ctx.arc(feature.x, feature.y, feature.r * 0.8, 0, TAU);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else if (feature.type === 'pebble') {
+      ctx.fillStyle = dawn ? 'rgba(120,112,96,.5)' : 'rgba(80,74,62,.6)';
+      ctx.beginPath();
+      ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.68, 0, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  if (!hasChamber) return;
+
+  // The way in, and the seed waiting at the end of it.
+  const { mouth, chamber } = burrowSite();
+  ctx.strokeStyle = 'rgba(200,170,120,.35)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(mouth.x, mouth.y, 26, 17, 0, 0, TAU);
+  ctx.stroke();
+
+  const stored = rootWatered();
+  const glow = stored ? 'rgba(198,232,206,.5)' : 'rgba(214,190,120,.42)';
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.ellipse(chamber.x, chamber.y, 9, 6, 0.6, 0, TAU);
+  ctx.fill();
+  ctx.strokeStyle = stored ? 'rgba(198,232,206,.5)' : 'rgba(214,190,120,.28)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(chamber.x, chamber.y, 26 + Math.sin(performance.now() * 0.002) * 3, 0, TAU);
+  ctx.stroke();
+  if (stored) {
+    ctx.strokeStyle = 'rgba(160,210,150,.75)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(chamber.x, chamber.y - 4);
+    ctx.quadraticCurveTo(chamber.x - 6, chamber.y - 22, chamber.x - 13, chamber.y - 26);
+    ctx.moveTo(chamber.x, chamber.y - 4);
+    ctx.quadraticCurveTo(chamber.x + 6, chamber.y - 22, chamber.x + 13, chamber.y - 26);
+    ctx.stroke();
   }
 }
 
@@ -325,7 +401,7 @@ function drawTeacherOverlay() {
 
 /** A pulsing ring over this life's goal (a fish's river pool, for instance). */
 function drawLifeGoal() {
-  if (!state.lifeMode || !isWaterBound()) return;
+  if (!state.lifeMode || !(isWaterBound() || canBurrow())) return;
   const goal = goalFor();
   drawTourMarker(goal.x, goal.y);
 }

@@ -25,6 +25,17 @@ export const BIOMES = Object.freeze({
     features: ['thicket', 'boulders', 'pond', 'clearing'],
     site: null,
   },
+  'under-root': {
+    nameKey: 'biome.root.name',
+    descKey: 'biome.root.desc',
+    ground: 'rgba(46,30,16,.5)',
+    water: '#2a1d12',
+    waterCore: '#3b2a18',
+    veil: 'rgba(120,92,52,.05)',
+    ambient: 0.9,
+    features: ['rootwall', 'pebble', 'clearing', 'burrow'],
+    site: 'burrow',
+  },
   woeful: {
     nameKey: 'biome.woeful.name',
     descKey: 'biome.woeful.desc',

@@ -1,6 +1,8 @@
 'use strict';
 
 import { TAU } from '../core/constants.js';
+import { ANIMALS as ANIMAL_CATALOG } from '../prototypes/animal-catalog.js';
+import { drawAnimalVector } from './animal-vectors.js';
 
 /**
  * Form silhouettes and locomotion (design §10).
@@ -290,7 +292,8 @@ export function drawFormBody(ctx, formId, x, y, options = {}) {
   const palette = PALETTES[formId] || DEFAULT_PALETTE;
 
   // Flyers lift off the ground and cast a smaller, offset shadow.
-  const lift = o.kind === 'fly' ? 10 + Math.sin(phase * 2) * 1.6 : 0;
+  const lift = (o.kind === 'fly' ? 10 + Math.sin(phase * 2) * 1.6 : 0)
+    + Math.max(0, Number(options.lift) || 0);
   const sink = o.kind === 'swim' ? 4 : 0;
 
   ctx.save();
@@ -367,3 +370,40 @@ export function drawFormAura(ctx, formId, x, y, phase) {
 }
 
 export const FORM_PALETTES = PALETTES;
+
+/**
+ * The lab roster, drawn in the main game (docs/animal-lives-story.md,
+ * character-lab.html).
+ *
+ * The eight animals added for the animal lives keep their one source of art:
+ * src/render/animal-vectors.js, the same procedural paths the character lab
+ * exercises. Nothing is re-drawn here, so a body looks identical in the lab and
+ * on the road, and `drawFormBody` keeps owning the shadow, the lift and the
+ * chest light for every form.
+ */
+const LAB_ANIMALS = new Map(ANIMAL_CATALOG.map((animal) => [animal.id, animal]));
+
+const LAB_PALETTES = {
+  worm: { robe: 'rgba(202,145,128,1)', skin: 'rgba(168,107,96,1)', trim: 'rgba(233,217,160,.6)' },
+  ant: { robe: 'rgba(121,80,59,1)', skin: 'rgba(152,100,70,1)', trim: 'rgba(233,217,160,.6)' },
+  frog: { robe: 'rgba(134,168,94,1)', skin: 'rgba(101,135,85,1)', trim: 'rgba(233,217,160,.6)' },
+  snake: { robe: 'rgba(142,170,105,1)', skin: 'rgba(89,111,71,1)', trim: 'rgba(233,217,160,.6)' },
+  rabbit: { robe: 'rgba(194,171,140,1)', skin: 'rgba(177,155,125,1)', trim: 'rgba(233,217,160,.6)' },
+  elephant: { robe: 'rgba(142,158,152,1)', skin: 'rgba(122,145,138,1)', trim: 'rgba(233,217,160,.6)' },
+  tiger: { robe: 'rgba(209,162,99,1)', skin: 'rgba(196,147,83,1)', trim: 'rgba(233,217,160,.6)' },
+  owl: { robe: 'rgba(157,142,114,1)', skin: 'rgba(140,126,102,1)', trim: 'rgba(233,217,160,.6)' },
+};
+
+for (const [id, animal] of LAB_ANIMALS) {
+  PALETTES[id] = LAB_PALETTES[id] || DEFAULT_PALETTE;
+  SHAPES[id] = (ctx, x, y, o) => {
+    ctx.save();
+    ctx.translate(x, y);
+    drawAnimalVector(ctx, { ...animal, duration: 1 }, {
+      phase: o.phase,
+      face: o.face,
+      action: o.acting ? Math.max(0, Math.min(1, o.act)) : 0,
+    }, o.moving, { shadow: false });
+    ctx.restore();
+  };
+}

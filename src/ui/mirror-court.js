@@ -5,7 +5,7 @@ import { on, EVENTS } from '../core/events.js';
 import { t } from '../systems/i18n.js';
 import { formNameKey } from '../content/forms.js';
 import {
-  GUIDED_LIVES, favouriteForm, getLifeLog, journeyReadiness, recordJourneyComplete,
+  GUIDED_LIVES, advanceLife, favouriteForm, getLifeLog, journeyReadiness, recordJourneyComplete,
 } from '../systems/life.js';
 import { showEndScreen } from './end-screen.js';
 import { $ } from './dom.js';
@@ -94,7 +94,8 @@ function finish(liberated) {
 
 /** The māra's bargain: keep the form and power you loved, and stay in the round. */
 function keepFavouriteForm() {
-  finish(false);
+  overlay.classList.add('hidden');
+  advanceLife();
 }
 
 /** The mirror slowly stops reflecting: three closing lines, then the end card. */
@@ -131,10 +132,10 @@ export function initMirrorCourt() {
   }
 
   const stay = $('#courtStay');
-  if (stay) stay.addEventListener('click', () => overlay.classList.add('hidden'));
+  if (stay) stay.addEventListener('click', keepFavouriteForm);
 
   const close = $('#courtClose');
-  if (close) close.addEventListener('click', () => overlay.classList.add('hidden'));
+  if (close) close.addEventListener('click', keepFavouriteForm);
 
   const epilogueDone = $('#journeyEndDone');
   if (epilogueDone) {

@@ -6,6 +6,7 @@ import { t } from '../systems/i18n.js';
 import { applySaveMeta, applySaveRuntime, readSave } from '../systems/save.js';
 import { CHAPTERS, chapterById, loadChapter } from '../game/chapters.js';
 import { $ } from './dom.js';
+import { showLifeSummary } from './life-summary.js';
 
 function startChapter(id) {
   initAudio();
@@ -23,8 +24,10 @@ function resumeRun() {
   initAudio();
   playBell();
   applySaveMeta(data);
+  applySaveRuntime(data);
   loadChapter(data.chapter, { autosave: false });
   applySaveRuntime(data);
+  if (data.lifeMode && !data.liberated && data.lifeLog?.some(entry => entry.lifeId === data.lifeId)) showLifeSummary();
 }
 
 export function initTitleScreen() {

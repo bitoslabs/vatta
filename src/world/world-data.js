@@ -21,6 +21,46 @@ export const RIVER_WIDTH = 95;
 export const FALSE_A = [[2250, 1180], [2280, 860], [2380, 560], [2470, 340]];
 export const FALSE_B = [[3120, 1650], [3260, 1980], [3420, 2280]];
 
+/**
+ * The great root behind the temple, and its sealed seed chamber
+ * (docs/animal-lives-story.md ch.2, "ทางใต้ราก").
+ *
+ * The chamber is a ring of hard root with a single mouth of soft soil: a body
+ * that can tunnel enters and reaches the seed inside; a walking body cannot get
+ * in at all. `world/rooms.js#validateBurrowExit` proves both halves, and
+ * `game/burrow.js` records the `root-watered` effect when the seed is reached.
+ */
+export const BURROW = Object.freeze({
+  mouth: Object.freeze({ x: 700, y: 1120 }),
+  chamber: Object.freeze({ x: 520, y: 900 }),
+  ring: 150,
+  walls: 14,
+  wallRadius: 46,
+  gapRadius: 42,
+  exitRadius: 92,
+});
+
+/** Keep seeded dressing out of the chamber, or the ring could leak. */
+export const BURROW_KEEPOUT = Object.freeze({
+  x: BURROW.chamber.x,
+  y: BURROW.chamber.y,
+  r: BURROW.ring + 130,
+});
+
+/**
+ * The way in: a clear approach from the temple gate to the mouth and down to the
+ * seed. Tree scatter keeps off this line, so a slow body is never walled out of
+ * the only route its life has (the design's rule that no body is born where it
+ * cannot finish).
+ */
+export const BURROW_APPROACH = Object.freeze([
+  Object.freeze([1120, 1560]),
+  Object.freeze([900, 1340]),
+  Object.freeze([760, 1180]),
+  Object.freeze([BURROW.mouth.x, BURROW.mouth.y]),
+  Object.freeze([BURROW.chamber.x, BURROW.chamber.y]),
+]);
+
 const makeGateParts = () => Array.from({ length: 14 }, () => ({
   a: rng() * TAU,
   r: 40 + rng() * 55,
@@ -73,6 +113,9 @@ export const TREES = (() => {
     if (distToPoly(PATH, x, y) < 135) continue;
     if (distToPoly(FALSE_A, x, y) < 92) continue;
     if (distToPoly(FALSE_B, x, y) < 92) continue;
+    // Leave the road to the seed clear: roots, not trunks, own this ground.
+    if (dist(x, y, BURROW_KEEPOUT.x, BURROW_KEEPOUT.y) < BURROW_KEEPOUT.r) continue;
+    if (distToPoly(BURROW_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }
