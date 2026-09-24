@@ -2,7 +2,7 @@
 
 import { state } from '../core/state.js';
 import { getKarmaMemory } from './karma-memory.js';
-import { getForm, isWaterBound, setForm, canBurrow } from './forms.js';
+import { getForm, isWaterBound, setForm } from './forms.js';
 import { planNextLife } from './life-route.js';
 import { addFloater } from './effects.js';
 import { goalFor } from './goals.js';
@@ -131,23 +131,21 @@ export function advanceLife() {
   state.formHistory.push(next.formId);
   loadChapter(next.chapter);
 
-  if (isWaterBound()) {
+  // A life whose end is not the temple is told where it can go (systems/goals.js).
+  const form = getForm();
+  const lifeGoal = isWaterBound() ? 'water' : (form.lifeGoal || 'land');
+  const hint = {
+    water: { key: 'life.goal.water', color: '#9fc6dd' },
+    seed: { key: 'life.goal.burrow', color: '#c9a97a' },
+    nest: { key: 'life.goal.nest', color: '#d7bd8c' },
+  }[lifeGoal];
+  if (hint) {
     const goal = goalFor();
     addFloater(
       (player.x + goal.x) / 2,
       Math.min(player.y, goal.y) - 120,
-      t('life.goal.water'),
-      '#9fc6dd',
-      15,
-    );
-  } else if (canBurrow()) {
-    // A tunnelling body cannot use the road at all: its life ends under the root.
-    const goal = goalFor();
-    addFloater(
-      (player.x + goal.x) / 2,
-      Math.min(player.y, goal.y) - 120,
-      t('life.goal.burrow'),
-      '#c9a97a',
+      t(hint.key),
+      hint.color,
       15,
     );
   }

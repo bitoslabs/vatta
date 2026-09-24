@@ -3,7 +3,7 @@
 import { TAU, TEMPLE, SALA, WORLD } from '../core/constants.js';
 import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
-import { BURROW, BURROW_KEEPOUT, PATH, RIVER, RIVER_WIDTH } from './world-data.js';
+import { BURROW, BURROW_KEEPOUT, NEST, NEST_KEEPOUT, PATH, RIVER, RIVER_WIDTH } from './world-data.js';
 import { BIOMES } from '../content/biomes.js';
 
 /**
@@ -26,6 +26,12 @@ export const BIOME_FEATURE_TYPES = Object.freeze(['tower', 'bridge', 'bloom', 's
  */
 export const BURROW_FEATURE_TYPES = Object.freeze(['rootwall', 'burrow', 'pebble']);
 
+/**
+ * The nest's own kind: `crack` is a gap a small body slips through and every
+ * other body is stopped by (docs/animal-lives-story.md ch.3).
+ */
+export const NEST_FEATURE_TYPES = Object.freeze(['crack']);
+
 const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall']);
 
 function featureRadius(type, rng) {
@@ -39,6 +45,7 @@ function featureRadius(type, rng) {
   if (type === 'weir') return 58;
   if (type === 'rootwall') return BURROW.wallRadius;
   if (type === 'burrow') return BURROW.gapRadius;
+  if (type === 'crack') return NEST.crackRadius;
   if (type === 'pebble') return 18 + rng() * 10;
   return 62;
 }
@@ -65,6 +72,7 @@ export function blockedAt(features, x, y, abilities = {}) {
   if (abilities.flying === true) return false;
   return features.some((feature) => {
     if (feature.type === 'burrow') return abilities.burrow !== true && featureAt(feature, x, y);
+    if (feature.type === 'crack') return abilities.small !== true && featureAt(feature, x, y);
     if (!SOLID_TYPES.has(feature.type)) return false;
     if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
     if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
@@ -80,6 +88,8 @@ function mayPlace(type, x, y, radius) {
   if (distToPoly(PATH, x, y) < radius + MARGIN_FROM_PATH) return false;
   // Never crowd the root chamber, or a seed could seal its own tunnel.
   if (dist(x, y, BURROW_KEEPOUT.x, BURROW_KEEPOUT.y) < BURROW_KEEPOUT.r + radius) return false;
+  // Nor the ant's nest, or a trunk could close the crack.
+  if (dist(x, y, NEST_KEEPOUT.x, NEST_KEEPOUT.y) < NEST_KEEPOUT.r + radius) return false;
   void type;
   return true;
 }
@@ -104,6 +114,7 @@ export function assembleBurrow() {
     const angle = gapAngle + (k + 1.5) * step;
     features.push({
       i: features.length,
+      site: 'burrow',
       type: 'rootwall',
       fixed: true,
       x: chamber.x + Math.cos(angle) * ring,
@@ -112,18 +123,64 @@ export function assembleBurrow() {
     });
   }
 
-  // Soft soil plugs the mouth: three overlapping circles so no walking body can
-  // squeeze through the ~167px opening, while a tunnelling body passes freely.
+  // Soft soil plugs the mouth: overlapping circles so no walking body can
+  // squeeze through the opening, while a tunnelling body passes freely.
   const face = { x: Math.cos(gapAngle), y: Math.sin(gapAngle) };
   const side = { x: -face.y, y: face.x };
   for (const offset of [-40, 0, 40]) {
     features.push({
       i: features.length,
+      site: 'burrow',
       type: 'burrow',
       fixed: true,
       x: chamber.x + face.x * ring + side.x * offset,
       y: chamber.y + face.y * ring + side.y * offset,
       r: gapRadius,
+    });
+  }
+
+  return features;
+}
+
+/**
+ * The ant's nest (docs/animal-lives-story.md ch.3, "เมล็ดของใคร").
+ *
+ * Same shape of proof as the burrow, a different door: a dome of hard root whose
+ * only gap is a crack. `validateNestRoute` shows that a small body slips through
+ * and that walking bodies — and even the tunnelling earthworm — cannot.
+ */
+export function assembleNest() {
+  const { seed, chamber, ring, walls, wallRadius, crackRadius, crackPlugs } = NEST;
+  const features = [];
+  const doorAngle = Math.atan2(seed.y - chamber.y, seed.x - chamber.x);
+  const step = TAU / (walls + 2);
+
+  for (let k = 0; k < walls; k++) {
+    const angle = doorAngle + (k + 1.5) * step;
+    features.push({
+      i: features.length,
+      site: 'nest',
+      type: 'rootwall',
+      fixed: true,
+      x: chamber.x + Math.cos(angle) * ring,
+      y: chamber.y + Math.sin(angle) * ring,
+      r: wallRadius,
+    });
+  }
+
+  const face = { x: Math.cos(doorAngle), y: Math.sin(doorAngle) };
+  const side = { x: -face.y, y: face.x };
+  const plugStep = 40;
+  for (let i = 0; i < crackPlugs; i++) {
+    const offset = (i - (crackPlugs - 1) / 2) * plugStep;
+    features.push({
+      i: features.length,
+      site: 'nest',
+      type: 'crack',
+      fixed: true,
+      x: chamber.x + face.x * ring + side.x * offset,
+      y: chamber.y + face.y * ring + side.y * offset,
+      r: crackRadius,
     });
   }
 
@@ -150,9 +207,10 @@ export function assembleRooms(seed, biomeId = 'memory-forest') {
     }
   }
 
-  // The soil under the great root carries the earthworm's first life.
+  // The soil under the great root carries the earthworm's and the ant's lives.
   if (BIOMES[biomeId] && BIOMES[biomeId].site === 'burrow') {
     for (const feature of assembleBurrow()) features.push({ ...feature, i: features.length });
+    for (const feature of assembleNest()) features.push({ ...feature, i: features.length });
   }
 
   // Occasionally silt builds up in the river — which the route check must catch.
@@ -307,6 +365,20 @@ export function validateBurrowExit(features, abilities = {}) {
   const burrowReaches = reachableBetween(features, BURROW.mouth, BURROW.chamber, { ...base, burrow: true });
   const walkerReaches = reachableBetween(features, BURROW.mouth, BURROW.chamber, { ...base, burrow: false });
   return { ok: burrowReaches && !walkerReaches, burrowReaches, walkerReaches };
+}
+
+/**
+ * Prove the ant's nest is a small body's home (docs/animal-lives-story.md ch.3):
+ * a small body slips through the crack from the fallen seed, while walking
+ * bodies cannot — and neither can a tunnelling body that is not small, so the
+ * crack and the burrow stay different doors.
+ */
+export function validateNestRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false };
+  const smallReaches = reachableBetween(features, NEST.seed, NEST.chamber, { ...base, small: true });
+  const walkerReaches = reachableBetween(features, NEST.seed, NEST.chamber, { ...base, small: false, burrow: false });
+  const tunnelReaches = reachableBetween(features, NEST.seed, NEST.chamber, { ...base, small: false, burrow: true });
+  return { ok: smallReaches && !walkerReaches && !tunnelReaches, smallReaches, walkerReaches, tunnelReaches };
 }
 
 /** Try seeds until one validates for this form; fall back to an empty world. */export function buildDynamicWorld(seed, formId, abilities = {}, biomeId = 'memory-forest') {

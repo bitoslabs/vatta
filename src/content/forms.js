@@ -19,6 +19,11 @@
  * (for the beings of §6: อสุร uses strong, เทวดา walks over thickets)
  * canSpeak   flavour only for now: animals would use gestures for dialogue
  * rebirth    whether the life cycle may be born into this body at all
+ * lifeGoal   how this body's life ends (systems/goals.js):
+ *              'land'  the temple, through the chapter's own story (default)
+ *              'water' the river pool nearest home (a fish cannot walk out)
+ *              'seed'  the seed chamber under the great root (a tunnelling body)
+ *              'nest'  the ant's own nest, after carrying a seed home
  * maps       the maps that can carry this body (see systems/life-route.js):
  *              'land' the forest road · 'water' the river · 'burrow' the soil
  *              under the great root · 'air' anywhere above the ground
@@ -147,6 +152,7 @@ export const FORMS = Object.freeze([
     waterBound: true,
     canSpeak: false,
     rebirth: true,
+    lifeGoal: 'water',
     maps: ['water'],
     abilities: { flying: false, climbing: false, small: false },
   },
@@ -154,10 +160,10 @@ export const FORMS = Object.freeze([
   /*
    * The lab roster (docs/animal-lives-story.md, character-lab.html). They share
    * the same ids as src/prototypes/animal-catalog.js, so the main game and the
-   * lab draw one body from one source. Only the earthworm is born into the life
-   * cycle so far: its burrow map exists (see game/burrow.js), while the others
-   * stay `rebirth: false` until a chapter carries their body — the design's rule
-   * that no one is reborn somewhere their map cannot take them.
+   * lab draw one body from one source. The earthworm (its burrow, game/burrow.js)
+   * and the ant (its nest, game/ant.js) are born into the life cycle so far; the
+   * others stay `rebirth: false` until a chapter carries their body — the
+   * design's rule that no one is reborn somewhere their map cannot take them.
    */
   {
     id: 'worm',
@@ -168,6 +174,7 @@ export const FORMS = Object.freeze([
     canSpeak: false,
     fearGain: 1.2,
     rebirth: true,
+    lifeGoal: 'seed',
     maps: ['burrow'],
     abilities: { flying: false, climbing: false, small: false, burrow: true },
   },
@@ -178,7 +185,8 @@ export const FORMS = Object.freeze([
     vision: 10,
     waterBound: false,
     canSpeak: false,
-    rebirth: false,
+    rebirth: true,
+    lifeGoal: 'nest',
     maps: ['burrow', 'land'],
     abilities: { flying: false, climbing: true, small: true, burrow: true },
   },

@@ -48,8 +48,8 @@ const log = (message) => console.error(`[burrow] ${message}`);
 
 // ---- 1. the chamber is assembled from fixed geometry, not from a seed ----
 const underRoot = assembleRooms(4242, 'under-root');
-const walls = underRoot.filter((feature) => feature.type === 'rootwall' && feature.fixed);
-const plugs = underRoot.filter((feature) => feature.type === 'burrow' && feature.fixed);
+const walls = underRoot.filter((feature) => feature.type === 'rootwall' && feature.site === 'burrow');
+const plugs = underRoot.filter((feature) => feature.type === 'burrow' && feature.site === 'burrow');
 assert.equal(walls.length, BURROW.walls, 'the root ring has its full set of walls');
 assert(plugs.length >= 3, 'the mouth is plugged with overlapping soft soil');
 assert(plugs.every((plug) => plug.fixed), 'the soil is fixed: strength cannot lift the world shape');
@@ -190,8 +190,9 @@ for (let i = 0; i < 140; i++) {
 }
 assert(sawWorm, 'the earthworm really is born during a long journey');
 
-// the lab-only bodies wait for their maps
-for (const id of ['ant', 'frog', 'snake', 'rabbit', 'elephant', 'tiger', 'owl']) {
+// the lab-only bodies wait for their maps (the ant left this list when its nest
+// arrived — see tests/ant.test.mjs)
+for (const id of ['frog', 'snake', 'rabbit', 'elephant', 'tiger', 'owl']) {
   assert.equal(isRebirthForm(FORMS.find((form) => form.id === id)), false, `${id} waits for its chapter`);
 }
 // and a motionless walker is still the fallback for every chapter

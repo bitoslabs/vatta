@@ -40,6 +40,44 @@ export const BURROW = Object.freeze({
   exitRadius: 92,
 });
 
+/**
+ * The ant's nest and the fallen seed (docs/animal-lives-story.md ch.3,
+ * "เมล็ดของใคร").
+ *
+ * A shallow dome of hard root with one narrow crack: only a body small enough to
+ * slip through reaches the nest, and the seed lies out in the open first, so the
+ * life is an errand — pick the seed up, decide how much to leave for others, and
+ * carry it home. `world/rooms.js#validateNestRoute` proves the crack is a door
+ * for small bodies and a wall for everyone else.
+ */
+export const NEST = Object.freeze({
+  seed: Object.freeze({ x: 980, y: 1440 }),
+  chamber: Object.freeze({ x: 1300, y: 1960 }),
+  ring: 130,
+  walls: 12,
+  wallRadius: 40,
+  crackRadius: 34,
+  crackPlugs: 5,
+  seedRadius: 110,
+  goalRadius: 78,
+});
+
+/** Keep seeded dressing out of the nest ring, or the crack could leak. */
+export const NEST_KEEPOUT = Object.freeze({
+  x: NEST.chamber.x,
+  y: NEST.chamber.y,
+  r: NEST.ring + 120,
+});
+
+/** The ant's errand: gate → the fallen seed → home. Kept clear of trunks. */
+export const NEST_APPROACH = Object.freeze([
+  Object.freeze([1120, 1560]),
+  Object.freeze([1060, 1500]),
+  Object.freeze([NEST.seed.x, NEST.seed.y]),
+  Object.freeze([1200, 1720]),
+  Object.freeze([NEST.chamber.x, NEST.chamber.y]),
+]);
+
 /** Keep seeded dressing out of the chamber, or the ring could leak. */
 export const BURROW_KEEPOUT = Object.freeze({
   x: BURROW.chamber.x,
@@ -113,9 +151,11 @@ export const TREES = (() => {
     if (distToPoly(PATH, x, y) < 135) continue;
     if (distToPoly(FALSE_A, x, y) < 92) continue;
     if (distToPoly(FALSE_B, x, y) < 92) continue;
-    // Leave the road to the seed clear: roots, not trunks, own this ground.
+    // Leave the roads to the seed and the nest clear: roots, not trunks, own this ground.
     if (dist(x, y, BURROW_KEEPOUT.x, BURROW_KEEPOUT.y) < BURROW_KEEPOUT.r) continue;
     if (distToPoly(BURROW_APPROACH, x, y) < 84) continue;
+    if (dist(x, y, NEST_KEEPOUT.x, NEST_KEEPOUT.y) < NEST_KEEPOUT.r) continue;
+    if (distToPoly(NEST_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }

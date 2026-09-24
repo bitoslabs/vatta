@@ -11,12 +11,12 @@ import { FORMS, mapsFor } from '../content/forms.js';
  * because its burrow map now exists — see game/burrow.js.
  */
 export const CHAPTER_ANIMALS = [
-  ['deer', 'dog', 'crane'], ['turtle', 'dog', 'worm'],
+  ['deer', 'dog', 'crane'], ['turtle', 'dog', 'worm', 'ant'],
   ['monkey', 'butterfly', 'deer'], ['dog', 'turtle', 'crane'],
   ['butterfly', 'monkey', 'worm'], ['crane', 'dog', 'turtle'],
-  ['turtle', 'deer', 'butterfly'], ['dog', 'monkey', 'worm'],
+  ['turtle', 'deer', 'butterfly'], ['dog', 'monkey', 'worm', 'ant'],
   ['deer', 'butterfly', 'turtle'], ['monkey', 'crane', 'dog'],
-  ['crane', 'turtle', 'butterfly'], ['butterfly', 'dog', 'deer'],
+  ['crane', 'turtle', 'butterfly', 'ant'], ['butterfly', 'dog', 'deer'],
   ['turtle', 'monkey', 'crane'], ['deer', 'dog', 'butterfly'],
 ];
 

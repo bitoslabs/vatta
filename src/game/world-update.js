@@ -20,6 +20,7 @@ import { updateEchoes } from './echoes.js';
 import { updateGuardian } from './npc.js';
 import { updateEncounters } from './npc-encounters.js';
 import { updateWorldMemory } from './world-memory.js';
+import { updateAnt } from './ant.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
 import { updateTour } from '../systems/teacher.js';
@@ -56,6 +57,7 @@ export function updateWorld(dt) {
   updateGuardian();
   updateEncounters();
   updateWorldMemory();
+  updateAnt();
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);

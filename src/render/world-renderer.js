@@ -21,9 +21,10 @@ import { drawEncounter, drawGhost, drawGuardian, drawLure, drawPlayer, drawPromp
 import { getLures } from '../game/lures.js';
 import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
 import { burrowSite, rootWatered } from '../game/burrow.js';
+import { isCarrying, nestSite, seedCarried } from '../game/ant.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome } from '../systems/biome.js';
-import { getForm, isWaterBound, canBurrow } from '../systems/forms.js';
+import { getForm, isWaterBound } from '../systems/forms.js';
 import { goalFor } from '../systems/goals.js';
 import { GUARDIAN } from '../game/npc.js';
 import { ENCOUNTERS } from '../content/encounters.js';
@@ -57,6 +58,7 @@ export function renderWorld() {
   drawPaths(dawn);
   drawDynamicRooms(dawn);
   drawBurrow(dawn);
+  drawNest(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -245,6 +247,62 @@ function drawBurrow(dawn) {
   }
 }
 
+/**
+ * The ant's errand (docs/animal-lives-story.md ch.3): the fallen seed, the crack
+ * only a small body fits, and the sprouts that come up once a seed is carried
+ * home — the forest the errand planted.
+ */
+function drawNest(dawn) {
+  const features = dynamicFeatures();
+  const hasNest = features.some((feature) => feature.type === 'crack');
+  if (!hasNest) return;
+  const { seed, chamber } = nestSite();
+
+  for (const feature of features) {
+    if (feature.type !== 'crack') continue;
+    ctx.fillStyle = dawn ? 'rgba(30,22,12,.75)' : 'rgba(14,10,6,.8)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r * 0.7, feature.r * 1.15, 0, 0, TAU);
+    ctx.fill();
+  }
+
+  // The nest mound, and the way in.
+  ctx.fillStyle = dawn ? 'rgba(84,62,38,.85)' : 'rgba(38,28,16,.9)';
+  ctx.beginPath();
+  ctx.ellipse(chamber.x, chamber.y, 108, 78, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = dawn ? 'rgba(40,28,14,.8)' : 'rgba(16,11,6,.85)';
+  ctx.beginPath();
+  ctx.ellipse(chamber.x, chamber.y, 34, 24, 0, 0, TAU);
+  ctx.fill();
+
+  // The seed this life is meant to carry.
+  if (!isCarrying()) {
+    ctx.fillStyle = dawn ? 'rgba(226,200,132,.95)' : 'rgba(200,172,104,.9)';
+    for (const [dx, dy] of [[0, 0], [13, 6], [-11, 7]]) {
+      ctx.beginPath();
+      ctx.ellipse(seed.x + dx, seed.y + dy, 7, 4.6, 0.5, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  // Once carried, the route remembers: small shoots along the way home.
+  if (seedCarried()) {
+    ctx.strokeStyle = 'rgba(168,206,140,.8)';
+    ctx.lineWidth = 2;
+    for (const [offset, height] of [[0, 30], [46, 22], [-40, 26], [92, 18]]) {
+      const x = seed.x + (offset * 0.5);
+      const y = seed.y + 60 + Math.abs(offset) * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(x - 5, y - height * 0.6, x - 9, y - height);
+      ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(x + 5, y - height * 0.6, x + 9, y - height);
+      ctx.stroke();
+    }
+  }
+}
+
 /** A bridge built in an earlier life, and the debris its upkeep left behind. */
 function drawWorldMemory(dawn) {
   if (!hasBridge()) return;
@@ -401,8 +459,10 @@ function drawTeacherOverlay() {
 
 /** A pulsing ring over this life's goal (a fish's river pool, for instance). */
 function drawLifeGoal() {
-  if (!state.lifeMode || !(isWaterBound() || canBurrow())) return;
+  if (!state.lifeMode) return;
   const goal = goalFor();
+  // A land life is guided by its chapter, not by a marker.
+  if (goal.kind === 'land') return;
   drawTourMarker(goal.x, goal.y);
 }
 
