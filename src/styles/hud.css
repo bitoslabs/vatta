@@ -51,7 +51,8 @@
 #karmaReadout,
 #realmReadout,
 #pathReadout,
-#preceptReadout {
+#preceptReadout,
+#formReadout {
   margin-top: 10px;
   font-size: 11px;
   letter-spacing: 0.06em;
@@ -72,4 +73,9 @@
 #preceptReadout {
   margin-top: 4px;
   color: #8f8272;
+}
+
+#formReadout {
+  margin-top: 4px;
+  color: #8fa7b5;
 }

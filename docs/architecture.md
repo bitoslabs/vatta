@@ -27,6 +27,7 @@ src/
 ├── content/               "ข้อมูลคำสอน" ล้วน ๆ
 │   ├── karma-actions.js   11 กรรม + กุศล/อกุศล + มูล 6
 │   ├── factors.js         มรรค 8 + เงื่อนไขเปิด + ผล
+│   ├── forms.js           ร่างที่เล่นได้ (มนุษย์/กวาง/ปลา) + ความสามารถ
 │   ├── precepts.js        ศีล 5 + การกระทำที่ทำให้ขาด
 │   ├── worksheets.js      ใบงาน 6 หัวข้อ × 3 คำถาม (ห้องเรียน)
 │   └── realms.js          ภูมิ 31 (ไตรภูมิ)
@@ -39,6 +40,8 @@ src/
 │   ├── karma.js           บัญชีบุญ–บาป + กุศล–อกุศล + อนุสัย
 │   ├── karma-memory.js    กรรมในอดีต → "ความจำ" ที่โลกตอบสนอง
 │   ├── path.js            มรรค 8 — เปิดตามการปฏิบัติ + รวมผลต่อการรับรู้
+│   ├── forms.js           ร่างปัจจุบัน, ความเร็ว/การมองเห็น, แม่น้ำที่ปลาออกไม่ได้
+│   ├── life.js            วงจรชีวิต — เริ่ม/สรุปชาติ/เกิดใหม่ด้วยร่างใหม่
 │   ├── precepts.js        ศีล 5 — สถานะตามการกระทำ (ไม่ตัดสิน)
 │   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
 │   ├── save.js            บันทึก/โหลด 3 ช่อง + ชื่อรอบ (autosave + เล่นต่อ + สรุปช่อง)
@@ -46,7 +49,7 @@ src/
 │   ├── projector.js       โหมดฉายภาพ — ตัวอักษร/ป้ายใหญ่ (implies โหมดครู)
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
-│   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES
+│   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES, RIVER
 │   └── textures.js        ground/grain patterns
 ├── entities/              สิ่งมีชีวิต
 │   ├── player.js          movement, collision, safe zone
@@ -70,6 +73,7 @@ src/
 │   ├── path-notice.js     แจ้งเตือนเมื่อมรรคข้อใหม่เปิด
 │   ├── teacher-panel.js   แผงคำบรรยายโหมดครู
 │   ├── save-slots.js      แถวเลือกช่องบันทึกบนหน้า Title
+│   ├── life-summary.js    การ์ดจบชีวิต + ปุ่มเกิดใหม่
 │   ├── journey-recap.js   หน้าสรุปการเดินทาง (กรรม–มรรค–ศีล–ภูมิ)
 │   ├── worksheets.js      หน้าฉายใบงานสำหรับห้องเรียน
 │   ├── language-switcher.js

@@ -4,6 +4,7 @@ import { MODE, PATH_WIDTH, PLAYER, TEMPLE, SALA, WORLD } from '../core/constants
 import { clamp, dist, distToPoly } from '../core/math.js';
 import { state } from '../core/state.js';
 import { input, isMindful } from '../systems/input.js';
+import { inWater, isWaterBound, speedMultiplier } from '../systems/forms.js';
 import { getRealmModifier } from '../systems/samsara.js';
 import { FALSE_A, FALSE_B, PATH as TRUE_PATH, TREES } from '../world/world-data.js';
 
@@ -65,8 +66,16 @@ export function updatePlayer(dt) {
   if (!onPath) speed *= PLAYER.offPathSpeedFactor;
   speed *= getRealmModifier().speed;
 
-  player.x = clamp(player.x + ax * speed * dt, PLAYER.margin, WORLD.w - PLAYER.margin);
-  player.y = clamp(player.y + ay * speed * dt, PLAYER.margin, WORLD.h - PLAYER.margin);
+  // The form (ร่าง) decides how this terrain is crossed.
+  speed *= speedMultiplier(player.x, player.y);
+
+  const nextX = clamp(player.x + ax * speed * dt, PLAYER.margin, WORLD.w - PLAYER.margin);
+  const nextY = clamp(player.y + ay * speed * dt, PLAYER.margin, WORLD.h - PLAYER.margin);
+  const blocked = isWaterBound() && !inWater(nextX, nextY);
+  if (!blocked) {
+    player.x = nextX;
+    player.y = nextY;
+  }
   if (ax) player.face = ax > 0 ? 1 : -1;
   player.moving = magnitude > 0.1;
   if (player.moving) player.bob += dt * (running ? 11 : 6);

@@ -11,7 +11,7 @@ import { teacherLandmarks, tourTarget } from '../systems/teacher.js';
 import { floaters, screenNotes, sparks } from '../systems/effects.js';
 import { ctx, viewport } from '../systems/viewport.js';
 import { textures } from '../world/textures.js';
-import { FALSE_A, FALSE_B, FOOT, GATES, PATH, TREES } from '../world/world-data.js';
+import { FALSE_A, FALSE_B, FOOT, GATES, PATH, RIVER, RIVER_WIDTH, TREES } from '../world/world-data.js';
 import { cam } from '../game/camera.js';
 import { ghosts } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
@@ -45,6 +45,7 @@ export function renderWorld() {
   ctx.translate(Math.round(W / 2 - cam.x + shake.x), Math.round(H / 2 - cam.y + shake.y));
 
   drawGround(dawn);
+  drawRiver(dawn);
   drawPaths(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
@@ -106,6 +107,12 @@ export function renderWorld() {
 function drawGround(dawn) {
   ctx.fillStyle = dawn ? textures.groundDawn : textures.groundNight;
   ctx.fillRect(-60, -60, WORLD.w + 120, WORLD.h + 120);
+}
+
+/** The river: a dark band with a lighter core, crossed by the true path. */
+function drawRiver(dawn) {
+  drawPath(RIVER, RIVER_WIDTH * 2, dawn ? '#1b3550' : '#0a1a2c');
+  drawPath(RIVER, RIVER_WIDTH * 1.1, dawn ? '#264f70' : '#123049');
 }
 
 function drawPaths(dawn) {

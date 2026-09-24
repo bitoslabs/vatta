@@ -23,6 +23,7 @@
     <div id="realmReadout"></div>
     <div id="pathReadout"></div>
     <div id="preceptReadout"></div>
+    <div id="formReadout"></div>
   </div>
   <div id="ctrlHint" class="hidden" data-i18n="hud.controls">WASD เดิน · SHIFT วิ่ง · SPACE ค้าง ตั้งสติ · E โต้ตอบ · M เสียง</div>
 
@@ -78,6 +79,7 @@
       <button type="button" class="link-btn" id="recapBtn" data-i18n="recap.title">สรุปการเดินทาง</button>
       <button type="button" class="link-btn" id="worksheetBtn" data-i18n="ws.title">ใบงานห้องเรียน</button>
       <button type="button" class="link-btn" id="projectorBtn" data-i18n="projector.toggle.off">โหมดฉายภาพ: ปิด</button>
+      <button type="button" class="link-btn" id="lifeBtn" data-i18n="life.start">วงจรชีวิต (ต้นแบบ)</button>
     </div>
   </div>
 
@@ -158,6 +160,21 @@
         <button type="button" class="link-btn" id="recapClose" data-i18n="codex.close">ปิด</button>
       </div>
       <div id="recapBody" class="recap-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ Life summary (multi-life prototype) ============ -->
+  <div id="lifeSummary" class="hidden">
+    <div class="recap-card">
+      <div class="recap-head">
+        <div class="recap-card-title" data-i18n="life.title">จบชีวิต — สรุปชาติ</div>
+        <button type="button" class="link-btn" id="lifeClose" data-i18n="codex.close">ปิด</button>
+      </div>
+      <div id="lifeSummaryBody" class="recap-body"></div>
+      <div class="life-actions">
+        <button type="button" class="btn" id="lifeReborn" data-i18n="life.reborn">เกิดใหม่</button>
+      </div>
+      <div class="life-note" data-i18n="life.note">ต้นแบบสามชาติ: มนุษย์ → กวาง → ปลา · โลกและความจำจะถูกส่งต่อ</div>
     </div>
   </div>
 

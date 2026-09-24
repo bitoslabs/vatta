@@ -59,6 +59,10 @@ export function snapshot() {
     chapter: state.chapter,
     name: state.runName || '',
     realmId: state.realmId,
+    lifeMode: state.lifeMode === true,
+    lifeId: state.lifeId,
+    formId: state.formId,
+    formHistory: [...state.formHistory],
     liberated: state.liberated,
     stats: { ...state.stats },
     karma: exportKarma(),
@@ -155,5 +159,9 @@ export function applySaveRuntime(data) {
   state.runName = typeof data.name === 'string' ? data.name : '';
   state.stats = { ...emptyStats(), ...(data.stats || {}) };
   if (typeof data.realmId === 'string') state.realmId = data.realmId;
+  state.lifeMode = Boolean(data.lifeMode);
+  state.lifeId = Number(data.lifeId) || 1;
+  if (typeof data.formId === 'string') state.formId = data.formId;
+  state.formHistory = Array.isArray(data.formHistory) ? [...data.formHistory] : [];
   state.liberated = Boolean(data.liberated);
 }

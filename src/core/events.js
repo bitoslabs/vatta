@@ -47,4 +47,6 @@ export const EVENTS = Object.freeze({
   PROJECTOR_KEY: 'projector:key',
   /** Payload: whether projector mode is now on. */
   PROJECTOR_TOGGLE: 'projector:toggle',
+  /** Payload: the new form id (see content/forms.js). */
+  FORM_CHANGED: 'form:changed',
 });

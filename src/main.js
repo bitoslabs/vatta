@@ -16,6 +16,7 @@ import { initPathNotice } from './ui/path-notice.js';
 import { initRecap } from './ui/journey-recap.js';
 import { initSaveSlots } from './ui/save-slots.js';
 import { initWorksheets } from './ui/worksheets.js';
+import { initLifeSummary } from './ui/life-summary.js';
 import { initTeacherPanel } from './ui/teacher-panel.js';
 import { initTitleScreen } from './ui/title-screen.js';
 import { initTouchControls } from './ui/touch.js';
@@ -46,6 +47,7 @@ function bootstrap() {
   initSaveSlots();
   initRecap();
   initWorksheets();
+  initLifeSummary();
   initCodex();
   startLoop();
 }

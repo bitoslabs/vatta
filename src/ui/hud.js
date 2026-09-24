@@ -7,6 +7,7 @@ import { getKarma } from '../systems/karma.js';
 import { getRealm } from '../systems/samsara.js';
 import { unlockedCount } from '../systems/path.js';
 import { keptPreceptCount } from '../systems/precepts.js';
+import { formNameKey } from '../content/forms.js';
 import { $ } from './dom.js';
 
 const hudEl = $('#hud');
@@ -17,6 +18,7 @@ const karmaReadout = $('#karmaReadout');
 const realmReadout = $('#realmReadout');
 const pathReadout = $('#pathReadout');
 const preceptReadout = $('#preceptReadout');
+const formReadout = $('#formReadout');
 
 const FEAR_LOW = 0.3;
 const FEAR_HIGH = 0.6;
@@ -42,6 +44,7 @@ export function updateHud(mind) {
     realmReadout.textContent = t('hud.realm', { realm: t(getRealm().nameKey) });
     pathReadout.textContent = t('hud.path.count', { count: unlockedCount() });
     preceptReadout.textContent = t('hud.precept.count', { kept: keptPreceptCount() });
+    formReadout.textContent = t('hud.form', { form: t(formNameKey(state.formId)) });
 
     if (mind) {
       const quotes = tList(state.mindHintKey || 'hud.mind');

@@ -22,6 +22,11 @@ export const state = {
   projector: false,
   /** Player-chosen name for the current run (shown in slots and the recap). */
   runName: '',
+  /** Multi-life prototype: which life we are on, and in which form. */
+  lifeMode: false,
+  lifeId: 1,
+  formId: 'human',
+  formHistory: [],
   /** Locale key for the HUD meter label and the mindfulness hints. */
   meterKey: 'hud.fear',
   mindHintKey: 'hud.mind',

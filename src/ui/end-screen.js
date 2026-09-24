@@ -8,6 +8,7 @@ import { t } from '../systems/i18n.js';
 import { getKarma, activeRoots } from '../systems/karma.js';
 import { keptPreceptCount } from '../systems/precepts.js';
 import { saveRun } from '../systems/save.js';
+import { showLifeSummary } from './life-summary.js';
 import { resolveRebirth } from '../systems/rebirth.js';
 import { realmById } from '../content/realms.js';
 import { chapterById, loadChapter, nextChapterId } from '../game/chapters.js';
@@ -96,6 +97,12 @@ function renderRebirth() {
 }
 
 export function showEndScreen() {
+  // Multi-life prototype: a chapter does not end the run — the life does.
+  if (state.lifeMode === true) {
+    state.mode = MODE.WORLD;
+    showLifeSummary();
+    return;
+  }
   state.mode = MODE.END;
   renderEndText();
 

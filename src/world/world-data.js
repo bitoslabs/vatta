@@ -10,6 +10,13 @@ export const PATH = [
   [2820, 1520], [3120, 1650], [3420, 1500], [3680, 1150], [3880, 1000], [3960, 940],
 ];
 
+/** A winding river, crossed by the true path; fish lives are bound to it. */
+export const RIVER = [
+  [1520, 3000], [1420, 2430], [1620, 1930], [1310, 1420],
+  [1460, 900], [1260, 430], [1360, 0],
+];
+export const RIVER_WIDTH = 95;
+
 /** False branches that lead to light gates. */
 export const FALSE_A = [[2250, 1180], [2280, 860], [2380, 560], [2470, 340]];
 export const FALSE_B = [[3120, 1650], [3260, 1980], [3420, 2280]];
