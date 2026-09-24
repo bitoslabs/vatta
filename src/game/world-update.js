@@ -23,17 +23,17 @@ import { updateWorldMemory } from './world-memory.js';
 import { updateAnt } from './ant.js';
 import { updateFrog } from './frog.js';
 import { updateSnake } from './snake.js';
-import { inShelter, updateRabbit } from './rabbit.js';
+import { updateRabbit } from './rabbit.js';
 import { updateOwl } from './owl.js';
-import { inNestCover, updateElephant } from './elephant.js';
+import { updateElephant } from './elephant.js';
+import { updateTiger } from './tiger.js';
+import { isRestful, REST_RELIEF } from '../systems/rest.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
 import { updateTour } from '../systems/teacher.js';
 import { updateLifeGoal } from '../systems/goals.js';
 
 let heartCd = 0;
-/** Fear relief inside a warren whose shelter was shared in an earlier life. */
-const SHELTER_RELIEF = 0.18;
 
 /** Per-frame update of the explorable world scene. */
 export function updateWorld(dt) {
@@ -71,6 +71,7 @@ export function updateWorld(dt) {
   updateRabbit();
   updateOwl();
   updateElephant();
+  updateTiger();
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);
@@ -98,11 +99,10 @@ function updateFear(dt, { frozen, mind, running }) {
   else if (!player.moving) state.fear -= FEAR.idleRelief * relief * dt;
   else state.fear -= FEAR.walkRelief * relief * dt;
   if (inSafeZone(player.x, player.y)) state.fear -= FEAR.safeRelief * relief * dt;
-  // A sheltered field is felt, not just recorded: warrens opened by an earlier
-  // life settle the mind of any body that stands in them (game/rabbit.js).
-  if (inShelter(player.x, player.y)) state.fear -= SHELTER_RELIEF * relief * dt;
-  // A nest kept whole under the log is cover too (game/elephant.js).
-  if (inNestCover(player.x, player.y)) state.fear -= SHELTER_RELIEF * relief * dt;
+  // Places a past life made safe are felt, not just recorded: a warren whose
+  // shelter was shared, a nest kept whole, a hollow where a fight was left
+  // unpicked (systems/rest.js).
+  if (isRestful(player.x, player.y)) state.fear -= REST_RELIEF * relief * dt;
 
   state.fear = clamp(state.fear, 0, 1);
 }

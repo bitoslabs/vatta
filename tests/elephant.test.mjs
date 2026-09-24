@@ -200,7 +200,7 @@ for (let i = 0; i < 400; i++) {
   route = { ...next, history: [...route.history, next.formId], chapterIds };
 }
 assert.equal(sawElephant, true, 'the elephant is born during a long journey');
-assert.equal(isRebirthForm(FORMS.find((f) => f.id === 'tiger')), false, 'the tiger waits for its chapter');
+assert.equal(FORMS.every((f) => isRebirthForm(f)), true, 'every body of the roster can be reborn now');
 log('rebirth ok');
 
 console.error('ELEPHANT TEST OK — one wall with two ways, strength placed carefully, and the nests it keeps or pays for');

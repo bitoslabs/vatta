@@ -269,9 +269,7 @@ for (let i = 0; i < 300; i++) {
   route = { ...next, history: [...route.history, next.formId], chapterIds };
 }
 assert.equal(sawRabbit, true, 'the rabbit is born during a long journey');
-for (const id of ['tiger']) {
-  assert.equal(isRebirthForm(FORMS.find((f) => f.id === id)), false, `${id} waits for its chapter`);
-}
+assert.equal(FORMS.every((f) => isRebirthForm(f)), true, 'every body of the roster can be reborn now');
 log('rebirth ok');
 
 console.error('RABBIT TEST OK — warrens joined without a clock, the rim leapt, and the shelter that keeps sheltering');

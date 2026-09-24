@@ -227,9 +227,7 @@ for (let i = 0; i < 400; i++) {
   route = { ...next, history: [...route.history, next.formId], chapterIds };
 }
 assert.equal(sawOwl, true, 'the owl is born during a long journey');
-for (const id of ['tiger']) {
-  assert.equal(isRebirthForm(FORMS.find((f) => f.id === id)), false, `${id} waits for its chapter`);
-}
+assert.equal(FORMS.every((f) => isRebirthForm(f)), true, 'every body of the roster can be reborn now');
 log('rebirth ok');
 
 console.error('OWL TEST OK — the dark as the door, the lost led home, and the watch that leaves everyone more light');

@@ -41,6 +41,49 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The trail, the rival and the tiger's range (docs/animal-lives-story.md ch.12,
+ * "เงาในพุ่ม").
+ *
+ * Real tracks, in order: each one has to be read where the last one ended, and
+ * only a body that reads trails can read them at all (`tracker`, or the
+ * `trust-built` effect of a life that already chose the quiet way). The tracks
+ * lead to a hollow where a rival rests — and the life's question is asked there:
+ * slip away, or take it. Nothing here is a wall; the tiger's door is attention.
+ */
+export const TRAIL = Object.freeze({
+  tracks: Object.freeze([
+    Object.freeze({ x: 1700, y: 620 }),
+    Object.freeze({ x: 2050, y: 760 }),
+    Object.freeze({ x: 2400, y: 900 }),
+    Object.freeze({ x: 2720, y: 700 }),
+    Object.freeze({ x: 2980, y: 520 }),
+  ]),
+  hollow: Object.freeze({ x: 3200, y: 380 }),
+  range: Object.freeze({ x: 1500, y: 400 }),
+  trackRadius: 78,
+  hollowRadius: 104,
+  rangeRadius: 112,
+});
+
+/** Seeded dressing keeps off the tracks, the hollow and the tiger's range. */
+export const TRAIL_KEEPOUTS = Object.freeze([
+  ...TRAIL.tracks.map((track) => Object.freeze({ x: track.x, y: track.y, r: 110 })),
+  Object.freeze({ x: TRAIL.hollow.x, y: TRAIL.hollow.y, r: 190 }),
+  Object.freeze({ x: TRAIL.range.x, y: TRAIL.range.y, r: 190 }),
+]);
+
+/** The tiger's way: its range → the tracks → the hollow → home. Kept clear of trunks. */
+export const TRAIL_APPROACH = Object.freeze([
+  Object.freeze([1500, 400]),
+  Object.freeze([1700, 620]),
+  Object.freeze([2050, 760]),
+  Object.freeze([2400, 900]),
+  Object.freeze([2720, 700]),
+  Object.freeze([2980, 520]),
+  Object.freeze([3200, 380]),
+]);
+
+/**
  * The grove and the fallen log (docs/animal-lives-story.md ch.11, "กำลังที่คุ้มครอง").
  *
  * The gathering grove is walled by stone with two openings: a mouth plugged by a
@@ -363,6 +406,8 @@ export const TREES = (() => {
     if (OWL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (GROVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (distToPoly(GROVE_APPROACH, x, y) < 84) continue;
+    if (TRAIL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(TRAIL_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }

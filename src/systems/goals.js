@@ -14,11 +14,12 @@ import { linkWater, snakeGoal } from '../game/snake.js';
 import { rabbitGoal, tendField } from '../game/rabbit.js';
 import { owlGoal, settleRoost } from '../game/owl.js';
 import { gatherInGrove } from '../game/elephant.js';
+import { settleRange, tigerGoal } from '../game/tiger.js';
 
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove']);
+const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range']);
 
 function nearestRiverPoint(target) {
   let best = RIVER[0];
@@ -59,6 +60,9 @@ function nearestRiverPoint(target) {
  *   grove  the elephant's strength: the gathering place behind the fallen log,
  *          which only strength opens (world/rooms.js#validateElephantRoute proves
  *          it is shut before the lift and open after it)
+ *   range  the tiger's trail: the tracks of another animal, read one after the
+ *          next, then the hollow where the fight is or is not picked — no wall at
+ *          all, only attention (game/tiger.js#canTrack is the whole gate)
  */
 export function goalFor() {
   if (isWaterBound() || getForm().lifeGoal === 'water') {
@@ -77,6 +81,7 @@ export function goalFor() {
   if (lifeGoal === 'grove') {
     return { x: GROVE.grove.x, y: GROVE.grove.y, r: GROVE.groveRadius, kind: 'grove' };
   }
+  if (lifeGoal === 'trail') return tigerGoal();
   return { x: TEMPLE.x, y: TEMPLE.y, r: LAND_GOAL_RADIUS, kind: 'land' };
 }
 
@@ -101,6 +106,7 @@ export function updateLifeGoal() {
     if (goal.kind === 'storm') tendField();
     if (goal.kind === 'watch') settleRoost();
     if (goal.kind === 'grove') gatherInGrove();
+    if (goal.kind === 'range') settleRange();
     emit(EVENTS.LIFE_COMPLETE, goal.kind);
   }
 }

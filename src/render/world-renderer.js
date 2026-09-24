@@ -27,6 +27,7 @@ import { creviceSite, isLinked } from '../game/snake.js';
 import { fieldSite, isSheltered, warrenIsConnected } from '../game/rabbit.js';
 import { nightWatched, owlFound, owlSite, perceivesLost } from '../game/owl.js';
 import { groveSite, nestCrashed, waysJoined } from '../game/elephant.js';
+import { canTrack, inHollowRest, isHunted, tracksRead, trailSite } from '../game/tiger.js';
 import { visionRadius } from '../systems/vision.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome } from '../systems/biome.js';
@@ -70,6 +71,7 @@ export function renderWorld() {
   drawField(dawn);
   drawOwlNight(dawn);
   drawGrove(dawn);
+  drawTigerTrail(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -651,6 +653,72 @@ function drawGrove(dawn) {
       ctx.beginPath();
       ctx.arc(nest.x, nest.y, 48, 0, TAU);
       ctx.fill();
+    }
+  }
+}
+
+/**
+ * The trail, the rival and the range (docs/animal-lives-story.md ch.12): real
+ * tracks in order, readable only by a body that reads trails — or by any body at
+ * all once a tiger left the fight unpicked. The hollow is a place of rest in that
+ * case, and an empty, hunted place if it was not.
+ */
+function drawTigerTrail(dawn) {
+  if (getForm().lifeGoal !== 'trail') return;
+  const { tracks, hollow, range } = trailSite();
+  const step = tracksRead();
+  const readable = canTrack();
+
+  // The tiger's own range.
+  ctx.strokeStyle = dawn ? 'rgba(150,120,80,.4)' : 'rgba(120,96,64,.35)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(range.x, range.y, 86, 58, 0, 0, TAU);
+  ctx.stroke();
+
+  for (const [index, track] of tracks.entries()) {
+    const isNext = readable && index === step;
+    const already = index < step;
+    // A track is a pair of paw prints, and a mistake to read out of order.
+    ctx.fillStyle = already
+      ? (dawn ? 'rgba(120,98,70,.35)' : 'rgba(80,66,46,.35)')
+      : (dawn ? 'rgba(60,48,32,.85)' : 'rgba(24,20,14,.85)');
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.ellipse(track.x + side * 11, track.y + side * 7, 7, 9, 0, 0, TAU);
+      ctx.fill();
+    }
+    // Only the next one in the chain is lit — following is one step at a time.
+    if (isNext) {
+      ctx.strokeStyle = `rgba(216,200,180,${0.4 + Math.sin(performance.now() * 0.003) * 0.2})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(track.x, track.y, 34, 0, TAU);
+      ctx.stroke();
+    }
+  }
+
+  // The hollow: a rival resting, or the place a fight was not picked.
+  const resting = inHollowRest(hollow.x, hollow.y);
+  ctx.fillStyle = dawn ? 'rgba(40,44,32,.5)' : 'rgba(16,20,14,.55)';
+  ctx.beginPath();
+  ctx.ellipse(hollow.x, hollow.y, 104, 68, 0, 0, TAU);
+  ctx.fill();
+  if (!isHunted()) {
+    ctx.fillStyle = dawn ? 'rgba(70,62,48,.9)' : 'rgba(30,26,20,.92)';
+    ctx.beginPath();
+    ctx.ellipse(hollow.x, hollow.y, 42, 26, -0.15, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(228,214,180,.75)';
+    ctx.beginPath();
+    ctx.arc(hollow.x + 26, hollow.y - 8, 3, 0, TAU);
+    ctx.fill();
+    if (resting) {
+      ctx.strokeStyle = `rgba(216,200,180,${0.2 + Math.sin(performance.now() * 0.002) * 0.08})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(hollow.x, hollow.y, 118, 0, TAU);
+      ctx.stroke();
     }
   }
 }

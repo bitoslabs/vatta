@@ -224,7 +224,7 @@ for (let i = 0; i < 200; i++) {
   route = { ...next, history: [...route.history, next.formId], chapterIds };
 }
 assert.equal(sawFrog, true, 'the frog is born during a long journey');
-assert.equal(isRebirthForm(FORMS.find((f) => f.id === 'tiger')), false, 'the tiger still waits for its chapter');
+assert.equal(FORMS.every((f) => isRebirthForm(f)), true, 'every body of the roster can be reborn now');
 log('rebirth ok');
 
 console.error('FROG TEST OK — mire crossed only by leaping, the channel question, and the bank that ends the life');

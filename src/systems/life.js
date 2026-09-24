@@ -142,6 +142,7 @@ export function advanceLife() {
     storm: { key: 'life.goal.storm', color: '#d9c48f' },
     watch: { key: 'life.goal.watch', color: '#cbd6ea' },
     grove: { key: 'life.goal.grove', color: '#c9b78f' },
+    trail: { key: 'life.goal.trail', color: '#d8c8b4' },
   }[lifeGoal];
   if (hint) {
     const goal = goalFor();

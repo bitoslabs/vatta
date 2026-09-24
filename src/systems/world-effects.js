@@ -21,6 +21,7 @@ export const WORLD_EFFECTS = Object.freeze({
   'water-linked': { key: 'effect.waterLinked', color: '#8fd0c4' },
   'night-watched': { key: 'effect.nightWatched', color: '#cbd6ea' },
   'ways-joined': { key: 'effect.waysJoined', color: '#c9b78f' },
+  'trust-built': { key: 'effect.trustBuilt', color: '#d8c8b4' },
 });
 
 /** The effect store, created on demand so old saves need no migration. */
