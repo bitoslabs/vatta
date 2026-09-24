@@ -1,0 +1,74 @@
+/* ---------- Projector mode: a classroom screen ---------- */
+html.projector .panel h1 {
+  font-size: 78px;
+}
+
+html.projector .panel h2 {
+  font-size: 32px;
+}
+
+html.projector .panel p,
+html.projector .panel .lesson {
+  font-size: 19px;
+  line-height: 2;
+}
+
+html.projector #dlgBox {
+  width: min(920px, 96%);
+}
+
+html.projector #dlgWhen,
+html.projector #dlgText {
+  font-size: 21px;
+}
+
+html.projector #toastTitle {
+  font-size: 50px;
+}
+
+html.projector #toastSub {
+  font-size: 18px;
+}
+
+html.projector #ctrlHint,
+html.projector #karmaReadout,
+html.projector #realmReadout,
+html.projector #pathReadout,
+html.projector #preceptReadout {
+  font-size: 15px;
+}
+
+html.projector .chapter-btn,
+html.projector .lang-btn {
+  font-size: 15px;
+  padding: 10px 16px;
+}
+
+html.projector #teacherPanel {
+  width: min(560px, 62vw);
+  padding: 20px 22px;
+}
+
+html.projector .teacher-title {
+  font-size: 14px;
+}
+
+html.projector .teacher-text {
+  font-size: 18px;
+  line-height: 1.9;
+}
+
+html.projector .teacher-tour,
+html.projector .teacher-hint {
+  font-size: 14px;
+}
+
+html.projector .recap-card,
+html.projector .codex-panel {
+  width: min(760px, 96%);
+}
+
+html.projector .recap-row,
+html.projector .codex-desc {
+  font-size: 16px;
+}

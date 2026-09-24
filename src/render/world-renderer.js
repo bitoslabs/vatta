@@ -213,8 +213,9 @@ function drawEntities(dawn) {
 /** Classroom mode: floating landmark names and the next tour stop. */
 function drawTeacherOverlay() {
   if (!state.teacher) return;
+  const scale = state.projector ? 1.45 : 1;
   for (const landmark of teacherLandmarks()) {
-    drawTeacherLabel(landmark.x, landmark.y - 34, t(landmark.labelKey));
+    drawTeacherLabel(landmark.x, landmark.y - 34, t(landmark.labelKey), scale);
   }
   const target = tourTarget();
   if (target) drawTourMarker(target.x, target.y);

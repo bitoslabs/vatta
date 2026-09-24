@@ -18,6 +18,8 @@ export const state = {
   liberated: false,
   /** Classroom mode: no spirits, free-roam commentary. */
   teacher: false,
+  /** Projector mode: larger type and labels for a classroom screen. */
+  projector: false,
   /** Locale key for the HUD meter label and the mindfulness hints. */
   meterKey: 'hud.fear',
   mindHintKey: 'hud.mind',

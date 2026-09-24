@@ -224,18 +224,21 @@ export function drawGuardian(x, y) {
 }
 
 /** A floating name for a landmark, used by classroom mode. */
-export function drawTeacherLabel(x, y, text) {
+export function drawTeacherLabel(x, y, text, scale = 1) {
+  const size = Math.round(13 * scale);
   ctx.save();
-  ctx.font = "300 13px 'Bai Jamjuree'";
+  ctx.font = `300 ${size}px 'Bai Jamjuree'`;
   ctx.textAlign = 'center';
-  const width = ctx.measureText(text).width + 18;
-  ctx.fillStyle = 'rgba(6,11,8,.72)';
-  ctx.fillRect(x - width / 2, y - 22, width, 20);
+  const width = ctx.measureText(text).width + Math.round(18 * scale);
+  const height = Math.round(20 * scale);
+  const top = y - height - Math.round(2 * scale);
+  ctx.fillStyle = 'rgba(6,11,8,.78)';
+  ctx.fillRect(x - width / 2, top, width, height);
   ctx.strokeStyle = 'rgba(214,180,120,.35)';
   ctx.lineWidth = 1;
-  ctx.strokeRect(x - width / 2, y - 22, width, 20);
+  ctx.strokeRect(x - width / 2, top, width, height);
   ctx.fillStyle = '#e9d9a8';
-  ctx.fillText(text, x, y - 8);
+  ctx.fillText(text, x, top + height - Math.round(5 * scale));
   ctx.restore();
   ctx.textAlign = 'left';
 }

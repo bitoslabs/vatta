@@ -43,4 +43,8 @@ export const EVENTS = Object.freeze({
   TEACHER_TOGGLE: 'teacher:toggle',
   /** Payload: { index, total, done } as the guided tour advances. */
   TEACHER_TOUR: 'teacher:tour',
+  /** Payload: the P key was pressed (request to toggle projector mode). */
+  PROJECTOR_KEY: 'projector:key',
+  /** Payload: whether projector mode is now on. */
+  PROJECTOR_TOGGLE: 'projector:toggle',
 });

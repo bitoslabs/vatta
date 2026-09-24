@@ -28,6 +28,7 @@ src/
 │   ├── karma-actions.js   11 กรรม + กุศล/อกุศล + มูล 6
 │   ├── factors.js         มรรค 8 + เงื่อนไขเปิด + ผล
 │   ├── precepts.js        ศีล 5 + การกระทำที่ทำให้ขาด
+│   ├── worksheets.js      ใบงาน 6 หัวข้อ × 3 คำถาม (ห้องเรียน)
 │   └── realms.js          ภูมิ 31 (ไตรภูมิ)
 ├── systems/               กลไกที่ใช้ซ้ำได้
 │   ├── viewport.js        canvas, DPR, resize, light buffer
@@ -42,6 +43,7 @@ src/
 │   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
 │   ├── save.js            บันทึก/โหลด 3 ช่อง (autosave + เล่นต่อ + สรุปช่อง)
 │   ├── teacher.js         โหมดครู — เปิด/ปิด, จุดสำคัญ, guided tour
+│   ├── projector.js       โหมดฉายภาพ — ตัวอักษร/ป้ายใหญ่ (implies โหมดครู)
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
 │   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES
@@ -69,6 +71,7 @@ src/
 │   ├── teacher-panel.js   แผงคำบรรยายโหมดครู
 │   ├── save-slots.js      แถวเลือกช่องบันทึกบนหน้า Title
 │   ├── journey-recap.js   หน้าสรุปการเดินทาง (กรรม–มรรค–ศีล–ภูมิ)
+│   ├── worksheets.js      หน้าฉายใบงานสำหรับห้องเรียน
 │   ├── language-switcher.js
 │   └── touch.js           joystick + ปุ่มสัมผัส
 ├── game/                  การประสานฉาก
@@ -138,6 +141,8 @@ MEMORY      → renderMemoryScene(dt)
 | `teacher:key` | — | input → teacher (T) |
 | `teacher:toggle` | boolean | teacher → panel/title |
 | `teacher:tour` | { index, total, done } | teacher → panel |
+| `projector:key` | — | input → projector (P) |
+| `projector:toggle` | boolean | projector → panel/title |
 | `precept:broken` | preceptId | precepts → path-notice |
 
 ## 5. Chapter system

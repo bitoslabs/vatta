@@ -34,6 +34,7 @@ function onKeyDown(e) {
   if (e.key === 'x' || e.key === 'X') emit(EVENTS.DISMISS);
   if (e.key === 'm' || e.key === 'M') emit(EVENTS.MUTE_TOGGLE);
   if (e.key === 't' || e.key === 'T') emit(EVENTS.TEACHER_KEY);
+  if (e.key === 'p' || e.key === 'P') emit(EVENTS.PROJECTOR_KEY);
   if (e.key === ' ' || e.key === 'Enter') emit(EVENTS.DIALOGUE_ADVANCE);
 
   const n = Number.parseInt(e.key, 10);

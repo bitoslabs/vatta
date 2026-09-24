@@ -3,6 +3,7 @@
 import { on, EVENTS } from '../core/events.js';
 import { t } from '../systems/i18n.js';
 import { currentNote, isTeacher, tourProgress, tourTarget, toggleTeacher } from '../systems/teacher.js';
+import { isProjector, toggleProjector } from '../systems/projector.js';
 import { $ } from './dom.js';
 
 const panel = $('#teacherPanel');
@@ -11,6 +12,7 @@ const textEl = $('#teacherText');
 const tourEl = $('#teacherTour');
 const hintEl = $('#teacherHint');
 const toggleButton = $('#teacherBtn');
+const projectorButton = $('#projectorBtn');
 
 let lastNote = null;
 let lastTour = -1;
@@ -36,6 +38,9 @@ function renderChrome() {
   hintEl.textContent = t('teacher.hint');
   if (toggleButton) {
     toggleButton.textContent = on ? t('teacher.toggle.on') : t('teacher.toggle.off');
+  }
+  if (projectorButton) {
+    projectorButton.textContent = isProjector() ? t('projector.toggle.on') : t('projector.toggle.off');
   }
   lastNote = null;
   lastTour = -1; // force a refresh on the next frame
@@ -65,7 +70,14 @@ export function initTeacherPanel() {
       toggleTeacher();
     });
   }
+  if (projectorButton) {
+    projectorButton.addEventListener('click', (e) => {
+      e.target.blur();
+      toggleProjector();
+    });
+  }
   on(EVENTS.TEACHER_TOGGLE, renderChrome);
+  on(EVENTS.PROJECTOR_TOGGLE, renderChrome);
   on(EVENTS.TEACHER_TOUR, renderTour);
   on(EVENTS.LOCALE_CHANGED, renderChrome);
   renderChrome();

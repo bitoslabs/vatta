@@ -355,3 +355,15 @@
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- Worksheets ---------- */
+.ws-q {
+  padding: 5px 0 5px 4px;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+
+html.projector .ws-q {
+  font-size: 16.5px;
+}
