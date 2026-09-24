@@ -7,14 +7,21 @@ import { ENCOUNTERS } from '../content/encounters.js';
 import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { currentBiomeId } from '../systems/biome.js';
 import { animatePlayer, player } from '../entities/player.js';
 import { choose } from '../ui/choices.js';
+
+/** Only the beings whose plane this is (design §7). */
+export function encountersHere() {
+  const biome = currentBiomeId();
+  return ENCOUNTERS.filter((encounter) => !encounter.biome || encounter.biome === biome);
+}
 
 /** The encounter the walker is standing beside, or null. */
 export function encounterAt(x, y) {
   let best = null;
   let bestDist = Infinity;
-  for (const encounter of ENCOUNTERS) {
+  for (const encounter of encountersHere()) {
     const d = dist(x, y, encounter.x, encounter.y);
     if (d < encounter.r && d < bestDist) {
       bestDist = d;

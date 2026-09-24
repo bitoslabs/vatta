@@ -8,6 +8,10 @@
  * ground tint, water colour, the veil over the scene, and how dark the night
  * feels. It is chosen from the body you wear, the plane you were born into, and
  * your strongest tendency — so the map answers "where am I?" as much as the HUD.
+ *
+ * `features` is the dressing the seed assembles for that plane (design §7's
+ * "กฎ Dynamic" per map), and `site` names the signature place where that realm
+ * asks you to decide something (see game/npc-encounters.js).
  */
 export const BIOMES = Object.freeze({
   'memory-forest': {
@@ -18,6 +22,8 @@ export const BIOMES = Object.freeze({
     waterCore: '#123049',
     veil: null,
     ambient: 0.87,
+    features: ['thicket', 'boulders', 'pond', 'clearing'],
+    site: null,
   },
   woeful: {
     nameKey: 'biome.woeful.name',
@@ -27,6 +33,8 @@ export const BIOMES = Object.freeze({
     waterCore: '#3d1a18',
     veil: 'rgba(120,20,20,.07)',
     ambient: 0.93,
+    features: ['boulders', 'thicket', 'thicket'],
+    site: null,
   },
   'asura-city': {
     nameKey: 'biome.asura.name',
@@ -36,6 +44,8 @@ export const BIOMES = Object.freeze({
     waterCore: '#1f2f42',
     veil: 'rgba(70,90,130,.06)',
     ambient: 0.8,
+    features: ['tower', 'tower', 'bridge'],
+    site: 'asura',
   },
   'light-garden': {
     nameKey: 'biome.garden.name',
@@ -45,6 +55,8 @@ export const BIOMES = Object.freeze({
     waterCore: '#2a5a7d',
     veil: 'rgba(230,240,200,.05)',
     ambient: 0.62,
+    features: ['bloom', 'bloom', 'clearing', 'pond'],
+    site: 'garden',
   },
   'craving-market': {
     nameKey: 'biome.market.name',
@@ -54,6 +66,8 @@ export const BIOMES = Object.freeze({
     waterCore: '#2a2438',
     veil: 'rgba(200,150,60,.06)',
     ambient: 0.84,
+    features: ['stall', 'stall', 'clearing'],
+    site: 'market',
   },
   formless: {
     nameKey: 'biome.formless.name',
@@ -63,5 +77,7 @@ export const BIOMES = Object.freeze({
     waterCore: '#3a3f4c',
     veil: 'rgba(220,230,255,.05)',
     ambient: 0.55,
+    features: ['clearing'],
+    site: null,
   },
 });

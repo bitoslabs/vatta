@@ -4,6 +4,7 @@ import { TAU, TEMPLE, SALA, WORLD } from '../core/constants.js';
 import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
 import { PATH, RIVER, RIVER_WIDTH } from './world-data.js';
+import { BIOMES } from '../content/biomes.js';
 
 /**
  * Dynamic rooms: a fixed skeleton with seed-varied dressing (design §3).
@@ -14,6 +15,23 @@ import { PATH, RIVER, RIVER_WIDTH } from './world-data.js';
  * fails, another is tried, and an empty (trivially valid) set is the fallback.
  */
 export const FEATURE_TYPES = Object.freeze(['thicket', 'boulders', 'pond', 'clearing']);
+
+/** Dressing kinds added by the planes of design §7. */
+export const BIOME_FEATURE_TYPES = Object.freeze(['tower', 'bridge', 'bloom', 'stall', 'weir']);
+
+const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall']);
+
+function featureRadius(type, rng) {
+  if (type === 'boulders') return 36 + rng() * 14;
+  if (type === 'thicket') return 46 + rng() * 18;
+  if (type === 'pond') return 70 + rng() * 30;
+  if (type === 'tower') return 52 + rng() * 20;
+  if (type === 'bridge') return 96;
+  if (type === 'bloom') return 30 + rng() * 10;
+  if (type === 'stall') return 44 + rng() * 10;
+  if (type === 'weir') return 58;
+  return 62;
+}
 
 const MARGIN_FROM_PATH = 46;
 const GRID_CELL = 40;
@@ -36,9 +54,10 @@ export function waterAt(features, x, y) {
 export function blockedAt(features, x, y, abilities = {}) {
   if (abilities.flying === true) return false;
   return features.some((feature) => {
+    if (!SOLID_TYPES.has(feature.type)) return false;
     if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
     if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
-    return false;
+    return featureAt(feature, x, y);
   });
 }
 
@@ -52,23 +71,21 @@ function mayPlace(type, x, y, radius) {
   return true;
 }
 
-/** Assemble the seed's dressing: obstacle clusters beside the true path. */
-export function assembleRooms(seed) {
+/** Assemble the seed's dressing: the plane's own kinds beside the true path. */
+export function assembleRooms(seed, biomeId = 'memory-forest') {
   const rng = mulberry32(seed);
   const features = [];
+  const pool = (BIOMES[biomeId] && BIOMES[biomeId].features) || FEATURE_TYPES;
 
   for (let i = 1; i < PATH.length - 1; i++) {
     for (let k = 0; k < 2; k++) {
       if (rng() < 0.3) continue;
-      const type = FEATURE_TYPES[(rng() * FEATURE_TYPES.length) | 0];
+      const type = pool[(rng() * pool.length) | 0] || 'clearing';
       const angle = rng() * TAU;
       const reach = 130 + rng() * 110;
       const x = PATH[i][0] + Math.cos(angle) * reach;
       const y = PATH[i][1] + Math.sin(angle) * reach;
-      const radius = type === 'boulders' ? 36 + rng() * 14
-        : type === 'thicket' ? 46 + rng() * 18
-          : type === 'pond' ? 70 + rng() * 30
-            : 62;
+      const radius = featureRadius(type, rng);
       if (!mayPlace(type, x, y, radius)) continue;
       features.push({ i: features.length, type, x, y, r: radius });
     }
@@ -166,10 +183,10 @@ export function validateRoute(features, formId, abilities = {}) {
 }
 
 /** Try seeds until one validates for this form; fall back to an empty world. */
-export function buildDynamicWorld(seed, formId, abilities = {}) {
+export function buildDynamicWorld(seed, formId, abilities = {}, biomeId = 'memory-forest') {
   for (let attempt = 0; attempt < MAX_SEED_TRIES; attempt++) {
     const trySeed = (seed + attempt) >>> 0;
-    const features = assembleRooms(trySeed);
+    const features = assembleRooms(trySeed, biomeId);
     const validation = validateRoute(features, formId, abilities);
     if (validation.ok) return { seed: trySeed, features, validation, attempts: attempt + 1 };
   }

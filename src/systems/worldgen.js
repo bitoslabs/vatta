@@ -3,6 +3,7 @@
 import { state } from '../core/state.js';
 import { assembleRooms, buildDynamicWorld, blockedAt, waterAt } from '../world/rooms.js';
 import { getForm } from './forms.js';
+import { currentBiomeId } from './biome.js';
 
 /**
  * The generated world for the current life and chapter (design §3).
@@ -17,7 +18,7 @@ export function seedFor(chapterId, lifeId = state.lifeId) {
 
 export function initDynamicWorld(chapterId) {
   const seed = seedFor(chapterId);
-  const built = buildDynamicWorld(seed, state.formId, getForm().abilities || {});
+  const built = buildDynamicWorld(seed, state.formId, getForm().abilities || {}, currentBiomeId());
   // Anything lifted away in an earlier life stays away.
   const removed = new Set(state.world.removed || []);
   built.features = built.features.filter((feature) => !removed.has(feature.i));

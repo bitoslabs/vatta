@@ -6,6 +6,9 @@
  * Each being stands somewhere on the road with a prompt; talking offers choices
  * that record an intention and answer through the world, never with a verdict.
  * Chapters, the guardian and the bridge always take priority.
+ *
+ * A being with a `biome` only appears in that plane (design §7's signature
+ * places: the asura bridge, the fading garden, the market of craving, the weir).
  */
 export const ENCOUNTERS = Object.freeze([
   {
@@ -66,6 +69,58 @@ export const ENCOUNTERS = Object.freeze([
     choices: [
       { key: 'garuda.choice.speed', karma: 'cling', answer: 'garuda.answer.speed', color: '#c8a2c8' },
       { key: 'garuda.choice.wait', karma: 'compassion', answer: 'garuda.answer.wait', color: '#bfd9cd' },
+    ],
+  },
+  {
+    id: 'asura-bridge',
+    kind: 'asura',
+    biome: 'asura-city',
+    x: 1500,
+    y: 2400,
+    r: 130,
+    promptKey: 'prompt.talkAsuraBridge',
+    choices: [
+      { key: 'asura.choice.share', karma: 'give', answer: 'asura.answer.share', color: '#bfd9cd' },
+      { key: 'asura.choice.race', karma: 'cling', answer: 'asura.answer.race', color: '#c8a2c8' },
+    ],
+  },
+  {
+    id: 'garden-bloom',
+    kind: 'garden',
+    biome: 'light-garden',
+    x: 3700,
+    y: 1200,
+    r: 130,
+    promptKey: 'prompt.talkGardenBloom',
+    choices: [
+      { key: 'garden.choice.release', karma: 'letgo', answer: 'garden.answer.release', color: '#bfd9cd' },
+      { key: 'garden.choice.hold', karma: 'cling', answer: 'garden.answer.hold', color: '#c8a2c8' },
+    ],
+  },
+  {
+    id: 'market-stall',
+    kind: 'market',
+    biome: 'craving-market',
+    x: 2120,
+    y: 1200,
+    r: 130,
+    promptKey: 'prompt.talkMarketStall',
+    choices: [
+      { key: 'market.choice.empty', karma: 'precept', answer: 'market.answer.empty', color: '#bfd9cd' },
+      { key: 'market.choice.offer', karma: 'steal', answer: 'market.answer.offer', color: '#e9c46a' },
+    ],
+  },
+  {
+    id: 'river-weir',
+    kind: 'weir',
+    biome: 'memory-forest',
+    x: 1350,
+    y: 2600,
+    r: 130,
+    promptKey: 'prompt.talkWeir',
+    choices: [
+      { key: 'weir.choice.open', karma: 'give', answer: 'weir.answer.open', color: '#9fc6dd' },
+      { key: 'weir.choice.close', karma: 'cling', answer: 'weir.answer.close', color: '#c8a2c8' },
     ],
   },
   {

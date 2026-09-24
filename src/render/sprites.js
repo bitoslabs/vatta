@@ -225,6 +225,10 @@ export function drawEncounter(x, y, kind) {
     naga: { robe: '#245040', head: '#9fd0b4', glow: 'rgba(120,220,180,.16)' },
     garuda: { robe: '#6b4426', head: '#e0b070', glow: 'rgba(255,190,120,.16)' },
     keeper: { robe: '#4a4f4c', head: '#eef2ee', glow: 'rgba(230,240,235,.2)' },
+    asura: { robe: '#3f5486', head: '#8fb0d8', glow: 'rgba(120,150,220,.18)' },
+    garden: { robe: '#8a9668', head: '#f2ecd0', glow: 'rgba(240,240,200,.2)' },
+    market: { robe: '#7a5a24', head: '#e6cfa0', glow: 'rgba(230,190,110,.18)' },
+    weir: { robe: '#2c4a52', head: '#a8d8d0', glow: 'rgba(140,220,220,.16)' },
   };
   const palette = palettes[kind] || palettes.keeper;
 
