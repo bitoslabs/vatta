@@ -4,7 +4,7 @@ import { state } from '../core/state.js';
 import { on, EVENTS } from '../core/events.js';
 import { t } from '../systems/i18n.js';
 import { formNameKey } from '../content/forms.js';
-import { getLifeLog } from '../systems/life.js';
+import { favouriteForm, getLifeLog } from '../systems/life.js';
 import { showEndScreen } from './end-screen.js';
 import { $ } from './dom.js';
 
@@ -56,6 +56,11 @@ export function renderMirrorCourt() {
       `${t(formNameKey(life.formId))} — ${marks}`,
     ));
   }
+
+  // มารกระจก offers to keep the form you loved most, forever.
+  const favourite = favouriteForm();
+  body.appendChild(group(t('court.group.mara')));
+  body.appendChild(row(t('court.mara.offer', { form: t(formNameKey(favourite)) }), ''));
 }
 
 export function openMirrorCourt() {
@@ -70,11 +75,19 @@ function finish(liberated) {
   showEndScreen();
 }
 
+/** The māra's bargain: keep the form and power you loved, and stay in the round. */
+function keepFavouriteForm() {
+  finish(false);
+}
+
 export function initMirrorCourt() {
   const release = $('#courtRelease');
   if (release) release.addEventListener('click', (e) => { e.target.blur(); finish(true); });
+  const keep = $('#courtKeep');
+  if (keep) keep.addEventListener('click', (e) => { e.target.blur(); keepFavouriteForm(); });
+  // "Not ready" simply leaves the courtyard open — the choice is not forced.
   const stay = $('#courtStay');
-  if (stay) stay.addEventListener('click', (e) => { e.target.blur(); finish(false); });
+  if (stay) stay.addEventListener('click', () => overlay.classList.add('hidden'));
   const close = $('#courtClose');
   if (close) close.addEventListener('click', () => overlay.classList.add('hidden'));
 

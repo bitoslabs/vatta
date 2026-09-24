@@ -55,6 +55,27 @@ export function getLifeLog() {
   return state.lifeLog;
 }
 
+/**
+ * The form this run wore most often (design §6, มารกระจก: it offers to keep
+ * your favourite form and power forever). Falls back to the current form.
+ */
+export function favouriteForm() {
+  const counts = new Map();
+  for (const life of state.lifeLog) {
+    counts.set(life.formId, (counts.get(life.formId) || 0) + 1);
+  }
+  if (!counts.size) return state.formId;
+  let best = state.formId;
+  let bestCount = 0;
+  for (const [id, count] of counts) {
+    if (count > bestCount) {
+      best = id;
+      bestCount = count;
+    }
+  }
+  return best;
+}
+
 export function isPrototypeComplete() {
   return state.lifeId >= PROTOTYPE_LIVES;
 }
