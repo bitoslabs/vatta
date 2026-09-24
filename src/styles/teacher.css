@@ -26,6 +26,13 @@
   color: var(--ink);
 }
 
+.teacher-tour {
+  margin-top: 9px;
+  font-size: 11.5px;
+  color: var(--gold-dim);
+  letter-spacing: 0.04em;
+}
+
 .teacher-hint {
   margin-top: 9px;
   padding-top: 7px;

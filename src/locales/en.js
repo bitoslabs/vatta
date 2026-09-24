@@ -380,6 +380,31 @@ export default {
     'teacher.note.sala': 'The sala is a place of rest and practice — look first: is the mind truly calm, or merely pausing?',
     'teacher.note.gate': 'False light gates appear when fear is high — the more afraid, the clearer the false road.',
     'teacher.note.guardian': 'The guardian does not judge — it only reflects what the walker has done.',
+    'teacher.label.temple': 'Temple',
+    'teacher.label.bodhi': 'Bodhi tree',
+    'teacher.label.sala': 'Sala',
+    'teacher.label.gate': 'False light gate',
+    'teacher.label.guardian': 'The guardian',
+    'teacher.label.path': 'Footprint path',
+    'teacher.tour': 'Next stop ({i}/{n}): {name}',
+    'teacher.tour.done': 'Route complete — wander freely',
+
+    'chapter14.name': 'The Wheel and the Way Out',
+    'chapter14.subtitle': 'Chapter Fourteen — Part Three · Capstone',
+    'hud.liberation': 'T H E  W A Y  O U T',
+    'ch14.toast.start.title': 'The Wheel and the Way Out',
+    'ch14.toast.start.sub': 'Chapter Fourteen — Capstone',
+    'ch14.pair': 'The wheel you carry: {a} · {b}',
+    'ch14.floater.split': 'Pressed up close… the wheel divides into {n}',
+    'ch14.floater.grown': 'Repetition {reps} — the wheel grows heavier',
+    'ch14.floater.seen': 'Seen in time… lighter',
+    'ch14.choice.free': '"The path is open, the precepts kept — set the wheel down"',
+    'ch14.choice.release': '"Release what I can — lean forward"',
+    'ch14.choice.bound': '"Not yet ready — let me be born again"',
+    'ch14.end.title': 'Part Three Complete',
+    'ch14.end.name': 'The Wheel and the Way Out',
+    'ch14.end.lesson': '<span style="color:#d9c58c">The wheel</span> — no one destroys it; there are only those who are free of it.<br><br><span style="color:#d9c58c">The way out</span> — a path opened, precepts kept, and kamma unowed: that is what carries the mind out of saṃsāra.',
+    'ch14.end.stats': 'Repeated {reps} times · Swallowed {caught} times<br>Total practice time {time}',
 
     'chapter13.name': 'All the Shadows',
     'chapter13.subtitle': 'Chapter Thirteen — Part Two · Finale',
@@ -508,6 +533,17 @@ export default {
     'ch13.question': [
       '"This swarm is me"',
       '"This swarm is what I have gathered, and it can cease"',
+      '"I do not know"',
+    ],
+
+    'hud.mind.liberation': [
+      'The wheel needs no fighting… just walking through',
+      'Lighter… no need to push it',
+      'The way out is seen… the mind begins to free',
+    ],
+    'ch14.question': [
+      '"This wheel is me"',
+      '"This wheel arises from causes, and can stop"',
       '"I do not know"',
     ],
   },
@@ -882,6 +918,28 @@ export default {
     ],
     'ch13.answerCool': [
       { who: 'The swarm', text: 'Being unsure is all right… we will wait here until you truly see.' },
+    ],
+
+    'ch14.intro': [
+      { who: '', text: 'The last chapter. Every wheel you have turned gathers into one — the pair, the swarm, and the one that grew with repetition.' },
+      { who: '', text: 'This time there is no way to destroy it. You can only walk through, and know that it is not you.' },
+      { who: '', text: 'Reach the bodhi tree, and the way out will be decided by all that you have done.' },
+    ],
+    'ch14.arrive': [
+      { who: 'Elder Monk', text: 'You have reached the bodhi tree… the wheel stops before you, but you must still choose.' },
+      { who: '', text: 'We looked at the path opened, the precepts kept, and the kamma still owed — and answered honestly.' },
+    ],
+    'ch14.answerFree': [
+      { who: '', text: 'We set the wheel down — not because it was destroyed, but because no one had to turn it any more.' },
+      { who: '', text: 'Liberation happened right there, nowhere else — for a mind whose causes have ceased, its fruits cease too.' },
+    ],
+    'ch14.answerRelease': [
+      { who: '', text: 'We released what we could — the wheel grew lighter, though it still turns somewhere in the distance.' },
+      { who: 'Elder Monk', text: 'Good… the road still lies ahead. Walk on, without heedlessness.' },
+    ],
+    'ch14.answerBound': [
+      { who: '', text: 'We answered, "not yet ready" — and the wheel turned on, by its own causes and effects.' },
+      { who: 'Elder Monk', text: 'There is no judgement — only the fruit of the mind. You will walk this road again.' },
     ],
   },
 };

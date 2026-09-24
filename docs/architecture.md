@@ -41,7 +41,7 @@ src/
 │   ├── precepts.js        ศีล 5 — สถานะตามการกระทำ (ไม่ตัดสิน)
 │   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
 │   ├── save.js            บันทึก/โหลดรอบเล่น (autosave + เล่นต่อ)
-│   ├── teacher.js         โหมดครู — เปิด/ปิด + คำบรรยายตามจุดสำคัญ
+│   ├── teacher.js         โหมดครู — เปิด/ปิด, จุดสำคัญ, guided tour
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
 │   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES
@@ -85,6 +85,7 @@ src/
 │   ├── story-chapter11.js ผีคู่ — สองอนุสัยพร้อมกัน (ghosts collection)
 │   ├── story-chapter12.js ผีที่แบ่งตัว — กดแล้วเพิ่ม ถอยห่างแล้วจาง
 │   ├── story-chapter13.js เงาทั้งมวล — บทส่งท้ายภาคสอง (รวมทุกกลไก)
+│   ├── story-chapter14.js กงล้อและทางออก — ทางพ้นที่ gated ด้วยมรรค+ศีล+กรรม
 │   ├── world-update.js    อัปเดตโลกต่อเฟรม (fear, ghost, story, camera)
 │   ├── camera.js          กล้อง + shake
 │   └── loop.js            requestAnimationFrame เดียว
@@ -134,6 +135,7 @@ MEMORY      → renderMemoryScene(dt)
 | `path:unlocked` | factorId | path → path-notice |
 | `teacher:key` | — | input → teacher (T) |
 | `teacher:toggle` | boolean | teacher → panel/title |
+| `teacher:tour` | { index, total, done } | teacher → panel |
 | `precept:broken` | preceptId | precepts → path-notice |
 
 ## 5. Chapter system

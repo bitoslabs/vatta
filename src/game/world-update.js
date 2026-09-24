@@ -15,6 +15,7 @@ import { updateEchoes } from './echoes.js';
 import { updateGuardian } from './npc.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
+import { updateTour } from '../systems/teacher.js';
 
 let heartCd = 0;
 
@@ -28,6 +29,7 @@ export function updateWorld(dt) {
 
   // Classroom mode: free roam, no spirits, no fail states — just the map.
   if (state.teacher) {
+    updateTour();
     updateTeacherPanel();
     updateCamera(dt);
     updateEffects(dt);

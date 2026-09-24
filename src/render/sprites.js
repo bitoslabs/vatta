@@ -223,6 +223,38 @@ export function drawGuardian(x, y) {
   ctx.fill();
 }
 
+/** A floating name for a landmark, used by classroom mode. */
+export function drawTeacherLabel(x, y, text) {
+  ctx.save();
+  ctx.font = "300 13px 'Bai Jamjuree'";
+  ctx.textAlign = 'center';
+  const width = ctx.measureText(text).width + 18;
+  ctx.fillStyle = 'rgba(6,11,8,.72)';
+  ctx.fillRect(x - width / 2, y - 22, width, 20);
+  ctx.strokeStyle = 'rgba(214,180,120,.35)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x - width / 2, y - 22, width, 20);
+  ctx.fillStyle = '#e9d9a8';
+  ctx.fillText(text, x, y - 8);
+  ctx.restore();
+  ctx.textAlign = 'left';
+}
+
+/** A pulsing ring marking the next stop of the guided tour. */
+export function drawTourMarker(x, y) {
+  const t = performance.now() * 0.003;
+  const radius = 26 + Math.sin(t) * 5;
+  ctx.strokeStyle = 'rgba(233,217,168,.75)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, TAU);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(233,217,168,.28)';
+  ctx.beginPath();
+  ctx.arc(x, y, radius + 12, 0, TAU);
+  ctx.stroke();
+}
+
 export function drawTemple(dawn) {
   const T = TEMPLE;
   const now = performance.now();

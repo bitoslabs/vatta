@@ -41,4 +41,6 @@ export const EVENTS = Object.freeze({
   TEACHER_KEY: 'teacher:key',
   /** Payload: whether classroom mode is now on. */
   TEACHER_TOGGLE: 'teacher:toggle',
+  /** Payload: { index, total, done } as the guided tour advances. */
+  TEACHER_TOUR: 'teacher:tour',
 });

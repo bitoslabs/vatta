@@ -7,6 +7,7 @@ import { state } from '../core/state.js';
 import { isMindful } from '../systems/input.js';
 import { t } from '../systems/i18n.js';
 import { getRealm } from '../systems/samsara.js';
+import { teacherLandmarks, tourTarget } from '../systems/teacher.js';
 import { floaters, screenNotes, sparks } from '../systems/effects.js';
 import { ctx, viewport } from '../systems/viewport.js';
 import { textures } from '../world/textures.js';
@@ -16,7 +17,7 @@ import { ghosts } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { updateHud } from '../ui/hud.js';
 import { renderLighting, shakeOffset } from './lighting.js';
-import { drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, drawTemple, drawTree } from './sprites.js';
+import { drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, drawTeacherLabel, drawTemple, drawTourMarker, drawTree } from './sprites.js';
 import { getLures } from '../game/lures.js';
 import { GUARDIAN } from '../game/npc.js';
 
@@ -53,6 +54,7 @@ export function renderWorld() {
   drawLures();
   drawGuardian(GUARDIAN.x, GUARDIAN.y);
   drawEntities(dawn);
+  drawTeacherOverlay();
   drawInteractionPrompt();
 
   ctx.restore();
@@ -86,6 +88,10 @@ export function renderWorld() {
   } else if (state.chapter === 13) {
     // Ash-grey closing veil for the Part Two finale.
     ctx.fillStyle = 'rgba(60,55,70,.08)';
+    ctx.fillRect(0, 0, W, H);
+  } else if (state.chapter === 14) {
+    // First-light veil for the capstone.
+    ctx.fillStyle = 'rgba(70,70,55,.07)';
     ctx.fillRect(0, 0, W, H);
   }
   drawFog();
@@ -202,6 +208,16 @@ function drawEntities(dawn) {
   for (const tree of treesNear) if (tree.y >= player.y - 6) drawTree(tree, dawn);
 
   if (!state.teacher) for (const spirit of ghosts) if (spirit.active) drawGhost(spirit);
+}
+
+/** Classroom mode: floating landmark names and the next tour stop. */
+function drawTeacherOverlay() {
+  if (!state.teacher) return;
+  for (const landmark of teacherLandmarks()) {
+    drawTeacherLabel(landmark.x, landmark.y - 34, t(landmark.labelKey));
+  }
+  const target = tourTarget();
+  if (target) drawTourMarker(target.x, target.y);
 }
 
 function drawInteractionPrompt() {
