@@ -23,7 +23,7 @@ export const BIOMES = Object.freeze({
     veil: null,
     ambient: 0.87,
     features: ['thicket', 'boulders', 'pond', 'clearing'],
-    site: null,
+    site: 'marsh',
   },
   'under-root': {
     nameKey: 'biome.root.name',

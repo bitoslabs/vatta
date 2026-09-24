@@ -3,7 +3,10 @@
 import { TAU, TEMPLE, SALA, WORLD } from '../core/constants.js';
 import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
-import { BURROW, BURROW_KEEPOUT, NEST, NEST_KEEPOUT, PATH, RIVER, RIVER_WIDTH } from './world-data.js';
+import {
+  BURROW, BURROW_KEEPOUT, MARSH, MARSH_APPROACH, MARSH_KEEPOUT, MARSH_PONDS,
+  NEST, NEST_KEEPOUT, PATH, RIVER, RIVER_WIDTH,
+} from './world-data.js';
 import { BIOMES } from '../content/biomes.js';
 
 /**
@@ -32,6 +35,13 @@ export const BURROW_FEATURE_TYPES = Object.freeze(['rootwall', 'burrow', 'pebble
  */
 export const NEST_FEATURE_TYPES = Object.freeze(['crack']);
 
+/**
+ * The marsh's own kind: `mire` is deep mud and standing water that only a body
+ * able to leap crosses — tunnelling into it or being small does not help
+ * (docs/animal-lives-story.md ch.4).
+ */
+export const MARSH_FEATURE_TYPES = Object.freeze(['mire']);
+
 const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall']);
 
 function featureRadius(type, rng) {
@@ -46,6 +56,7 @@ function featureRadius(type, rng) {
   if (type === 'rootwall') return BURROW.wallRadius;
   if (type === 'burrow') return BURROW.gapRadius;
   if (type === 'crack') return NEST.crackRadius;
+  if (type === 'mire') return MARSH.mireRadius;
   if (type === 'pebble') return 18 + rng() * 10;
   return 62;
 }
@@ -73,6 +84,7 @@ export function blockedAt(features, x, y, abilities = {}) {
   return features.some((feature) => {
     if (feature.type === 'burrow') return abilities.burrow !== true && featureAt(feature, x, y);
     if (feature.type === 'crack') return abilities.small !== true && featureAt(feature, x, y);
+    if (feature.type === 'mire') return abilities.leap !== true && featureAt(feature, x, y);
     if (!SOLID_TYPES.has(feature.type)) return false;
     if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
     if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
@@ -90,6 +102,8 @@ function mayPlace(type, x, y, radius) {
   if (dist(x, y, BURROW_KEEPOUT.x, BURROW_KEEPOUT.y) < BURROW_KEEPOUT.r + radius) return false;
   // Nor the ant's nest, or a trunk could close the crack.
   if (dist(x, y, NEST_KEEPOUT.x, NEST_KEEPOUT.y) < NEST_KEEPOUT.r + radius) return false;
+  // Nor the marsh, or a trunk could block the leap across the mire.
+  if (dist(x, y, MARSH_KEEPOUT.x, MARSH_KEEPOUT.y) < MARSH_KEEPOUT.r + radius) return false;
   void type;
   return true;
 }
@@ -187,6 +201,57 @@ export function assembleNest() {
   return features;
 }
 
+/**
+ * The marsh (docs/animal-lives-story.md ch.4, "ฝนหยดแรก").
+ *
+ * The channel gate sits inside a ring of deep mire with one gap, and the pools
+ * and the spawning bank lie outside it. Only a leaping body crosses the mire, so
+ * `validateFrogRoute` can prove the inlet belongs to the frog and to no one
+ * else; the bank stays open, because laying eggs is not a locked door.
+ */
+export function assembleMarsh() {
+  const { inlet, ring, walls, wallRadius, mireRadius, mirePlugs } = MARSH;
+  const features = [];
+  const entryAngle = -Math.PI / 2; // the way in faces the road, north of the ring
+  const step = TAU / (walls + 2);
+
+  for (let k = 0; k < walls; k++) {
+    const angle = entryAngle + (k + 1.5) * step;
+    features.push({
+      i: 0,
+      site: 'marsh',
+      type: 'mire',
+      fixed: true,
+      x: inlet.x + Math.cos(angle) * ring,
+      y: inlet.y + Math.sin(angle) * ring,
+      r: wallRadius,
+    });
+  }
+
+  const face = { x: Math.cos(entryAngle), y: Math.sin(entryAngle) };
+  const side = { x: -face.y, y: face.x };
+  const plugStep = 40;
+  for (let i = 0; i < mirePlugs; i++) {
+    const offset = (i - (mirePlugs - 1) / 2) * plugStep;
+    features.push({
+      i: 0,
+      site: 'marsh',
+      type: 'mire',
+      fixed: true,
+      x: inlet.x + face.x * ring + side.x * offset,
+      y: inlet.y + face.y * ring + side.y * offset,
+      r: mireRadius,
+    });
+  }
+
+  // Still water to swim in, and the soft bank at the marsh edge.
+  for (const pond of MARSH_PONDS) {
+    features.push({ i: 0, site: 'marsh', type: 'pond', fixed: true, x: pond.x, y: pond.y, r: pond.r });
+  }
+
+  return features;
+}
+
 /** Assemble the seed's dressing: the plane's own kinds beside the true path. */
 export function assembleRooms(seed, biomeId = 'memory-forest') {
   const rng = mulberry32(seed);
@@ -211,6 +276,11 @@ export function assembleRooms(seed, biomeId = 'memory-forest') {
   if (BIOMES[biomeId] && BIOMES[biomeId].site === 'burrow') {
     for (const feature of assembleBurrow()) features.push({ ...feature, i: features.length });
     for (const feature of assembleNest()) features.push({ ...feature, i: features.length });
+  }
+
+  // The forest's own water trouble carries the frog's (design §7, site 'marsh').
+  if (BIOMES[biomeId] && BIOMES[biomeId].site === 'marsh') {
+    for (const feature of assembleMarsh()) features.push({ ...feature, i: features.length });
   }
 
   // Occasionally silt builds up in the river — which the route check must catch.
@@ -379,6 +449,24 @@ export function validateNestRoute(features, abilities = {}) {
   const walkerReaches = reachableBetween(features, NEST.seed, NEST.chamber, { ...base, small: false, burrow: false });
   const tunnelReaches = reachableBetween(features, NEST.seed, NEST.chamber, { ...base, small: false, burrow: true });
   return { ok: smallReaches && !walkerReaches && !tunnelReaches, smallReaches, walkerReaches, tunnelReaches };
+}
+
+/**
+ * Prove the marsh inlet is the frog's alone (docs/animal-lives-story.md ch.4):
+ * a leaping body crosses the mire from the road side, while walking bodies,
+ * tunnellers and small bodies are all stopped by it — the mud is not a burrow,
+ * and nothing can squeeze through standing water.
+ */
+export function validateFrogRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false };
+  const start = MARSH_APPROACH[0];
+  const from = { x: start[0], y: start[1] };
+  const leapReaches = reachableBetween(features, from, MARSH.inlet, { ...base, leap: true });
+  const walkerReaches = reachableBetween(features, from, MARSH.inlet, { ...base, leap: false });
+  const tunnelReaches = reachableBetween(features, from, MARSH.inlet, { ...base, leap: false, burrow: true });
+  const smallReaches = reachableBetween(features, from, MARSH.inlet, { ...base, leap: false, small: true });
+  const ok = leapReaches && !walkerReaches && !tunnelReaches && !smallReaches;
+  return { ok, leapReaches, walkerReaches, tunnelReaches, smallReaches };
 }
 
 /** Try seeds until one validates for this form; fall back to an empty world. */export function buildDynamicWorld(seed, formId, abilities = {}, biomeId = 'memory-forest') {

@@ -22,6 +22,7 @@ import { getLures } from '../game/lures.js';
 import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
 import { burrowSite, rootWatered } from '../game/burrow.js';
 import { isCarrying, nestSite, seedCarried } from '../game/ant.js';
+import { marshSite, waterOpened } from '../game/frog.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome } from '../systems/biome.js';
 import { getForm, isWaterBound } from '../systems/forms.js';
@@ -59,6 +60,7 @@ export function renderWorld() {
   drawDynamicRooms(dawn);
   drawBurrow(dawn);
   drawNest(dawn);
+  drawMarsh(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -300,6 +302,85 @@ function drawNest(dawn) {
       ctx.quadraticCurveTo(x + 5, y - height * 0.6, x + 9, y - height);
       ctx.stroke();
     }
+  }
+}
+
+/**
+ * The marsh (docs/animal-lives-story.md ch.4): deep mire only a leap crosses, the
+ * blocked channel inside it, and — once the channel is opened — water running
+ * down to the lower forest.
+ */
+function drawMarsh(dawn) {
+  const features = dynamicFeatures();
+  const hasMarsh = features.some((feature) => feature.type === 'mire');
+  if (!hasMarsh) return;
+  const { inlet, bank } = marshSite();
+  const opened = waterOpened();
+
+  for (const feature of features) {
+    if (feature.type !== 'mire') continue;
+    ctx.fillStyle = dawn ? 'rgba(38,46,34,.9)' : 'rgba(18,24,18,.92)';
+    ctx.beginPath();
+    ctx.arc(feature.x, feature.y, feature.r, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = dawn ? 'rgba(70,86,64,.35)' : 'rgba(40,54,42,.4)';
+    for (let i = 0; i < 3; i++) {
+      const angle = i * 2.1 + feature.x * 0.01;
+      ctx.beginPath();
+      ctx.arc(
+        feature.x + Math.cos(angle) * feature.r * 0.42,
+        feature.y + Math.sin(angle) * feature.r * 0.42,
+        feature.r * 0.22, 0, TAU,
+      );
+      ctx.fill();
+    }
+  }
+
+  // The channel gate: closed boards, or a running spill once it is opened.
+  ctx.fillStyle = dawn ? '#4a3520' : '#2a1d10';
+  ctx.fillRect(inlet.x - 26, inlet.y - 10, 52, 20);
+  if (opened) {
+    const flow = 0.6 + Math.sin(performance.now() * 0.003) * 0.25;
+    ctx.strokeStyle = `rgba(150,205,235,${flow * 0.7})`;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(inlet.x, inlet.y + 10);
+    ctx.quadraticCurveTo(inlet.x + 60, inlet.y + 120, inlet.x + 30, inlet.y + 240);
+    ctx.stroke();
+    ctx.strokeStyle = `rgba(150,205,235,${flow * 0.35})`;
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.moveTo(inlet.x + 6, inlet.y + 14);
+    ctx.quadraticCurveTo(inlet.x + 70, inlet.y + 130, inlet.x + 44, inlet.y + 250);
+    ctx.stroke();
+  } else {
+    ctx.strokeStyle = 'rgba(200,180,140,.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(inlet.x - 30, inlet.y - 14);
+    ctx.lineTo(inlet.x + 30, inlet.y + 14);
+    ctx.stroke();
+  }
+
+  // The bank: reeds, and the eggs once this life has spawned.
+  ctx.fillStyle = dawn ? 'rgba(96,84,54,.9)' : 'rgba(44,38,24,.9)';
+  ctx.beginPath();
+  ctx.ellipse(bank.x, bank.y, 62, 34, 0, 0, TAU);
+  ctx.fill();
+  ctx.strokeStyle = dawn ? 'rgba(120,146,96,.8)' : 'rgba(96,124,80,.75)';
+  ctx.lineWidth = 2;
+  for (const offset of [-34, -12, 14, 36]) {
+    const sway = Math.sin(performance.now() * 0.0012 + offset) * 2.4;
+    ctx.beginPath();
+    ctx.moveTo(bank.x + offset, bank.y + 12);
+    ctx.quadraticCurveTo(bank.x + offset + sway, bank.y - 14, bank.x + offset + sway * 2, bank.y - 34);
+    ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(226,238,214,.5)';
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.arc(bank.x - 18 + i * 9, bank.y + 26, 3.4, 0, TAU);
+    ctx.fill();
   }
 }
 

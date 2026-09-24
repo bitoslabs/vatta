@@ -41,6 +41,50 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The marsh (docs/animal-lives-story.md ch.4, "ฝนหยดแรก").
+ *
+ * The forest is short of water. A channel that would feed the lower forest is
+ * blocked, and the gate to it stands inside a ring of deep mire — the frog leaps
+ * in, decides what to do about the channel, and only then does the bank where it
+ * lays its eggs become the place its life can end. `world/rooms.js#validateFrogRoute`
+ * proves the mire is a door for a leaping body alone.
+ */
+export const MARSH = Object.freeze({
+  inlet: Object.freeze({ x: 2860, y: 2320 }),
+  bank: Object.freeze({ x: 3108, y: 2180 }),
+  ring: 150,
+  walls: 12,
+  wallRadius: 44,
+  mireRadius: 40,
+  mirePlugs: 5,
+  inletRadius: 84,
+  bankRadius: 92,
+});
+
+/** Pools that make the marsh water, not just mud. */
+export const MARSH_PONDS = Object.freeze([
+  Object.freeze({ x: 3010, y: 2300, r: 96 }),
+  Object.freeze({ x: 3160, y: 2380, r: 78 }),
+  Object.freeze({ x: 3260, y: 2140, r: 70 }),
+]);
+
+/** Keep seeded dressing out of the inlet ring, or the leap gap could close. */
+export const MARSH_KEEPOUT = Object.freeze({
+  x: MARSH.inlet.x,
+  y: MARSH.inlet.y,
+  r: MARSH.ring + 130,
+});
+
+/** The frog's way in: road → marsh → the inlet → the bank. Kept clear of trunks. */
+export const MARSH_APPROACH = Object.freeze([
+  Object.freeze([2820, 1520]),
+  Object.freeze([2790, 1900]),
+  Object.freeze([2820, 2140]),
+  Object.freeze([MARSH.inlet.x, MARSH.inlet.y]),
+  Object.freeze([MARSH.bank.x, MARSH.bank.y]),
+]);
+
+/**
  * The ant's nest and the fallen seed (docs/animal-lives-story.md ch.3,
  * "เมล็ดของใคร").
  *
@@ -156,6 +200,8 @@ export const TREES = (() => {
     if (distToPoly(BURROW_APPROACH, x, y) < 84) continue;
     if (dist(x, y, NEST_KEEPOUT.x, NEST_KEEPOUT.y) < NEST_KEEPOUT.r) continue;
     if (distToPoly(NEST_APPROACH, x, y) < 84) continue;
+    if (dist(x, y, MARSH_KEEPOUT.x, MARSH_KEEPOUT.y) < MARSH_KEEPOUT.r) continue;
+    if (distToPoly(MARSH_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }

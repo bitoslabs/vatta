@@ -24,6 +24,8 @@
  *              'water' the river pool nearest home (a fish cannot walk out)
  *              'seed'  the seed chamber under the great root (a tunnelling body)
  *              'nest'  the ant's own nest, after carrying a seed home
+ *              'spawn' the marsh bank a frog lays its eggs on, once it has
+ *                      decided what to do about the blocked channel
  * maps       the maps that can carry this body (see systems/life-route.js):
  *              'land' the forest road · 'water' the river · 'burrow' the soil
  *              under the great root · 'air' anywhere above the ground
@@ -160,10 +162,11 @@ export const FORMS = Object.freeze([
   /*
    * The lab roster (docs/animal-lives-story.md, character-lab.html). They share
    * the same ids as src/prototypes/animal-catalog.js, so the main game and the
-   * lab draw one body from one source. The earthworm (its burrow, game/burrow.js)
-   * and the ant (its nest, game/ant.js) are born into the life cycle so far; the
-   * others stay `rebirth: false` until a chapter carries their body — the
-   * design's rule that no one is reborn somewhere their map cannot take them.
+   * lab draw one body from one source. The earthworm (its burrow, game/burrow.js),
+   * the ant (its nest, game/ant.js) and the frog (the marsh, game/frog.js) are
+   * born into the life cycle so far; the others stay `rebirth: false` until a
+   * chapter carries their body — the design's rule that no one is reborn
+   * somewhere their map cannot take them.
    */
   {
     id: 'worm',
@@ -197,7 +200,8 @@ export const FORMS = Object.freeze([
     vision: 20,
     waterBound: false,
     canSpeak: false,
-    rebirth: false,
+    rebirth: true,
+    lifeGoal: 'spawn',
     maps: ['water', 'land'],
     abilities: { flying: false, climbing: false, small: false, leap: true },
   },

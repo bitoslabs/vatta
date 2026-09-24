@@ -11,6 +11,7 @@ import { player } from '../entities/player.js';
 import { cam } from './camera.js';
 import { resetRelease } from './release.js';
 import { resetAnt } from './ant.js';
+import { resetFrog } from './frog.js';
 import { getKarma } from '../systems/karma.js';
 import { resolveRebirth } from '../systems/rebirth.js';
 import { enterRealm } from '../systems/samsara.js';
@@ -451,8 +452,10 @@ export function loadChapter(id, { autosave = true } = {}) {
   resetStoryFlags();
   resetGhost(def.ghost || {});
   resetRelease();
-  // A new life starts empty-handed: the ant's errand is its own (game/ant.js).
+  // A new life starts empty-handed, and with its own questions unanswered
+  // (game/ant.js, game/frog.js).
   resetAnt();
+  resetFrog();
   // You are reborn into this chapter in the plane your kamma has earned.
   enterRealm(resolveRebirth(getKarma()).realmId);
   // Conduct so far may have opened further factors of the path.

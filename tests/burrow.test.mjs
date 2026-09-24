@@ -66,7 +66,14 @@ for (const feature of underRoot) {
 assert(BIOMES['under-root'].site === 'burrow', 'the soil is the plane that carries the burrow');
 for (const id of Object.keys(BIOMES)) {
   if (id === 'under-root') continue;
+  // The forest plane has its own fixed site (the marsh — tests/frog.test.mjs);
+  // every other plane is pure seed dressing.
+  if (id === 'memory-forest') continue;
   assert(assembleRooms(4242, id).every((feature) => !feature.fixed), `${id} has no root chamber`);
+}
+for (const feature of assembleRooms(4242, 'under-root').filter((f) => f.fixed)) {
+  assert(feature.type === 'rootwall' || feature.type === 'burrow' || feature.type === 'crack',
+    `the soil only carries soil sites (saw ${feature.type})`);
 }
 log('assembly ok');
 
@@ -190,9 +197,9 @@ for (let i = 0; i < 140; i++) {
 }
 assert(sawWorm, 'the earthworm really is born during a long journey');
 
-// the lab-only bodies wait for their maps (the ant left this list when its nest
-// arrived — see tests/ant.test.mjs)
-for (const id of ['frog', 'snake', 'rabbit', 'elephant', 'tiger', 'owl']) {
+// the lab-only bodies wait for their maps (the ant and the frog left this list
+// when their nest and marsh arrived — tests/ant.test.mjs, tests/frog.test.mjs)
+for (const id of ['snake', 'rabbit', 'elephant', 'tiger', 'owl']) {
   assert.equal(isRebirthForm(FORMS.find((form) => form.id === id)), false, `${id} waits for its chapter`);
 }
 // and a motionless walker is still the fallback for every chapter

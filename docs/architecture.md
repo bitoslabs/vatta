@@ -45,7 +45,7 @@ src/
 │   ├── forms.js           ร่างปัจจุบัน, ความเร็ว/การมองเห็น, แม่น้ำที่ปลาออกไม่ได้
 │   ├── worldgen.js        seed ต่อชาติ/บท, ประกอบโลก, ความสามารถรวมผลต่อโลก, ผลตรวจเส้นทาง
 │   ├── world-effects.js   รหัสผลต่อโลกถาวร (root-watered …) แยกจากสิ่งกีดขวางสุ่ม
-│   ├── goals.js           เป้าหมายชีวิตตาม `lifeGoal` ของร่าง (น้ำ/โพรง/รัง จบชีวิต · land/seed ชี้ทาง) + LIFE_COMPLETE
+│   ├── goals.js           เป้าหมายชีวิตตาม `lifeGoal` ของร่าง (น้ำ/โพรง/รัง/วางไข่ จบชีวิต · land/seed/inlet ชี้ทาง) + LIFE_COMPLETE
 │   ├── biome.js           เลือกไบโอมจากร่าง/ภูมิ/อนุสัย (รวม under-root ของไส้เดือน)
 │   ├── life-route.js      เลือกร่างถัดไปตามบท + กรองด้วย maps/rebirth
 │   ├── life.js            วงจรชีวิต — เริ่ม/สรุปชาติ/เกิดใหม่ด้วยร่างใหม่
@@ -56,8 +56,8 @@ src/
 │   ├── projector.js       โหมดฉายภาพ — ตัวอักษร/ป้ายใหญ่ (implies โหมดครู)
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
-│   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES, RIVER, BURROW (โพรง) , NEST (รังมด)
-│   ├── rooms.js           ประกอบสิ่งกีดขวางตาม seed + ตัวตรวจเส้นทาง (BFS) + validateBurrowExit / validateNestRoute (ที่ทางที่พิสูจน์ได้)
+│   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES, RIVER, BURROW, NEST, MARSH
+│   ├── rooms.js           ประกอบสิ่งกีดขวางตาม seed + ตัวตรวจเส้นทาง (BFS) + validateBurrowExit / validateNestRoute / validateFrogRoute (ที่ทางที่พิสูจน์ได้)
 │   └── textures.js        ground/grain patterns
 ├── entities/              สิ่งมีชีวิต
 │   ├── player.js          movement, collision, safe zone
@@ -101,6 +101,7 @@ src/
 │   ├── world-memory.js    สะพาน/ทางน้ำที่จำข้ามชาติ
 │   ├── burrow.js          บทไส้เดือน — ถึงเมล็ดแล้วบันทึกผลต่อโลก root-watered
 │   ├── ant.js             บทมด — ธุระเมล็ดสองขั้น + ทางเลือกที่เมล็ด + seed-carried
+│   ├── frog.js            บทกบ — ทางน้ำในวงโคลน + คำถามเปิด/ปล่อย + water-opened
 │   ├── npc-encounters.js  beings ข้างทาง §6 (เปรต/นางฟ้า/มาร/นาค/ครุฑ/ผู้เฝ้าธาร)
 │   ├── story-chapter8.js  กระจกแห่งกรรม — เงาตามอนุสัย (ภาค 2)
 │   ├── story-chapter9.js  อนุสัยที่เหลือ — ผีเดินตามรอยเดิม (replay)
@@ -185,7 +186,7 @@ npm start          # หรือ npm run serve:py
 # http://localhost:5173
 ```
 
-- `npm test` — canonical suites ใน `tests/` (life-transition + burrow + ant)
+- `npm test` — canonical suites ใน `tests/` (life-transition + burrow + ant + frog)
 - `node --check src/**/*.js` — syntax
 - smoke tests: โหลดทุกโมดูลด้วย DOM stub, เดินครบทุกฉาก (title/world/meditation/memory/release/chapter 2)
 - i18n audit: เทียบคีย์ครบทั้ง 3 ภาษา + ตรวจ `data-i18n` ใน HTML และ `t('…')` ใน JS

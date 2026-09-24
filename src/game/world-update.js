@@ -21,6 +21,7 @@ import { updateGuardian } from './npc.js';
 import { updateEncounters } from './npc-encounters.js';
 import { updateWorldMemory } from './world-memory.js';
 import { updateAnt } from './ant.js';
+import { updateFrog } from './frog.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
 import { updateTour } from '../systems/teacher.js';
@@ -52,12 +53,14 @@ export function updateWorld(dt) {
 
   updateStory(dt);
   leaveLightFootprints();
+  leapSplashes();
   clearBouldersForStrongForms();
   updateLifeGoal();
   updateGuardian();
   updateEncounters();
   updateWorldMemory();
   updateAnt();
+  updateFrog();
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);
@@ -109,6 +112,27 @@ function leaveLightFootprints() {
     vy: -6 - rng() * 8,
     t: 0,
     life: 0.9 + rng() * 0.5,
+  });
+}
+
+/**
+ * A leap across the mire leaves water behind it (design §10): the frog's own
+ * flourish, and the one cue that says the mud was crossable for this body.
+ */
+function leapSplashes() {
+  if (getForm().abilities?.leap !== true || !player.moving) return;
+  if (rng() > 0.16) return;
+  const overMire = dynamicFeatures().some((feature) => (
+    feature.type === 'mire' && dist(player.x, player.y, feature.x, feature.y) < feature.r + 26
+  ));
+  if (!overMire) return;
+  addSpark({
+    x: player.x + (rng() - 0.5) * 16,
+    y: player.y + 4,
+    vx: (rng() - 0.5) * 26,
+    vy: -14 - rng() * 12,
+    t: 0,
+    life: 0.5 + rng() * 0.4,
   });
 }
 
