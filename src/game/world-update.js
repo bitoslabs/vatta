@@ -27,6 +27,7 @@ import { updateRabbit } from './rabbit.js';
 import { updateOwl } from './owl.js';
 import { updateElephant } from './elephant.js';
 import { updateTiger } from './tiger.js';
+import { updateGecko } from './gecko.js';
 import { isRestful, REST_RELIEF } from '../systems/rest.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
@@ -72,6 +73,7 @@ export function updateWorld(dt) {
   updateOwl();
   updateElephant();
   updateTiger();
+  updateGecko();
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);

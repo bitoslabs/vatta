@@ -143,6 +143,7 @@ export function advanceLife() {
     watch: { key: 'life.goal.watch', color: '#cbd6ea' },
     grove: { key: 'life.goal.grove', color: '#c9b78f' },
     trail: { key: 'life.goal.trail', color: '#d8c8b4' },
+    enclosure: { key: 'life.goal.enclosure', color: '#b9c9a8' },
   }[lifeGoal];
   if (hint) {
     const goal = goalFor();

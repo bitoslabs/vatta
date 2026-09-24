@@ -41,6 +41,37 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The walled enclosure and its gate (docs/animal-lives-story.md reserve table,
+ * "จิ้งจก — มองปัญหาจากมุมใหม่").
+ *
+ * A sheer wall nothing walks over, one gate — and the gate only opens from the
+ * inside. So the life is a change of angle: climb the wall, drop into the
+ * enclosure, and open the way for every body that cannot climb at all
+ * `world/rooms.js#validateGeckoRoute` proves the enclosure is shut to walkers
+ * before that and open to them after it.
+ */
+export const ENCLOSURE = Object.freeze({
+  center: Object.freeze({ x: 2150, y: 2680 }),
+  ring: 200,
+  segments: 24,
+  wallRadius: 48,
+  refugeRadius: 96,
+});
+
+/** Keep seeded dressing out of the walled enclosure and its approach. */
+export const ENCLOSURE_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: ENCLOSURE.center.x, y: ENCLOSURE.center.y, r: ENCLOSURE.ring + 140 }),
+]);
+
+/** The gecko's way: the road → the wall → the gate → the refuge. Kept clear of trunks. */
+export const ENCLOSURE_APPROACH = Object.freeze([
+  Object.freeze([2820, 1520]),
+  Object.freeze([2500, 2050]),
+  Object.freeze([2250, 2400]),
+  Object.freeze([ENCLOSURE.center.x, ENCLOSURE.center.y]),
+]);
+
+/**
  * The trail, the rival and the tiger's range (docs/animal-lives-story.md ch.12,
  * "เงาในพุ่ม").
  *
@@ -408,6 +439,8 @@ export const TREES = (() => {
     if (distToPoly(GROVE_APPROACH, x, y) < 84) continue;
     if (TRAIL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (distToPoly(TRAIL_APPROACH, x, y) < 84) continue;
+    if (ENCLOSURE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(ENCLOSURE_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }

@@ -94,6 +94,21 @@ export function drawAnimalVector(ctx, animal, actor, moving, options = {}) {
       eye(23, -18 + crouch);
       break;
     }
+    case 'gecko': {
+      // A low splayed lizard: four legs out to the sides, a long tail, wide eyes.
+      for (const side of [-1, 1]) for (const [legX, reach] of [[-6, 7], [5, 6]]) {
+        const swing = step * side * 2.4;
+        line([[legX, -5], [legX + side * 5, -2], [legX + side * reach, 1 + swing * .3]], '#5f7550', 2.4);
+      }
+      line([[-10, -6], [-19, -4 + step * 1.6], [-25, -6 + step * 2.6]], '#7d9463', 3);
+      ellipse(0, -7, 13, 6.5, '#8aa06a');
+      ellipse(-5, -9, 6, 4, '#9db27b', -.2);
+      ellipse(9, -9, 7, 5.5, '#8aa06a');
+      eye(11, -11);
+      line([[1, -11], [3, -14], [6, -15]], '#6b7f57', 1.2);
+      if (active) for (let i = 0; i < 3; i++) ellipse(-16 + i * 8, -12, 3.4, 1.6, 'rgba(214,232,190,.5)');
+      break;
+    }
     case 'owl': {
       const flap = Math.sin(actor.phase * 2) * 7;
       if (active) {

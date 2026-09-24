@@ -12,12 +12,12 @@ import { FORMS, mapsFor } from '../content/forms.js';
  */
 export const CHAPTER_ANIMALS = [
   ['deer', 'dog', 'crane', 'snake', 'tiger'], ['turtle', 'dog', 'worm', 'ant'],
-  ['monkey', 'butterfly', 'deer', 'rabbit'], ['dog', 'turtle', 'crane', 'frog', 'elephant'],
-  ['butterfly', 'monkey', 'worm', 'snake'], ['crane', 'dog', 'turtle', 'tiger'],
+  ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko'], ['dog', 'turtle', 'crane', 'frog', 'elephant'],
+  ['butterfly', 'monkey', 'worm', 'snake', 'gecko'], ['crane', 'dog', 'turtle', 'tiger'],
   ['turtle', 'deer', 'butterfly', 'frog'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
   ['deer', 'butterfly', 'turtle', 'rabbit', 'tiger'], ['monkey', 'crane', 'dog', 'frog', 'owl'],
   ['crane', 'turtle', 'butterfly', 'ant', 'snake'], ['butterfly', 'dog', 'deer', 'tiger'],
-  ['turtle', 'monkey', 'crane', 'snake'], ['deer', 'dog', 'butterfly', 'rabbit', 'owl', 'elephant'],
+  ['turtle', 'monkey', 'crane', 'snake', 'gecko'], ['deer', 'dog', 'butterfly', 'rabbit', 'owl', 'elephant'],
 ];
 
 /** A body may only be offered for a chapter whose map carries it. */

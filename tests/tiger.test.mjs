@@ -252,7 +252,7 @@ for (let i = 0; i < 600; i++) {
   route = { ...next, history: [...route.history, next.formId], chapterIds };
 }
 assert.equal(born.has('tiger'), true, 'the tiger is born during a long journey');
-assert.equal(FORMS.filter((form) => isRebirthForm(form)).length, 18, 'every body in the roster can now be reborn');
+assert.equal(FORMS.filter((form) => isRebirthForm(form)).length, FORMS.length, 'every body in the roster can now be reborn');
 log('rebirth ok');
 
 console.error('TIGER TEST OK — tracks read in order, the fight left unpicked, and the trust that lets anyone follow');

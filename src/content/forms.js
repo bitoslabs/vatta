@@ -36,6 +36,8 @@
  *                      — one way for the large, one for the small
  *              'trail' the range a tiger returns to, once it has followed the
  *                      tracks and decided about the rival at the end of them
+ *              'enclosure' the refuge a gecko ends in, after climbing the wall
+ *                      and opening the gate from the inside for everyone
  * maps       the maps that can carry this body (see systems/life-route.js):
  *              'land' the forest road · 'water' the river · 'burrow' the soil
  *              under the great root · 'air' anywhere above the ground
@@ -46,6 +48,7 @@
  *              burrow  tunnels through soft soil (`burrow`), but not hard root
  *              leap    crosses deep mire, but not a slot in stone
  *              slither flattens through a crevice, but not through soil
+ *              cling   climbs a sheer wall nothing else passes (the gecko)
  *              tracker reads the trail of another animal (the tiger)
  *              stealth / nightVision are the lab bodies' own tools,
  *              exercised in character-lab.html and reserved for their chapters
@@ -270,6 +273,19 @@ export const FORMS = Object.freeze([
     lifeGoal: 'trail',
     maps: ['land'],
     abilities: { flying: false, climbing: false, small: false, stealth: true, tracker: true },
+  },
+  {
+    id: 'gecko',
+    speed: 0.9,
+    waterSpeed: 0.7,
+    vision: 10,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 1.1,
+    rebirth: true,
+    lifeGoal: 'enclosure',
+    maps: ['land'],
+    abilities: { flying: false, climbing: true, small: false, cling: true },
   },
   {
     id: 'owl',

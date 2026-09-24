@@ -11,7 +11,7 @@ import { teacherLandmarks, tourTarget } from '../systems/teacher.js';
 import { floaters, screenNotes, sparks } from '../systems/effects.js';
 import { ctx, viewport } from '../systems/viewport.js';
 import { textures } from '../world/textures.js';
-import { FALSE_A, FALSE_B, FOOT, GATES, PATH, RIVER, RIVER_WIDTH, TREES } from '../world/world-data.js';
+import { ENCLOSURE, FALSE_A, FALSE_B, FOOT, GATES, PATH, RIVER, RIVER_WIDTH, TREES } from '../world/world-data.js';
 import { cam } from '../game/camera.js';
 import { ghosts } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
@@ -28,6 +28,7 @@ import { fieldSite, isSheltered, warrenIsConnected } from '../game/rabbit.js';
 import { nightWatched, owlFound, owlSite, perceivesLost } from '../game/owl.js';
 import { groveSite, nestCrashed, waysJoined } from '../game/elephant.js';
 import { canTrack, inHollowRest, isHunted, tracksRead, trailSite } from '../game/tiger.js';
+import { enclosureSite, gateOpened as geckoGateOpened } from '../game/gecko.js';
 import { visionRadius } from '../systems/vision.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome } from '../systems/biome.js';
@@ -72,6 +73,7 @@ export function renderWorld() {
   drawOwlNight(dawn);
   drawGrove(dawn);
   drawTigerTrail(dawn);
+  drawEnclosure(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -720,6 +722,67 @@ function drawTigerTrail(dawn) {
       ctx.arc(hollow.x, hollow.y, 118, 0, TAU);
       ctx.stroke();
     }
+  }
+}
+
+/**
+ * The walled enclosure and its gate (reserve table, จิ้งจก): a sheer ring only a
+ * clinging body climbs, a barred gate that only opens from the inside, and the
+ * refuge every body walks into once it has been opened.
+ */
+function drawEnclosure(dawn) {
+  const features = dynamicFeatures();
+  const walls = features.filter((feature) => feature.type === 'wall');
+  if (!walls.length) return;
+  const { center, refugeRadius } = enclosureSite();
+  const opened = geckoGateOpened();
+
+  for (const wall of walls) {
+    if (wall.gate === true && !opened) {
+      // The barred gate: a wall with a bar across it.
+      ctx.fillStyle = dawn ? '#7a6a4a' : '#3a3220';
+      ctx.fillRect(wall.x - wall.r, wall.y - 8, wall.r * 2, 16);
+      ctx.strokeStyle = 'rgba(226,206,148,.6)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(wall.x - wall.r, wall.y);
+      ctx.lineTo(wall.x + wall.r, wall.y);
+      ctx.stroke();
+      continue;
+    }
+    if (wall.gate === true) continue; // an opened gate is simply gone
+    ctx.fillStyle = dawn ? '#5e5e56' : '#2c2e28';
+    ctx.beginPath();
+    ctx.arc(wall.x, wall.y, wall.r, 0, TAU);
+    ctx.fill();
+    // courses of stone, so a wall reads as built rather than as a boulder
+    ctx.strokeStyle = dawn ? 'rgba(150,150,140,.35)' : 'rgba(110,114,106,.3)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(wall.x - wall.r * 0.8, wall.y - wall.r * 0.3);
+    ctx.lineTo(wall.x + wall.r * 0.8, wall.y - wall.r * 0.3);
+    ctx.moveTo(wall.x - wall.r * 0.8, wall.y + wall.r * 0.3);
+    ctx.lineTo(wall.x + wall.r * 0.8, wall.y + wall.r * 0.3);
+    ctx.stroke();
+  }
+
+  // The refuge inside: mossy ground, and a warm ring once it is open to all.
+  ctx.fillStyle = dawn ? 'rgba(74,92,60,.45)' : 'rgba(32,48,32,.5)';
+  ctx.beginPath();
+  ctx.ellipse(center.x, center.y, refugeRadius, refugeRadius * 0.8, 0, 0, TAU);
+  ctx.fill();
+  if (opened) {
+    ctx.strokeStyle = `rgba(185,201,168,${0.25 + Math.sin(performance.now() * 0.002) * 0.08})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, refugeRadius + 26, 0, TAU);
+    ctx.stroke();
+    // the gate the gecko left open, drawn as a gap in the ring
+    ctx.strokeStyle = 'rgba(226,206,148,.5)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, ENCLOSURE.ring, Math.PI / 2 - 0.12, Math.PI / 2 + 0.12);
+    ctx.stroke();
   }
 }
 

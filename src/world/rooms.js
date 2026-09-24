@@ -5,6 +5,7 @@ import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
 import {
   BURROW, BURROW_KEEPOUT, CREVICE, CREVICE_APPROACH, CREVICE_KEEPOUT,
+  ENCLOSURE, ENCLOSURE_APPROACH, ENCLOSURE_KEEPOUTS,
   FIELD, FIELD_APPROACH, FIELD_KEEPOUTS, GROVE, GROVE_APPROACH, GROVE_KEEPOUTS,
   MARSH, MARSH_APPROACH, MARSH_KEEPOUT, MARSH_PONDS,
   NEST, NEST_KEEPOUT, PATH, RIVER, RIVER_WIDTH,
@@ -65,7 +66,14 @@ export const FIELD_FEATURE_TYPES = Object.freeze(['gully']);
  */
 export const GROVE_FEATURE_TYPES = Object.freeze(['log', 'crawlway']);
 
-const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone', 'log']);
+/**
+ * The enclosure's own kind (reserve table, จิ้งจก): `wall` is sheer stone that
+ * nothing walks over but a clinging body can climb — the gate in it is a wall
+ * too, and the only wall that can be opened, from the inside (game/gecko.js).
+ */
+export const ENCLOSURE_FEATURE_TYPES = Object.freeze(['wall']);
+
+const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone', 'log', 'wall']);
 
 function featureRadius(type, rng) {
   if (type === 'boulders') return 36 + rng() * 14;
@@ -85,6 +93,7 @@ function featureRadius(type, rng) {
   if (type === 'gully') return FIELD.gully.radius;
   if (type === 'log') return GROVE.logRadius;
   if (type === 'crawlway') return GROVE.crawlRadius;
+  if (type === 'wall') return ENCLOSURE.wallRadius;
   if (type === 'pebble') return 18 + rng() * 10;
   return 62;
 }
@@ -116,6 +125,7 @@ export function blockedAt(features, x, y, abilities = {}) {
     if (feature.type === 'crevice') return abilities.slither !== true && featureAt(feature, x, y);
     if (feature.type === 'gully') return abilities.leap !== true && featureAt(feature, x, y);
     if (feature.type === 'crawlway') return abilities.small !== true && featureAt(feature, x, y);
+    if (feature.type === 'wall') return abilities.cling !== true && featureAt(feature, x, y);
     if (!SOLID_TYPES.has(feature.type)) return false;
     if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
     if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
@@ -141,6 +151,8 @@ function mayPlace(type, x, y, radius) {
   if (FIELD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   // Nor the walled grove, or a trunk could fall across the log.
   if (GROVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
+  // Nor the walled enclosure, or a trunk could lean over the wall.
+  if (ENCLOSURE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   void type;
   return true;
 }
@@ -425,6 +437,40 @@ export function groveWithoutLog(features = assembleGrove()) {
   return features.filter((feature) => feature.type !== 'log');
 }
 
+/**
+ * The walled enclosure (reserve table, จิ้งจก — "มองปัญหาจากมุมใหม่").
+ *
+ * A sheer ring of wall with one gate in it, and the gate stands in the same ring:
+ * a clinging body climbs over anywhere, while every other body must wait for the
+ * gate — which only opens from the inside. The gate is the one wall marked
+ * `liftable`, so game/gecko.js can take it out of the world for good.
+ */
+export function assembleEnclosure() {
+  const { center, ring, segments, wallRadius } = ENCLOSURE;
+  const features = [];
+  const gateAngle = Math.PI / 2; // the gate faces the road, south of the ring
+  const step = TAU / segments;
+
+  for (let i = 0; i < segments; i++) {
+    const angle = i * step;
+    const isGate = Math.abs(((angle - gateAngle + Math.PI) % TAU + TAU) % TAU - Math.PI) < step / 2;
+    features.push({
+      i: 0,
+      site: 'enclosure',
+      type: 'wall',
+      fixed: true,
+      // The gate is as solid as the wall — until a body inside opens it.
+      gate: isGate || undefined,
+      liftable: isGate || undefined,
+      x: center.x + Math.cos(angle) * ring,
+      y: center.y + Math.sin(angle) * ring,
+      r: wallRadius,
+    });
+  }
+
+  return features;
+}
+
 /** Assemble the seed's dressing: the plane's own kinds beside the true path. */
 export function assembleRooms(seed, biomeId = 'memory-forest') {
   const rng = mulberry32(seed);
@@ -454,6 +500,7 @@ export function assembleRooms(seed, biomeId = 'memory-forest') {
   if (sites.includes('crevice')) for (const f of assembleCrevice()) features.push({ ...f, i: features.length });
   if (sites.includes('field')) for (const f of assembleField()) features.push({ ...f, i: features.length });
   if (sites.includes('grove')) for (const f of assembleGrove()) features.push({ ...f, i: features.length });
+  if (sites.includes('enclosure')) for (const f of assembleEnclosure()) features.push({ ...f, i: features.length });
 
   // Occasionally silt builds up in the river — which the route check must catch.
   if (rng() < 0.35) {
@@ -639,6 +686,29 @@ export function validateFrogRoute(features, abilities = {}) {
   const smallReaches = reachableBetween(features, from, MARSH.inlet, { ...base, leap: false, small: true });
   const ok = leapReaches && !walkerReaches && !tunnelReaches && !smallReaches;
   return { ok, leapReaches, walkerReaches, tunnelReaches, smallReaches };
+}
+
+/** The enclosure without its gate: what the world looks like once it is opened. */
+export function enclosureWithGateOpen(features = assembleEnclosure()) {
+  return features.filter((feature) => feature.gate !== true);
+}
+
+/**
+ * Prove the enclosure's gate is *a door opened from the far side* (reserve table,
+ * จิ้งจก): a clinging body reaches the inside by climbing the wall, a walking body
+ * cannot — and once the gate is open, the same walker can walk straight in. The
+ * life's whole point is that last line.
+ */
+export function validateGeckoRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false };
+  const start = ENCLOSURE_APPROACH[0];
+  const from = { x: start[0], y: start[1] };
+  const inside = ENCLOSURE.center;
+  const climbReaches = reachableBetween(features, from, inside, { ...base, cling: true });
+  const walkerBefore = reachableBetween(features, from, inside, { ...base, cling: false });
+  const walkerAfter = reachableBetween(enclosureWithGateOpen(features), from, inside, { ...base, cling: false });
+  const ok = climbReaches === true && walkerBefore === false && walkerAfter === true;
+  return { ok, climbReaches, walkerBefore, walkerAfter };
 }
 
 /**

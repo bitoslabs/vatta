@@ -46,7 +46,7 @@ src/
 │   ├── worldgen.js        seed ต่อชาติ/บท, ประกอบโลก, ความสามารถรวมผลต่อโลก, ผลตรวจเส้นทาง, removeFeature (ธง `liftable` = สิ่งที่ยกได้)
 │   ├── world-effects.js   รหัสผลต่อโลกถาวร (root-watered … night-watched) แยกจากสิ่งกีดขวางสุ่ม
 │   ├── vision.js          รัศมีการมองเห็นที่เดียวของเกม — ชั้นความมืดและ gameplay ใช้ค่าเดียวกัน
-│   ├── rest.js            "ที่ปลอดภัยที่โลกได้มา" ทุกแบบ (รังกระต่าย/รังนก/โพรง) รวมเป็นกฎเดียว
+│   ├── rest.js            "ที่ปลอดภัยที่โลกได้มา" ทุกแบบ (รังกระต่าย/รังนก/โพรง/ลานที่เปิดประตู) รวมเป็นกฎเดียว
 │   ├── goals.js           เป้าหมายชีวิตตาม `lifeGoal` ของร่าง (water/burrow/nest/spawn/link/storm/watch/grove/range จบชีวิต · land/seed/inlet/spring/warren/shelter/lost/roost/track/hollow ชี้ทาง) + LIFE_COMPLETE
 │   ├── biome.js           เลือกไบโอมจากร่าง/ภูมิ/อนุสัย (รวม under-root ของไส้เดือน) · `content/biomes.js` ประกาศ `sites` = จุดแผนที่ถาวรของภพ
 │   ├── life-route.js      เลือกร่างถัดไปตามบท + กรองด้วย maps/rebirth
@@ -58,8 +58,8 @@ src/
 │   ├── projector.js       โหมดฉายภาพ — ตัวอักษร/ป้ายใหญ่ (implies โหมดครู)
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
-│   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES, RIVER, BURROW, NEST, MARSH, CREVICE, FIELD, OWL, GROVE, TRAIL
-│   ├── rooms.js           ประกอบสิ่งกีดขวางตาม seed + จุดถาวรตาม `biome.sites` + ตัวตรวจเส้นทาง (BFS) + validateBurrowExit / validateNestRoute / validateFrogRoute / validateSnakeRoute / validateRabbitRoute / validateElephantRoute
+│   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES, RIVER, BURROW, NEST, MARSH, CREVICE, FIELD, OWL, GROVE, TRAIL, ENCLOSURE
+│   ├── rooms.js           ประกอบสิ่งกีดขวางตาม seed + จุดถาวรตาม `biome.sites` + ตัวตรวจเส้นทาง (BFS) + validateBurrowExit / validateNestRoute / validateFrogRoute / validateSnakeRoute / validateRabbitRoute / validateElephantRoute / validateGeckoRoute
 │   └── textures.js        ground/grain patterns
 ├── entities/              สิ่งมีชีวิต
 │   ├── player.js          movement, collision, safe zone
@@ -109,6 +109,7 @@ src/
 │   ├── owl.js             บทนกฮูก — ความมืดเป็นประตู + พาสัตว์หลงกลับรัง + night-watched
 │   ├── elephant.js        บทช้าง — ยกไม้โดยไม่ทำรังพัง + ways-joined + รังที่รอดเป็นที่กำบัง
 │   ├── tiger.js           บทเสือ — รอยเท้าตามลำดับ + เลือกหลบ/เข้าหา + trust-built
+│   ├── gecko.js           บทจิ้งจก — ไต่กำแพง + เปิดประตูจากด้านในให้ทุกตัว + gate-opened
 │   ├── npc-encounters.js  beings ข้างทาง §6 (เปรต/นางฟ้า/มาร/นาค/ครุฑ/ผู้เฝ้าธาร)
 │   ├── story-chapter8.js  กระจกแห่งกรรม — เงาตามอนุสัย (ภาค 2)
 │   ├── story-chapter9.js  อนุสัยที่เหลือ — ผีเดินตามรอยเดิม (replay)
@@ -193,7 +194,7 @@ npm start          # หรือ npm run serve:py
 # http://localhost:5173
 ```
 
-- `npm test` — canonical suites ใน `tests/` (life-transition + burrow + ant + frog + snake + rabbit + owl + elephant + tiger)
+- `npm test` — canonical suites ใน `tests/` (life-transition + burrow + ant + frog + snake + rabbit + owl + elephant + tiger + gecko)
 - `node --check src/**/*.js` — syntax
 - smoke tests: โหลดทุกโมดูลด้วย DOM stub, เดินครบทุกฉาก (title/world/meditation/memory/release/chapter 2)
 - i18n audit: เทียบคีย์ครบทั้ง 3 ภาษา + ตรวจ `data-i18n` ใน HTML และ `t('…')` ใน JS
