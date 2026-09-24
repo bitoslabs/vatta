@@ -5,7 +5,7 @@ import { clamp } from '../core/math.js';
 import { rng } from '../core/rng.js';
 import { state } from '../core/state.js';
 import { ctx, lightCanvas, lightCtx, viewport } from '../systems/viewport.js';
-import { currentBiome } from '../systems/biome.js';
+import { currentBiome, currentBiomeId } from '../systems/biome.js';
 import { visionRadius } from '../systems/vision.js';
 import { GATES } from '../world/world-data.js';
 import { player } from '../entities/player.js';
@@ -48,7 +48,8 @@ export function renderLighting(mind) {
   punch(TEMPLE.x, TEMPLE.y, TEMPLE.r + 120, 0.96);
   punch(SALA.x, SALA.y, 340, 0.9);
 
-  if (!dawn && state.chapter === 1) {
+  // The forest's light gates only shine in the forest (see story-chapter1.js).
+  if (!dawn && state.chapter === 1 && currentBiomeId() === 'memory-forest') {
     for (const gate of GATES) {
       punch(gate.x, gate.y, clamp((state.fear - 0.42) * 260, 0, 150), clamp((state.fear - 0.42) * 2, 0, 0.7));
     }

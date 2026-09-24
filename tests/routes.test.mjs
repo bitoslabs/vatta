@@ -198,4 +198,55 @@ for (const being of encountersHere()) {
 }
 log('anchored points ok');
 
-console.error('ROUTES TEST OK — every plane lays its own road, same gate and same sala, and no trunk or dressing covers it');
+// ---- 8. the story and the classroom tour follow the plane too ----
+state.formId = 'human';
+state.realmId = 'manussa';
+const chapter1 = await import('../src/game/story-chapter1.js');
+const chapter2 = await import('../src/game/story-chapter2.js');
+const teacher = await import('../src/systems/teacher.js');
+
+// the forest keeps every beat exactly where it always was
+assert.deepEqual(chapter2.angerSpawn(), { x: 2500, y: 1450 }, 'anger waits on its old spot in the forest');
+assert.equal(chapter1.hasLightGateLesson(), true, 'and the forest teaches the light gates');
+const forestNotes = teacher.teacherLandmarks();
+assert.deepEqual(
+  forestNotes.map((note) => note.key),
+  ['teacher.note.temple', 'teacher.note.bodhi', 'teacher.note.gate', 'teacher.note.guardian', 'teacher.note.path', 'teacher.note.sala'],
+  'the forest tour walks all six landmarks',
+);
+const forestGuardianNote = forestNotes.find((note) => note.key === 'teacher.note.guardian');
+assert.deepEqual(
+  { x: forestGuardianNote.x, y: forestGuardianNote.y },
+  { x: 2560, y: 1240 },
+  'including the guardian where it stood',
+);
+assert.equal(teacher.tourProgress().total, 6, 'and the tour counts six stops');
+
+// another plane: the forest-lesson disappears, the road-bound stops move onto its road
+state.formId = 'asura';
+const asuraNotes = teacher.teacherLandmarks();
+assert.deepEqual(
+  asuraNotes.map((note) => note.key),
+  ['teacher.note.temple', 'teacher.note.bodhi', 'teacher.note.guardian', 'teacher.note.path', 'teacher.note.sala'],
+  'the forest gate lesson is not taught where there are no forest gates',
+);
+for (const key of ['teacher.note.temple', 'teacher.note.bodhi', 'teacher.note.sala']) {
+  const forestNote = forestNotes.find((note) => note.key === key);
+  const asuraNote = asuraNotes.find((note) => note.key === key);
+  assert.deepEqual({ x: asuraNote.x, y: asuraNote.y }, { x: forestNote.x, y: forestNote.y },
+    `${key} stands in every plane, so it does not move`);
+}
+for (const key of ['teacher.note.guardian', 'teacher.note.path']) {
+  const note = asuraNotes.find((entry) => entry.key === key);
+  assert(distToPoly(ROUTES['asura-city'], note.x, note.y) < 1, `${key} stands on the city road`);
+}
+assert.equal(teacher.tourProgress().total, 5, 'and the tour counts five stops');
+assert.equal(teacher.tourTarget().key, 'teacher.note.temple', 'the tour still begins at the temple');
+assert.equal(chapter1.hasLightGateLesson(), false, 'and chapter one does not look for forest gates elsewhere');
+const asuraAnger = chapter2.angerSpawn();
+assert(distToPoly(ROUTES['asura-city'], asuraAnger.x, asuraAnger.y) < 1, 'anger waits on the city road');
+assert(dist(asuraAnger.x, asuraAnger.y, 2500, 1450) > 30, 'not on the forest spot it used to hold');
+state.formId = 'human';
+log('story and tour per plane ok');
+
+console.error('ROUTES TEST OK — every plane lays its own road, and the road\'s beings, lures, story beats and classroom tour move with it');

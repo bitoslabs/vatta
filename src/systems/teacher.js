@@ -4,6 +4,8 @@ import { state } from '../core/state.js';
 import { emit, EVENTS, on } from '../core/events.js';
 import { dist } from '../core/math.js';
 import { player } from '../entities/player.js';
+import { anchoredPoint } from '../world/world-data.js';
+import { currentBiomeId } from './biome.js';
 
 const KEY = 'vimutti.teacher';
 
@@ -34,7 +36,15 @@ const TOUR_ORDER = [
   'teacher.note.bodhi',
 ];
 
-const byKey = new Map(NOTES.map((note) => [note.key, note]));
+/**
+ * Two kinds of landmark live in this list (design §7): places that stand in every
+ * plane (the temple, the bodhi tree, the sala, the forest itself) and places that
+ * belong to the road (the guardian, and the road itself). The road-bound ones are
+ * carried onto whichever road this life walks, and the forest's own gate lesson
+ * is only taught in the forest.
+ */
+const ROAD_NOTES = new Set(['teacher.note.guardian', 'teacher.note.path']);
+const FOREST_NOTES = new Set(['teacher.note.gate']);
 
 let tourIndex = 0;
 
@@ -73,10 +83,29 @@ export function currentNote() {
   return here ? here.key : 'teacher.note.forest';
 }
 
+/** The landmarks this plane has, with the road-bound ones standing on its road. */
+export function teacherLandmarks() {
+  const plane = currentBiomeId();
+  const forest = plane === 'memory-forest';
+  return NOTES
+    .filter((note) => forest || !FOREST_NOTES.has(note.key))
+    .map((note) => {
+      if (!ROAD_NOTES.has(note.key)) return note;
+      const spot = anchoredPoint(plane, note.x, note.y);
+      return { ...note, x: spot.x, y: spot.y };
+    });
+}
+
+/** The tour order this plane can actually walk. */
+function tourOrder() {
+  const notes = teacherLandmarks();
+  return TOUR_ORDER.filter((key) => notes.some((note) => note.key === key));
+}
+
 function noteAt() {
   let best = null;
   let bestDist = Infinity;
-  for (const note of NOTES) {
+  for (const note of teacherLandmarks()) {
     const d = dist(player.x, player.y, note.x, note.y);
     if (d < note.r && d < bestDist) {
       bestDist = d;
@@ -86,17 +115,17 @@ function noteAt() {
   return best;
 }
 
-export function teacherLandmarks() {
-  return NOTES;
-}
-
 /** The next stop of the guided tour, or null when the tour is complete. */
 export function tourTarget() {
-  return byKey.get(TOUR_ORDER[tourIndex]) || null;
+  const notes = teacherLandmarks();
+  const order = tourOrder();
+  const key = order[tourIndex];
+  return key ? notes.find((note) => note.key === key) || null : null;
 }
 
 export function tourProgress() {
-  return { index: tourIndex, total: TOUR_ORDER.length, done: tourIndex >= TOUR_ORDER.length };
+  const order = tourOrder();
+  return { index: tourIndex, total: order.length, done: tourIndex >= order.length };
 }
 
 export function resetTour() {

@@ -16,11 +16,22 @@ import { showEndScreen } from '../ui/end-screen.js';
 import { toast } from '../ui/feedback.js';
 import { cam } from './camera.js';
 import { registerChapterHandler } from './chapters.js';
+import { anchoredPoint } from '../world/world-data.js';
+import { currentBiomeId } from '../systems/biome.js';
 
 const RETALIATE_RANGE = 150;
 const BODHI = { x: 360, y: 1690 };
 const BODHI_RADIUS = 140;
 const ANGER_SPAWN = { x: 2500, y: 1450 };
+
+/**
+ * Where anger is standing when the chapter opens. It waits on the road, so it
+ * waits on *this* life's road: the same place as always in the forest, and the
+ * nearest place on the plane's own road anywhere else (design §7).
+ */
+export function angerSpawn() {
+  return anchoredPoint(currentBiomeId(), ANGER_SPAWN.x, ANGER_SPAWN.y);
+}
 const ENRAGE_SECONDS = 6;
 const RETALIATE_FEAR = 0.28;
 
@@ -29,7 +40,8 @@ let ch2 = { hinted: false, pacified: false, answered: false, ended: false };
 
 export function startChapter2() {
   ch2 = { hinted: false, pacified: false, answered: false, ended: false };
-  placeGhost(ANGER_SPAWN.x, ANGER_SPAWN.y);
+  const spot = angerSpawn();
+  placeGhost(spot.x, spot.y);
   say('ch2.intro', () => toast(t('ch2.toast.start.title'), t('ch2.toast.start.sub')));
 }
 

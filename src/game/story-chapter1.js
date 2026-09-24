@@ -11,6 +11,7 @@ import { recordKarma } from '../systems/karma.js';
 import { GATES } from '../world/world-data.js';
 import { STATUS } from '../entities/ghost-status.js';
 import { ghost, spawnGhostNearPlayer } from '../entities/ghost.js';
+import { currentBiomeId } from '../systems/biome.js';
 import { player } from '../entities/player.js';
 import { say } from '../ui/dialogue.js';
 import { showEndScreen } from '../ui/end-screen.js';
@@ -21,6 +22,15 @@ import { startMeditation } from './meditation.js';
 import { updateRelease } from './release.js';
 
 const MONK = { x: 700, y: 1450 };
+
+/**
+ * The two false trails and the light gates that call from them are the *forest's*
+ * own lesson, so chapter one only teaches them in the forest (design §7): a life
+ * born in another plane walks its own road, and there are no forest gates on it.
+ */
+export function hasLightGateLesson() {
+  return currentBiomeId() === 'memory-forest';
+}
 const CALL_INTERVAL = 6.5;
 const GATE_CALL_RANGE = 950;
 const GATE_LOOP_RADIUS = 54;
@@ -59,9 +69,9 @@ export function updateChapter1(dt) {
     }, 4600);
   }
 
-  if (ghost.active && !story.salaReached) maybePlayGateCall(dt);
+  if (ghost.active && !story.salaReached && hasLightGateLesson()) maybePlayGateCall(dt);
 
-  if (state.fear > GATE_LOOP_FEAR) {
+  if (hasLightGateLesson() && state.fear > GATE_LOOP_FEAR) {
     for (const gate of GATES) {
       if (dist(player.x, player.y, gate.x, gate.y) < GATE_LOOP_RADIUS) {
         loopBack(gate);
