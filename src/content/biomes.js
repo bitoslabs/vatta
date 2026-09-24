@@ -10,8 +10,11 @@
  * your strongest tendency — so the map answers "where am I?" as much as the HUD.
  *
  * `features` is the dressing the seed assembles for that plane (design §7's
- * "กฎ Dynamic" per map), and `site` names the signature place where that realm
- * asks you to decide something (see game/npc-encounters.js).
+ * "กฎ Dynamic" per map). `sites` lists the **fixed map sites** that plane always
+ * carries no matter the seed (the earthworm's burrow, the ant's nest, the frog's
+ * marsh, the snake's crevice — see world/rooms.js), while `site` names the
+ * signature place where that realm asks you to decide something (the asura
+ * bridge, the garden, the market; see content/encounters.js).
  */
 export const BIOMES = Object.freeze({
   'memory-forest': {
@@ -23,7 +26,8 @@ export const BIOMES = Object.freeze({
     veil: null,
     ambient: 0.87,
     features: ['thicket', 'boulders', 'pond', 'clearing'],
-    site: 'marsh',
+    sites: ['marsh', 'crevice'],
+    site: null,
   },
   'under-root': {
     nameKey: 'biome.root.name',
@@ -34,7 +38,8 @@ export const BIOMES = Object.freeze({
     veil: 'rgba(120,92,52,.05)',
     ambient: 0.9,
     features: ['rootwall', 'pebble', 'clearing', 'burrow'],
-    site: 'burrow',
+    sites: ['burrow', 'nest'],
+    site: null,
   },
   woeful: {
     nameKey: 'biome.woeful.name',
@@ -45,6 +50,7 @@ export const BIOMES = Object.freeze({
     veil: 'rgba(120,20,20,.07)',
     ambient: 0.93,
     features: ['boulders', 'thicket', 'thicket'],
+    sites: [],
     site: null,
   },
   'asura-city': {
@@ -56,6 +62,7 @@ export const BIOMES = Object.freeze({
     veil: 'rgba(70,90,130,.06)',
     ambient: 0.8,
     features: ['tower', 'tower', 'bridge'],
+    sites: [],
     site: 'asura',
   },
   'light-garden': {
@@ -67,6 +74,7 @@ export const BIOMES = Object.freeze({
     veil: 'rgba(230,240,200,.05)',
     ambient: 0.62,
     features: ['bloom', 'bloom', 'clearing', 'pond'],
+    sites: [],
     site: 'garden',
   },
   'craving-market': {
@@ -78,6 +86,7 @@ export const BIOMES = Object.freeze({
     veil: 'rgba(200,150,60,.06)',
     ambient: 0.84,
     features: ['stall', 'stall', 'clearing'],
+    sites: [],
     site: 'market',
   },
   formless: {
@@ -89,6 +98,7 @@ export const BIOMES = Object.freeze({
     veil: 'rgba(220,230,255,.05)',
     ambient: 0.55,
     features: ['clearing'],
+    sites: [],
     site: null,
   },
 });

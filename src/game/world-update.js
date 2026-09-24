@@ -22,6 +22,7 @@ import { updateEncounters } from './npc-encounters.js';
 import { updateWorldMemory } from './world-memory.js';
 import { updateAnt } from './ant.js';
 import { updateFrog } from './frog.js';
+import { updateSnake } from './snake.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
 import { updateTour } from '../systems/teacher.js';
@@ -61,6 +62,7 @@ export function updateWorld(dt) {
   updateWorldMemory();
   updateAnt();
   updateFrog();
+  updateSnake();
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);

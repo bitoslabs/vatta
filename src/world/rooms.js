@@ -4,7 +4,8 @@ import { TAU, TEMPLE, SALA, WORLD } from '../core/constants.js';
 import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
 import {
-  BURROW, BURROW_KEEPOUT, MARSH, MARSH_APPROACH, MARSH_KEEPOUT, MARSH_PONDS,
+  BURROW, BURROW_KEEPOUT, CREVICE, CREVICE_APPROACH, CREVICE_KEEPOUT,
+  MARSH, MARSH_APPROACH, MARSH_KEEPOUT, MARSH_PONDS,
   NEST, NEST_KEEPOUT, PATH, RIVER, RIVER_WIDTH,
 } from './world-data.js';
 import { BIOMES } from '../content/biomes.js';
@@ -42,7 +43,14 @@ export const NEST_FEATURE_TYPES = Object.freeze(['crack']);
  */
 export const MARSH_FEATURE_TYPES = Object.freeze(['mire']);
 
-const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall']);
+/**
+ * The crevice's own kind: `crevice` is a slot in stone that only a body able to
+ * flatten itself slips through — being small or being able to tunnel is not
+ * enough (docs/animal-lives-story.md ch.6).
+ */
+export const CREVICE_FEATURE_TYPES = Object.freeze(['crevice']);
+
+const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone']);
 
 function featureRadius(type, rng) {
   if (type === 'boulders') return 36 + rng() * 14;
@@ -57,6 +65,8 @@ function featureRadius(type, rng) {
   if (type === 'burrow') return BURROW.gapRadius;
   if (type === 'crack') return NEST.crackRadius;
   if (type === 'mire') return MARSH.mireRadius;
+  if (type === 'crevice') return CREVICE.gapRadius;
+  if (type === 'stone') return CREVICE.wallRadius;
   if (type === 'pebble') return 18 + rng() * 10;
   return 62;
 }
@@ -85,6 +95,7 @@ export function blockedAt(features, x, y, abilities = {}) {
     if (feature.type === 'burrow') return abilities.burrow !== true && featureAt(feature, x, y);
     if (feature.type === 'crack') return abilities.small !== true && featureAt(feature, x, y);
     if (feature.type === 'mire') return abilities.leap !== true && featureAt(feature, x, y);
+    if (feature.type === 'crevice') return abilities.slither !== true && featureAt(feature, x, y);
     if (!SOLID_TYPES.has(feature.type)) return false;
     if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
     if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
@@ -104,6 +115,8 @@ function mayPlace(type, x, y, radius) {
   if (dist(x, y, NEST_KEEPOUT.x, NEST_KEEPOUT.y) < NEST_KEEPOUT.r + radius) return false;
   // Nor the marsh, or a trunk could block the leap across the mire.
   if (dist(x, y, MARSH_KEEPOUT.x, MARSH_KEEPOUT.y) < MARSH_KEEPOUT.r + radius) return false;
+  // Nor the stone ring, or a trunk could close the crevice.
+  if (dist(x, y, CREVICE_KEEPOUT.x, CREVICE_KEEPOUT.y) < CREVICE_KEEPOUT.r + radius) return false;
   void type;
   return true;
 }
@@ -252,6 +265,55 @@ export function assembleMarsh() {
   return features;
 }
 
+/**
+ * The crevice and the sealed spring (docs/animal-lives-story.md ch.6, "ช่องแคบ").
+ *
+ * A ring of stone around the spring with one slot, so that only a slithering
+ * body gets in. Once the crevice has been widened (`water-linked`, see
+ * systems/world-effects.js) it is a door for everyone — which is exactly what
+ * the snake decides inside.
+ */
+export function assembleCrevice() {
+  const { spring, outflow, ring, walls, wallRadius, gapRadius, gapPlugs } = CREVICE;
+  const features = [];
+  const doorAngle = Math.atan2(outflow.y - spring.y, outflow.x - spring.x);
+  const step = TAU / (walls + 2);
+
+  for (let k = 0; k < walls; k++) {
+    const angle = doorAngle + (k + 1.5) * step;
+    features.push({
+      i: 0,
+      site: 'crevice',
+      type: 'stone',
+      fixed: true,
+      x: spring.x + Math.cos(angle) * ring,
+      y: spring.y + Math.sin(angle) * ring,
+      r: wallRadius,
+    });
+  }
+
+  const face = { x: Math.cos(doorAngle), y: Math.sin(doorAngle) };
+  const side = { x: -face.y, y: face.x };
+  const plugStep = 40;
+  for (let i = 0; i < gapPlugs; i++) {
+    const offset = (i - (gapPlugs - 1) / 2) * plugStep;
+    features.push({
+      i: 0,
+      site: 'crevice',
+      type: 'crevice',
+      fixed: true,
+      x: spring.x + face.x * ring + side.x * offset,
+      y: spring.y + face.y * ring + side.y * offset,
+      r: gapRadius,
+    });
+  }
+
+  // The spring itself is water, so the snake swims in the dark.
+  features.push({ i: 0, site: 'crevice', type: 'pond', fixed: true, x: spring.x, y: spring.y, r: 72 });
+
+  return features;
+}
+
 /** Assemble the seed's dressing: the plane's own kinds beside the true path. */
 export function assembleRooms(seed, biomeId = 'memory-forest') {
   const rng = mulberry32(seed);
@@ -272,16 +334,13 @@ export function assembleRooms(seed, biomeId = 'memory-forest') {
     }
   }
 
-  // The soil under the great root carries the earthworm's and the ant's lives.
-  if (BIOMES[biomeId] && BIOMES[biomeId].site === 'burrow') {
-    for (const feature of assembleBurrow()) features.push({ ...feature, i: features.length });
-    for (const feature of assembleNest()) features.push({ ...feature, i: features.length });
-  }
-
-  // The forest's own water trouble carries the frog's (design §7, site 'marsh').
-  if (BIOMES[biomeId] && BIOMES[biomeId].site === 'marsh') {
-    for (const feature of assembleMarsh()) features.push({ ...feature, i: features.length });
-  }
+  // The plane's fixed sites: whole lives hang on these, so they come from the
+  // plane's own geometry rather than from the seed (design §7, design §12).
+  const sites = (BIOMES[biomeId] && BIOMES[biomeId].sites) || [];
+  if (sites.includes('burrow')) for (const f of assembleBurrow()) features.push({ ...f, i: features.length });
+  if (sites.includes('nest')) for (const f of assembleNest()) features.push({ ...f, i: features.length });
+  if (sites.includes('marsh')) for (const f of assembleMarsh()) features.push({ ...f, i: features.length });
+  if (sites.includes('crevice')) for (const f of assembleCrevice()) features.push({ ...f, i: features.length });
 
   // Occasionally silt builds up in the river — which the route check must catch.
   if (rng() < 0.35) {
@@ -467,6 +526,23 @@ export function validateFrogRoute(features, abilities = {}) {
   const smallReaches = reachableBetween(features, from, MARSH.inlet, { ...base, leap: false, small: true });
   const ok = leapReaches && !walkerReaches && !tunnelReaches && !smallReaches;
   return { ok, leapReaches, walkerReaches, tunnelReaches, smallReaches };
+}
+
+/**
+ * Prove the crevice is the snake's alone (docs/animal-lives-story.md ch.6): a
+ * slithering body reaches the spring from the road side, while walking bodies,
+ * small bodies (an ant is small, not flat) and tunnelling bodies cannot.
+ */
+export function validateSnakeRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false };
+  const start = CREVICE_APPROACH[0];
+  const from = { x: start[0], y: start[1] };
+  const slitherReaches = reachableBetween(features, from, CREVICE.spring, { ...base, slither: true });
+  const walkerReaches = reachableBetween(features, from, CREVICE.spring, { ...base, slither: false });
+  const smallReaches = reachableBetween(features, from, CREVICE.spring, { ...base, slither: false, small: true });
+  const tunnelReaches = reachableBetween(features, from, CREVICE.spring, { ...base, slither: false, burrow: true });
+  const ok = slitherReaches && !walkerReaches && !smallReaches && !tunnelReaches;
+  return { ok, slitherReaches, walkerReaches, smallReaches, tunnelReaches };
 }
 
 /** Try seeds until one validates for this form; fall back to an empty world. */export function buildDynamicWorld(seed, formId, abilities = {}, biomeId = 'memory-forest') {

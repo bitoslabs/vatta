@@ -11,13 +11,13 @@ import { FORMS, mapsFor } from '../content/forms.js';
  * because its burrow map now exists — see game/burrow.js.
  */
 export const CHAPTER_ANIMALS = [
-  ['deer', 'dog', 'crane'], ['turtle', 'dog', 'worm', 'ant'],
+  ['deer', 'dog', 'crane', 'snake'], ['turtle', 'dog', 'worm', 'ant'],
   ['monkey', 'butterfly', 'deer'], ['dog', 'turtle', 'crane', 'frog'],
-  ['butterfly', 'monkey', 'worm'], ['crane', 'dog', 'turtle'],
+  ['butterfly', 'monkey', 'worm', 'snake'], ['crane', 'dog', 'turtle'],
   ['turtle', 'deer', 'butterfly', 'frog'], ['dog', 'monkey', 'worm', 'ant'],
   ['deer', 'butterfly', 'turtle'], ['monkey', 'crane', 'dog', 'frog'],
-  ['crane', 'turtle', 'butterfly', 'ant'], ['butterfly', 'dog', 'deer'],
-  ['turtle', 'monkey', 'crane'], ['deer', 'dog', 'butterfly'],
+  ['crane', 'turtle', 'butterfly', 'ant', 'snake'], ['butterfly', 'dog', 'deer'],
+  ['turtle', 'monkey', 'crane', 'snake'], ['deer', 'dog', 'butterfly'],
 ];
 
 /** A body may only be offered for a chapter whose map carries it. */

@@ -41,6 +41,45 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The crevice and the sealed spring (docs/animal-lives-story.md ch.6, "ช่องแคบ").
+ *
+ * A spring is shut inside a ring of stone whose only way in is a narrow crevice:
+ * a body that can flatten itself slips through, a walker cannot, and neither can
+ * a small body that is not flat (an ant) or one that tunnels (an earthworm).
+ * Inside, the snake decides whether to *widen* the crevice so every body may
+ * pass and the water links to the river — the `water-linked` world effect — or
+ * to keep its own narrow way. `world/rooms.js#validateSnakeRoute` proves the
+ * crevice is a door for a slithering body alone.
+ */
+export const CREVICE = Object.freeze({
+  spring: Object.freeze({ x: 1780, y: 2380 }),
+  outflow: Object.freeze({ x: 1500, y: 2450 }),
+  ring: 140,
+  walls: 12,
+  wallRadius: 42,
+  gapRadius: 36,
+  gapPlugs: 5,
+  springRadius: 80,
+  outflowRadius: 86,
+});
+
+/** Keep seeded dressing out of the stone ring, or the crevice could close. */
+export const CREVICE_KEEPOUT = Object.freeze({
+  x: CREVICE.spring.x,
+  y: CREVICE.spring.y,
+  r: CREVICE.ring + 130,
+});
+
+/** The snake's way in: road → stone → the spring → the outflow. Kept clear of trunks. */
+export const CREVICE_APPROACH = Object.freeze([
+  Object.freeze([1560, 1580]),
+  Object.freeze([1600, 1960]),
+  Object.freeze([1710, 2260]),
+  Object.freeze([CREVICE.spring.x, CREVICE.spring.y]),
+  Object.freeze([CREVICE.outflow.x, CREVICE.outflow.y]),
+]);
+
+/**
  * The marsh (docs/animal-lives-story.md ch.4, "ฝนหยดแรก").
  *
  * The forest is short of water. A channel that would feed the lower forest is
@@ -202,6 +241,8 @@ export const TREES = (() => {
     if (distToPoly(NEST_APPROACH, x, y) < 84) continue;
     if (dist(x, y, MARSH_KEEPOUT.x, MARSH_KEEPOUT.y) < MARSH_KEEPOUT.r) continue;
     if (distToPoly(MARSH_APPROACH, x, y) < 84) continue;
+    if (dist(x, y, CREVICE_KEEPOUT.x, CREVICE_KEEPOUT.y) < CREVICE_KEEPOUT.r) continue;
+    if (distToPoly(CREVICE_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }

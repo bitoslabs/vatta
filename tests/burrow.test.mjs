@@ -63,7 +63,7 @@ for (const feature of underRoot) {
 }
 
 // only the tunnelling plane carries it
-assert(BIOMES['under-root'].site === 'burrow', 'the soil is the plane that carries the burrow');
+assert(BIOMES['under-root'].sites.includes('burrow'), 'the soil is the plane that carries the burrow');
 for (const id of Object.keys(BIOMES)) {
   if (id === 'under-root') continue;
   // The forest plane has its own fixed site (the marsh — tests/frog.test.mjs);
@@ -197,9 +197,9 @@ for (let i = 0; i < 140; i++) {
 }
 assert(sawWorm, 'the earthworm really is born during a long journey');
 
-// the lab-only bodies wait for their maps (the ant and the frog left this list
-// when their nest and marsh arrived — tests/ant.test.mjs, tests/frog.test.mjs)
-for (const id of ['snake', 'rabbit', 'elephant', 'tiger', 'owl']) {
+// the lab-only bodies wait for their maps (the ant, the frog and the snake left
+// this list as their nest, marsh and crevice arrived — tests/ant|frog|snake.test.mjs)
+for (const id of ['rabbit', 'elephant', 'tiger', 'owl']) {
   assert.equal(isRebirthForm(FORMS.find((form) => form.id === id)), false, `${id} waits for its chapter`);
 }
 // and a motionless walker is still the fallback for every chapter

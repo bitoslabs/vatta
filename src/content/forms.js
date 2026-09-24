@@ -26,6 +26,8 @@
  *              'nest'  the ant's own nest, after carrying a seed home
  *              'spawn' the marsh bank a frog lays its eggs on, once it has
  *                      decided what to do about the blocked channel
+ *              'crevice' the linked outflow a snake leaves by, once it has
+ *                      decided what to do about the slot in the stone
  * maps       the maps that can carry this body (see systems/life-route.js):
  *              'land' the forest road · 'water' the river · 'burrow' the soil
  *              under the great root · 'air' anywhere above the ground
@@ -34,7 +36,9 @@
  *              climbing passes thickets, but not boulders
  *              small   slips through boulders, but not thickets
  *              burrow  tunnels through soft soil (`burrow`), but not hard root
- *              leap / stealth / nightVision are the lab bodies' own tools,
+ *              leap    crosses deep mire, but not a slot in stone
+ *              slither flattens through a crevice, but not through soil
+ *              stealth / nightVision are the lab bodies' own tools,
  *              exercised in character-lab.html and reserved for their chapters
  */
 export const FORMS = Object.freeze([
@@ -163,10 +167,10 @@ export const FORMS = Object.freeze([
    * The lab roster (docs/animal-lives-story.md, character-lab.html). They share
    * the same ids as src/prototypes/animal-catalog.js, so the main game and the
    * lab draw one body from one source. The earthworm (its burrow, game/burrow.js),
-   * the ant (its nest, game/ant.js) and the frog (the marsh, game/frog.js) are
-   * born into the life cycle so far; the others stay `rebirth: false` until a
-   * chapter carries their body — the design's rule that no one is reborn
-   * somewhere their map cannot take them.
+   * the ant (its nest, game/ant.js), the frog (the marsh, game/frog.js) and the
+   * snake (the crevice, game/snake.js) are born into the life cycle so far; the
+   * others stay `rebirth: false` until a chapter carries their body — the
+   * design's rule that no one is reborn somewhere their map cannot take them.
    */
   {
     id: 'worm',
@@ -212,9 +216,10 @@ export const FORMS = Object.freeze([
     vision: 0,
     waterBound: false,
     canSpeak: false,
-    rebirth: false,
+    rebirth: true,
+    lifeGoal: 'crevice',
     maps: ['land', 'burrow'],
-    abilities: { flying: false, climbing: false, small: true },
+    abilities: { flying: false, climbing: false, small: true, slither: true },
   },
   {
     id: 'rabbit',

@@ -138,6 +138,7 @@ export function advanceLife() {
     water: { key: 'life.goal.water', color: '#9fc6dd' },
     seed: { key: 'life.goal.burrow', color: '#c9a97a' },
     nest: { key: 'life.goal.nest', color: '#d7bd8c' },
+    crevice: { key: 'life.goal.crevice', color: '#8fd0c4' },
   }[lifeGoal];
   if (hint) {
     const goal = goalFor();

@@ -19,13 +19,15 @@ export function seedFor(chapterId, lifeId = state.lifeId) {
 
 /**
  * How the current body meets this world: its own tools, plus what earlier lives
- * left behind. Once the earthworm has watered the root, the soil stays soft for
- * every later body — the design's "one life changes the next" (see
+ * left behind — the design's "one life changes the next" (see
  * systems/world-effects.js).
  */
 export function worldAbilities() {
   const abilities = { ...(getForm().abilities || {}) };
+  // What earlier lives did stays done: watered soil lets any body tunnel, and a
+  // widened crevice lets any body through the stone (systems/world-effects.js).
   if (hasEffect('root-watered')) abilities.burrow = true;
+  if (hasEffect('water-linked')) abilities.slither = true;
   return abilities;
 }
 

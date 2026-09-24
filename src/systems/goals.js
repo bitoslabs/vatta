@@ -10,11 +10,12 @@ import { BURROW, RIVER } from '../world/world-data.js';
 import { waterRoot } from '../game/burrow.js';
 import { antGoal, deliverSeed } from '../game/ant.js';
 import { frogGoal, spawnAtBank } from '../game/frog.js';
+import { linkWater, snakeGoal } from '../game/snake.js';
 
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn']);
+const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link']);
 
 function nearestRiverPoint(target) {
   let best = RIVER[0];
@@ -43,6 +44,9 @@ function nearestRiverPoint(target) {
  *   spawn  the frog's marsh: the blocked channel inside the mire first, then the
  *          bank its eggs are laid on (world/rooms.js#validateFrogRoute proves
  *          only a leaping body crosses the mire)
+ *   link   the snake's crevice: the sealed spring inside the stone first, then
+ *          the outflow that links to the river (world/rooms.js#validateSnakeRoute
+ *          proves only a slithering body fits through the slot)
  */
 export function goalFor() {
   if (isWaterBound() || getForm().lifeGoal === 'water') {
@@ -55,13 +59,14 @@ export function goalFor() {
   }
   if (lifeGoal === 'nest') return antGoal();
   if (lifeGoal === 'spawn') return frogGoal();
+  if (lifeGoal === 'crevice') return snakeGoal();
   return { x: TEMPLE.x, y: TEMPLE.y, r: LAND_GOAL_RADIUS, kind: 'land' };
 }
 
 /**
  * In life mode a water, burrow, nest or spawn life completes at its own goal. A
- * 'land' life is ended by its chapter, and a 'seed' or 'inlet' marker only shows
- * the body where its errand begins — standing there is not an ending.
+ * 'land' life is ended by its chapter, and a 'seed', 'inlet' or 'spring' marker
+ * only shows the body where its errand begins — standing there is not an ending.
  */
 export function updateLifeGoal() {
   if (state.mode !== MODE.WORLD) return;
@@ -74,6 +79,7 @@ export function updateLifeGoal() {
     if (goal.kind === 'burrow') waterRoot();
     if (goal.kind === 'nest') deliverSeed();
     if (goal.kind === 'spawn') spawnAtBank();
+    if (goal.kind === 'link') linkWater();
     emit(EVENTS.LIFE_COMPLETE, goal.kind);
   }
 }

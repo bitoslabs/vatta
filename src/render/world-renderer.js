@@ -23,6 +23,7 @@ import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.j
 import { burrowSite, rootWatered } from '../game/burrow.js';
 import { isCarrying, nestSite, seedCarried } from '../game/ant.js';
 import { marshSite, waterOpened } from '../game/frog.js';
+import { creviceSite, isLinked } from '../game/snake.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome } from '../systems/biome.js';
 import { getForm, isWaterBound } from '../systems/forms.js';
@@ -61,6 +62,7 @@ export function renderWorld() {
   drawBurrow(dawn);
   drawNest(dawn);
   drawMarsh(dawn);
+  drawCrevice(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -381,6 +383,74 @@ function drawMarsh(dawn) {
     ctx.beginPath();
     ctx.arc(bank.x - 18 + i * 9, bank.y + 26, 3.4, 0, TAU);
     ctx.fill();
+  }
+}
+
+/**
+ * The crevice and the sealed spring (docs/animal-lives-story.md ch.6): stone that
+ * only a flattened body slips through, the spring inside, and — once the slot is
+ * widened — water running out to the river.
+ */
+function drawCrevice(dawn) {
+  const features = dynamicFeatures();
+  const hasStone = features.some((feature) => feature.type === 'stone');
+  if (!hasStone) return;
+  const { spring, outflow } = creviceSite();
+  const linked = isLinked();
+
+  for (const feature of features) {
+    if (feature.type === 'stone') {
+      ctx.fillStyle = dawn ? '#6a6a62' : '#33352f';
+      ctx.beginPath();
+      ctx.arc(feature.x, feature.y, feature.r, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = dawn ? 'rgba(168,168,158,.45)' : 'rgba(120,124,116,.35)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(feature.x, feature.y, feature.r * 0.7, 0.6, 2.6);
+      ctx.stroke();
+    } else if (feature.type === 'crevice') {
+      ctx.fillStyle = dawn ? 'rgba(20,20,18,.55)' : 'rgba(8,8,8,.6)';
+      ctx.beginPath();
+      ctx.ellipse(feature.x, feature.y, feature.r * 0.42, feature.r * 1.25, 0, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  // The water inside the stone.
+  ctx.fillStyle = dawn ? 'rgba(60,120,160,.9)' : 'rgba(22,58,86,.92)';
+  ctx.beginPath();
+  ctx.ellipse(spring.x, spring.y, 68, 50, 0, 0, TAU);
+  ctx.fill();
+  ctx.strokeStyle = `rgba(150,205,235,${linked ? 0.5 : 0.22})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(spring.x, spring.y, 74, 56, 0, 0, TAU);
+  ctx.stroke();
+
+  if (linked) {
+    // The link: the spring runs out of the stone and down to the river.
+    const flow = 0.6 + Math.sin(performance.now() * 0.0026) * 0.25;
+    ctx.strokeStyle = `rgba(150,205,235,${flow * 0.8})`;
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(spring.x, spring.y);
+    ctx.quadraticCurveTo((spring.x + outflow.x) / 2, outflow.y - 60, outflow.x, outflow.y);
+    ctx.lineTo(outflow.x - 150, outflow.y + 90);
+    ctx.stroke();
+    ctx.strokeStyle = `rgba(190,230,250,${flow * 0.4})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(spring.x, spring.y + 6);
+    ctx.quadraticCurveTo((spring.x + outflow.x) / 2, outflow.y - 44, outflow.x, outflow.y + 6);
+    ctx.stroke();
+  } else {
+    ctx.strokeStyle = 'rgba(200,196,180,.28)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(spring.x - 30, spring.y - 30);
+    ctx.lineTo(spring.x + 30, spring.y + 30);
+    ctx.stroke();
   }
 }
 
