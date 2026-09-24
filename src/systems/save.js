@@ -57,6 +57,7 @@ export function snapshot() {
     v: VERSION,
     savedAt: Date.now(),
     chapter: state.chapter,
+    name: state.runName || '',
     realmId: state.realmId,
     liberated: state.liberated,
     stats: { ...state.stats },
@@ -104,6 +105,17 @@ export function clearSave(slot = activeSlot) {
   }
 }
 
+/** Name the current run, and persist it if the active slot already holds a save. */
+export function setRunName(name) {
+  state.runName = String(name || '').slice(0, 24);
+  if (hasSave()) saveRun();
+  return state.runName;
+}
+
+export function getRunName() {
+  return state.runName || '';
+}
+
 /** Every slot with a light summary, for the title screen's slot list. */
 export function listSaves() {
   const slots = [];
@@ -113,6 +125,7 @@ export function listSaves() {
       slot,
       filled: data !== null,
       chapter: data ? data.chapter : null,
+      name: data && typeof data.name === 'string' ? data.name : '',
       savedAt: data ? data.savedAt : null,
       merit: data && data.karma ? data.karma.merit : 0,
       demerit: data && data.karma ? data.karma.demerit : 0,
@@ -139,6 +152,7 @@ export function applySaveMeta(data) {
 export function applySaveRuntime(data) {
   if (!data) return;
   if (typeof data.chapter === 'number') state.chapter = data.chapter;
+  state.runName = typeof data.name === 'string' ? data.name : '';
   state.stats = { ...emptyStats(), ...(data.stats || {}) };
   if (typeof data.realmId === 'string') state.realmId = data.realmId;
   state.liberated = Boolean(data.liberated);

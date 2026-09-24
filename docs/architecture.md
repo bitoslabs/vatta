@@ -41,7 +41,7 @@ src/
 │   ├── path.js            มรรค 8 — เปิดตามการปฏิบัติ + รวมผลต่อการรับรู้
 │   ├── precepts.js        ศีล 5 — สถานะตามการกระทำ (ไม่ตัดสิน)
 │   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
-│   ├── save.js            บันทึก/โหลด 3 ช่อง (autosave + เล่นต่อ + สรุปช่อง)
+│   ├── save.js            บันทึก/โหลด 3 ช่อง + ชื่อรอบ (autosave + เล่นต่อ + สรุปช่อง)
 │   ├── teacher.js         โหมดครู — เปิด/ปิด, จุดสำคัญ, guided tour
 │   ├── projector.js       โหมดฉายภาพ — ตัวอักษร/ป้ายใหญ่ (implies โหมดครู)
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
@@ -101,6 +101,9 @@ src/
 │   └── realms.th.js …      ภูมิ 31 ต่อภาษา
 └── styles/
     ├── main.css           @import partials
+    ├── fonts.css          @font-face + local() fallbacks (offline fonts)
+    ├── projector.css      โหมดฉายภาพ (ตัวอักษร/ป้ายใหญ่)
+    ├── print.css          ใบงานพิมพ์ได้ (@media print)
     └── base/effects/hud/dialogue/meditation/memory/screens/codex/touch.css
 ```
 

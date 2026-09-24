@@ -1,0 +1,43 @@
+/* ---------- Offline fonts ----------
+ *
+ * The Google Fonts <link> in index.html covers machines with internet. For a
+ * classroom without it, drop the .woff2 files into assets/fonts/ and uncomment
+ * the two blocks below — no network is then required. Until then, the font
+ * stacks in base.css fall back to the system's Thai-capable serif/sans.
+ */
+
+@font-face {
+  font-family: 'Charm';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Charm');
+  /* src: local('Charm'), url('../../assets/fonts/Charm-Regular.woff2') format('woff2'); */
+}
+
+@font-face {
+  font-family: 'Charm';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Charm Bold');
+  /* src: local('Charm Bold'), url('../../assets/fonts/Charm-Bold.woff2') format('woff2'); */
+}
+
+@font-face {
+  font-family: 'Bai Jamjuree';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: local('Bai Jamjuree Light');
+  /* src: local('Bai Jamjuree Light'), url('../../assets/fonts/BaiJamjuree-Light.woff2') format('woff2'); */
+}
+
+@font-face {
+  font-family: 'Bai Jamjuree';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Bai Jamjuree');
+  /* src: local('Bai Jamjuree'), url('../../assets/fonts/BaiJamjuree-Regular.woff2') format('woff2'); */
+}

@@ -68,6 +68,11 @@
         <div class="chapter-label" data-i18n="save.slots.label">ช่องบันทึก</div>
         <div id="saveSlots" class="chapter-list"></div>
       </div>
+      <div class="chapters">
+        <div class="chapter-label" data-i18n="save.name.label">ชื่อรอบ</div>
+        <input id="runNameInput" class="run-name-input" maxlength="24"
+               data-i18n-attr="placeholder|save.name.placeholder" placeholder="ตั้งชื่อรอบนี้">
+      </div>
       <button type="button" class="link-btn" id="codexBtn" data-i18n="title.codex">ไตรภูมิ 31</button>
       <button type="button" class="link-btn" id="teacherBtn" data-i18n="teacher.toggle.off">โหมดครู: ปิด</button>
       <button type="button" class="link-btn" id="recapBtn" data-i18n="recap.title">สรุปการเดินทาง</button>
@@ -161,6 +166,7 @@
     <div class="recap-card">
       <div class="recap-head">
         <div class="recap-card-title" data-i18n="ws.title">ใบงานห้องเรียน</div>
+        <button type="button" class="link-btn" id="worksheetPrint" data-i18n="ws.print">พิมพ์</button>
         <button type="button" class="link-btn" id="worksheetClose" data-i18n="codex.close">ปิด</button>
       </div>
       <div id="worksheetBody" class="recap-body"></div>

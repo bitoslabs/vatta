@@ -367,3 +367,27 @@
 html.projector .ws-q {
   font-size: 16.5px;
 }
+
+/* ---------- Run name ---------- */
+.run-name-input {
+  width: min(280px, 80%);
+  margin-top: 2px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.run-name-input:focus {
+  outline: none;
+  border-color: var(--line-strong);
+}
+
+html.projector .run-name-input {
+  font-size: 16px;
+  padding: 11px 14px;
+}

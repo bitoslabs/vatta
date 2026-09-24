@@ -40,6 +40,13 @@ export function initWorksheets() {
       open();
     });
   }
+  const print = $('#worksheetPrint');
+  if (print) {
+    print.addEventListener('click', (e) => {
+      e.target.blur();
+      if (typeof window.print === 'function') window.print();
+    });
+  }
   const close = $('#worksheetClose');
   if (close) close.addEventListener('click', () => overlay.classList.add('hidden'));
   on(EVENTS.LOCALE_CHANGED, () => {

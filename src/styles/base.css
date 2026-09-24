@@ -1,7 +1,7 @@
 /* ---------- Design tokens ---------- */
 :root {
-  --font-display: 'Charm', serif;
-  --font-body: 'Bai Jamjuree', sans-serif;
+  --font-display: 'Charm', 'Noto Serif Thai', 'Souvenir', 'Songti SC', serif;
+  --font-body: 'Bai Jamjuree', 'Noto Sans Thai', 'Thonburi', 'Leelawadee UI', sans-serif;
 
   --ink: #e8e2d0;
   --ink-soft: #b9b2a0;

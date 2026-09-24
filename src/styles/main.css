@@ -1,3 +1,4 @@
+@import url('./fonts.css');
 @import url('./base.css');
 @import url('./effects.css');
 @import url('./hud.css');
@@ -10,3 +11,4 @@
 @import url('./rebirth.css');
 @import url('./teacher.css');
 @import url('./touch.css');
+@import url('./print.css');

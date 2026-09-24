@@ -1,0 +1,50 @@
+/* ---------- Print: worksheets on paper ---------- */
+@media print {
+  /* Hide the game; print the open worksheet. */
+  body * {
+    visibility: hidden !important;
+  }
+
+  #worksheetOverlay,
+  #worksheetOverlay * {
+    visibility: visible !important;
+  }
+
+  #worksheetOverlay {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    background: #fff !important;
+    padding: 0 !important;
+  }
+
+  #worksheetOverlay .recap-card {
+    width: 100% !important;
+    max-height: none !important;
+    border: none !important;
+    background: #fff !important;
+  }
+
+  #worksheetOverlay .recap-head {
+    border-bottom: 1px solid #999 !important;
+  }
+
+  #worksheetOverlay .recap-card-title,
+  #worksheetOverlay .recap-group,
+  #worksheetOverlay .ws-q {
+    color: #000 !important;
+  }
+
+  #worksheetOverlay .recap-card-title {
+    font-family: 'Charm', 'Noto Serif Thai', serif;
+  }
+
+  #worksheetClose,
+  #worksheetPrint {
+    display: none !important;
+  }
+
+  @page {
+    margin: 18mm;
+  }
+}

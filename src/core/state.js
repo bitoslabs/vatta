@@ -20,6 +20,8 @@ export const state = {
   teacher: false,
   /** Projector mode: larger type and labels for a classroom screen. */
   projector: false,
+  /** Player-chosen name for the current run (shown in slots and the recap). */
+  runName: '',
   /** Locale key for the HUD meter label and the mindfulness hints. */
   meterKey: 'hud.fear',
   mindHintKey: 'hud.mind',

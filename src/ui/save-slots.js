@@ -3,7 +3,8 @@
 import { on, EVENTS } from '../core/events.js';
 import { t } from '../systems/i18n.js';
 import {
-  applySaveMeta, applySaveRuntime, getActiveSlot, listSaves, readSave, setActiveSlot,
+  applySaveMeta, applySaveRuntime, getActiveSlot, getRunName, listSaves, readSave,
+  setActiveSlot, setRunName,
 } from '../systems/save.js';
 import { chapterById, CHAPTERS, loadChapter } from '../game/chapters.js';
 import { initAudio, playBell } from '../systems/audio.js';
@@ -46,11 +47,19 @@ export function renderSaveSlots() {
 
     if (entry.filled) {
       const def = chapterById(entry.chapter);
-      button.textContent = t('save.slot.filled', {
-        slot: entry.slot,
-        chapter: def ? t(def.nameKey) : entry.chapter,
-        merit: entry.merit,
-      });
+      if (entry.name) {
+        button.textContent = t('save.slot.named', {
+          slot: entry.slot,
+          name: entry.name,
+          chapter: def ? t(def.nameKey) : entry.chapter,
+        });
+      } else {
+        button.textContent = t('save.slot.filled', {
+          slot: entry.slot,
+          chapter: def ? t(def.nameKey) : entry.chapter,
+          merit: entry.merit,
+        });
+      }
     } else {
       button.textContent = t('save.slot.empty', { slot: entry.slot });
     }
@@ -58,13 +67,28 @@ export function renderSaveSlots() {
     button.addEventListener('click', (e) => {
       e.target.blur();
       openSlot(entry.slot);
+      syncNameInput();
     });
     container.appendChild(button);
   }
 }
 
+const nameInput = $('#runNameInput');
+
+function syncNameInput() {
+  if (nameInput) nameInput.value = getRunName();
+}
+
 export function initSaveSlots() {
   if (!container) return;
   renderSaveSlots();
-  on(EVENTS.LOCALE_CHANGED, renderSaveSlots);
+  syncNameInput();
+  if (nameInput) {
+    nameInput.addEventListener('input', () => setRunName(nameInput.value));
+    nameInput.addEventListener('change', renderSaveSlots);
+  }
+  on(EVENTS.LOCALE_CHANGED, () => {
+    renderSaveSlots();
+    syncNameInput();
+  });
 }

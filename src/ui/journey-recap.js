@@ -9,6 +9,7 @@ import { unlockedFactors } from '../systems/path.js';
 import { getPreceptStatus } from '../systems/precepts.js';
 import { realmById } from '../content/realms.js';
 import { chapterById } from '../game/chapters.js';
+import { getRunName } from '../systems/save.js';
 import { $ } from './dom.js';
 
 const overlay = $('#recapOverlay');
@@ -46,6 +47,8 @@ export function renderRecap() {
   const realm = realmById(state.realmId);
 
   body.appendChild(group(t('recap.group.journey')));
+  const name = getRunName();
+  if (name) body.appendChild(row(t('recap.name'), name));
   body.appendChild(row(t('recap.chapter'), def ? t(def.nameKey) : String(state.chapter)));
   body.appendChild(row(t('recap.realm'), realm ? t(realm.nameKey) : state.realmId));
   body.appendChild(row(t('recap.liberated'), t(state.liberated ? 'recap.yes' : 'recap.no')));
