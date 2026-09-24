@@ -7,6 +7,8 @@ import { state } from '../core/state.js';
 import { ctx, lightCanvas, lightCtx, viewport } from '../systems/viewport.js';
 import { currentBiome, currentBiomeId } from '../systems/biome.js';
 import { visionRadius } from '../systems/vision.js';
+import { echoRadius, echoWave, isEchoing } from '../systems/echo.js';
+import { caveDarkness } from '../world/world-data.js';
 import { GATES } from '../world/world-data.js';
 import { player } from '../entities/player.js';
 import { cam } from '../game/camera.js';
@@ -45,6 +47,20 @@ export function renderLighting(mind) {
 
   const vision = visionRadius(mind);
   punch(player.x, player.y, dawn ? 520 : vision, 0.98);
+
+  // The dark cave is not a tint but a fact (world-data.js#caveDarkness): inside
+  // it, only a pulse shows anything (systems/echo.js). The rim of the pulse
+  // travels outward, so a body can watch the room arrive.
+  const cave = caveDarkness(player.x, player.y);
+  if (cave !== null && !dawn) {
+    lightCtx.fillStyle = `rgba(0,0,0,${cave})`;
+    lightCtx.fillRect(0, 0, W, H);
+    punch(player.x, player.y, vision * 0.55, 0.9);
+  }
+  if (isEchoing()) {
+    const wave = echoWave();
+    punch(player.x, player.y, 60 + wave * echoRadius(), 0.95);
+  }
   punch(TEMPLE.x, TEMPLE.y, TEMPLE.r + 120, 0.96);
   punch(SALA.x, SALA.y, 340, 0.9);
 

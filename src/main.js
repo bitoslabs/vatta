@@ -5,6 +5,7 @@ import { initI18n } from './systems/i18n.js';
 import { initTeacher } from './systems/teacher.js';
 import { initSave } from './systems/save.js';
 import { initSettings } from './systems/settings.js';
+import { initEcho } from './systems/echo.js';
 import { initProjector } from './systems/projector.js';
 import { initInput } from './systems/input.js';
 import { initViewport } from './systems/viewport.js';
@@ -47,6 +48,7 @@ function bootstrap() {
   initTitleScreen();
   initAbout();
   initSettingsScreen();
+  initEcho();
   initEndScreen();
   initLanguageSwitcher();
   initPathNotice();

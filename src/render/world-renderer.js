@@ -1,7 +1,7 @@
 'use strict';
 
 import { MODE, TAU, WORLD } from '../core/constants.js';
-import { clamp } from '../core/math.js';
+import { clamp, dist } from '../core/math.js';
 import { rng } from '../core/rng.js';
 import { state } from '../core/state.js';
 import { isMindful } from '../systems/input.js';
@@ -31,6 +31,7 @@ import { creviceSite, isLinked } from '../game/snake.js';
 import { fieldSite, isSheltered, warrenIsConnected } from '../game/rabbit.js';
 import { nightWatched, owlFound, owlSite, perceivesLost } from '../game/owl.js';
 import { groveSite, nestCrashed, waysJoined } from '../game/elephant.js';
+import { caveSite, perceivesPup } from '../game/bat.js';
 import { canTrack, inHollowRest, isHunted, tracksRead, trailSite } from '../game/tiger.js';
 import { enclosureSite, gateOpened as geckoGateOpened } from '../game/gecko.js';
 import { visionRadius } from '../systems/vision.js';
@@ -99,6 +100,7 @@ export function renderWorld() {
   drawGrove(dawn);
   drawTigerTrail(dawn);
   drawEnclosure(dawn);
+  drawCave(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -810,6 +812,56 @@ function drawEnclosure(dawn) {
     ctx.arc(center.x, center.y, ENCLOSURE.ring, Math.PI / 2 - 0.12, Math.PI / 2 + 0.12);
     ctx.stroke();
   }
+}
+
+/**
+ * The dark cave (reserve table, ค้างคาว): rock, the roost, and the pup — which is
+ * only drawn when the body could actually perceive it, which in here means: only
+ * while a pulse is in flight (systems/echo.js). Nothing else in the game is
+ * hidden behind an *action* rather than a place.
+ */
+function drawCave(dawn) {
+  const { center, radius, roost, pup } = caveSite();
+  if (dist(center.x, center.y, player.x, player.y) > radius + 520) return;
+  const lit = perceivesPup() && dist(pup.x, pup.y, player.x, player.y) < 460;
+
+  // The chamber's rock, drawn faintly: inside the cave the darkness does the
+  // hiding, so the walls can be drawn without giving the pup away.
+  ctx.strokeStyle = dawn ? 'rgba(150,146,132,.22)' : 'rgba(120,118,108,.18)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, radius, 0, TAU);
+  ctx.stroke();
+
+  // The roost: a ledge the bat knows by heart, so it is always drawn.
+  ctx.fillStyle = dawn ? 'rgba(84,70,52,.5)' : 'rgba(34,28,20,.55)';
+  ctx.beginPath();
+  ctx.ellipse(roost.x, roost.y, 54, 26, 0, 0, TAU);
+  ctx.fill();
+
+  if (!lit) return;
+  // A small hunched body, and the ears that are about to learn.
+  ctx.fillStyle = dawn ? '#6b6152' : '#2c281f';
+  ctx.beginPath();
+  ctx.ellipse(pup.x, pup.y, 20, 14, 0, 0, TAU);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(pup.x - 12, pup.y - 8);
+  ctx.lineTo(pup.x - 18, pup.y - 22);
+  ctx.lineTo(pup.x - 4, pup.y - 12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(pup.x + 12, pup.y - 8);
+  ctx.lineTo(pup.x + 18, pup.y - 22);
+  ctx.lineTo(pup.x + 4, pup.y - 12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = 'rgba(226,238,214,.8)';
+  ctx.beginPath();
+  ctx.arc(pup.x - 5, pup.y - 3, 2.2, 0, TAU);
+  ctx.arc(pup.x + 6, pup.y - 3, 2.2, 0, TAU);
+  ctx.fill();
 }
 
 /** A bridge built in an earlier life, and the debris its upkeep left behind. */

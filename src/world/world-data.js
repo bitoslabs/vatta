@@ -142,6 +142,42 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The dark cave (docs/animal-lives-story.md reserve table, "ค้างคาว — รับรู้โดยไม่
+ * พึ่งภาพเพียงอย่างเดียว").
+ *
+ * A chamber whose darkness is not a tint but a fact (`caveDarkness`): inside it
+ * the world is nearly opaque, and only the bat's pulse — or whoever the bat
+ * taught — shows what is there. The pup is waiting somewhere inside, and the
+ * roost is the way this life ends. Nothing here is a wall: the point is not that
+ * the bat cannot enter, but that it cannot *find*.
+ */
+export const CAVE = Object.freeze({
+  center: Object.freeze({ x: 350, y: 2450 }),
+  radius: 300,
+  roost: Object.freeze({ x: 430, y: 2330 }),
+  pup: Object.freeze({ x: 240, y: 2560 }),
+  roostRadius: 92,
+  pupRadius: 84,
+  /** How dark the chamber gets (the ambient is replaced by this inside). */
+  darkness: 0.985,
+});
+
+/** Is this point inside the dark chamber? */
+export function inCave(x, y) {
+  return Math.hypot(x - CAVE.center.x, y - CAVE.center.y) < CAVE.radius;
+}
+
+/** The darkness of the air at this point — the cave is the dark one. */
+export function caveDarkness(x, y) {
+  return inCave(x, y) ? CAVE.darkness : null;
+}
+
+/** Seeded dressing keeps off the chamber and its two places. */
+export const CAVE_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: CAVE.center.x, y: CAVE.center.y, r: CAVE.radius + 120 }),
+]);
+
+/**
  * The walled enclosure and its gate (docs/animal-lives-story.md reserve table,
  * "จิ้งจก — มองปัญหาจากมุมใหม่").
  *
@@ -546,6 +582,7 @@ export const TREES = (() => {
     if (distToPoly(TRAIL_APPROACH, x, y) < 84) continue;
     if (ENCLOSURE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (distToPoly(ENCLOSURE_APPROACH, x, y) < 84) continue;
+    if (CAVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }

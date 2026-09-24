@@ -31,6 +31,7 @@ const KEYS = [
   ['help.keys.act', 'help.keys.act'],
   ['help.keys.mute', 'help.keys.mute'],
   ['help.keys.dismiss', 'help.keys.dismiss'],
+  ['help.keys.echo', 'help.keys.echo'],
   ['help.keys.teacher', 'help.keys.teacher'],
   ['help.keys.projector', 'help.keys.projector'],
   ['help.keys.help', 'help.keys.help'],

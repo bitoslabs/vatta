@@ -16,11 +16,12 @@ import { owlGoal, settleRoost } from '../game/owl.js';
 import { gatherInGrove } from '../game/elephant.js';
 import { settleRange, tigerGoal } from '../game/tiger.js';
 import { geckoGoal, settleRefuge } from '../game/gecko.js';
+import { batGoal, settleRoost as settleBatRoost } from '../game/bat.js';
 
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure']);
+const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure', 'dark-roost']);
 
 function nearestRiverPoint(target) {
   let best = RIVER[0];
@@ -67,6 +68,9 @@ function nearestRiverPoint(target) {
  *   enclosure the gecko's wall: climb the ring nothing walks over, lift the bar
  *          from the inside, and open the way for every body that cannot climb
  *          (world/rooms.js#validateGeckoRoute proves the last part)
+ *   roost  the bat's night: find the pup in a chamber too dark to see, then
+ *          answer for it at the roost — the gate is not a wall at all, it is a
+ *          sound the body has to make (systems/echo.js#perceivesPoint)
  */
 export function goalFor() {
   if (isWaterBound() || getForm().lifeGoal === 'water') {
@@ -87,6 +91,7 @@ export function goalFor() {
   }
   if (lifeGoal === 'trail') return tigerGoal();
   if (lifeGoal === 'enclosure') return geckoGoal();
+  if (lifeGoal === 'echo') return batGoal();
   return { x: TEMPLE.x, y: TEMPLE.y, r: LAND_GOAL_RADIUS, kind: 'land' };
 }
 
@@ -113,6 +118,7 @@ export function updateLifeGoal() {
     if (goal.kind === 'grove') gatherInGrove();
     if (goal.kind === 'range') settleRange();
     if (goal.kind === 'enclosure') settleRefuge();
+    if (goal.kind === 'dark-roost') settleBatRoost();
     emit(EVENTS.LIFE_COMPLETE, goal.kind);
   }
 }

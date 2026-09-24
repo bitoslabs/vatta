@@ -11,12 +11,12 @@ import { FORMS, mapsFor } from '../content/forms.js';
  * because its burrow map now exists — see game/burrow.js.
  */
 export const CHAPTER_ANIMALS = [
-  ['deer', 'dog', 'crane', 'snake', 'tiger'], ['turtle', 'dog', 'worm', 'ant'],
+  ['deer', 'dog', 'crane', 'snake', 'tiger'], ['turtle', 'dog', 'worm', 'ant', 'bat'],
   ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko'], ['dog', 'turtle', 'crane', 'frog', 'elephant'],
   ['butterfly', 'monkey', 'worm', 'snake', 'gecko'], ['crane', 'dog', 'turtle', 'tiger'],
-  ['turtle', 'deer', 'butterfly', 'frog'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
+  ['turtle', 'deer', 'butterfly', 'frog', 'bat'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
   ['deer', 'butterfly', 'turtle', 'rabbit', 'tiger'], ['monkey', 'crane', 'dog', 'frog', 'owl'],
-  ['crane', 'turtle', 'butterfly', 'ant', 'snake'], ['butterfly', 'dog', 'deer', 'tiger'],
+  ['crane', 'turtle', 'butterfly', 'ant', 'snake', 'bat'], ['butterfly', 'dog', 'deer', 'tiger'],
   ['turtle', 'monkey', 'crane', 'snake', 'gecko'], ['deer', 'dog', 'butterfly', 'rabbit', 'owl', 'elephant'],
 ];
 

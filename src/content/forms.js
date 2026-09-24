@@ -38,6 +38,8 @@
  *                      tracks and decided about the rival at the end of them
  *              'enclosure' the refuge a gecko ends in, after climbing the wall
  *                      and opening the gate from the inside for everyone
+ *              'echo'  the roost a bat ends in, after finding its pup in a cave
+ *                      that only sound maps
  * maps       the maps that can carry this body (see systems/life-route.js):
  *              'land' the forest road · 'water' the river · 'burrow' the soil
  *              under the great root · 'air' anywhere above the ground
@@ -49,6 +51,8 @@
  *              leap    crosses deep mire, but not a slot in stone
  *              slither flattens through a crevice, but not through soil
  *              cling   climbs a sheer wall nothing else passes (the gecko)
+ *              echo    maps the dark by sound: a pulse shows what eyes cannot
+ *                      (the bat), and only what a pulse has shown can be found
  *              tracker reads the trail of another animal (the tiger)
  *              stealth / nightVision are the lab bodies' own tools,
  *              exercised in character-lab.html and reserved for their chapters
@@ -182,8 +186,9 @@ export const FORMS = Object.freeze([
    * the ant (its nest, game/ant.js), the frog (the marsh, game/frog.js), the
    * snake (the crevice, game/snake.js), the rabbit (the field, game/rabbit.js)
    * the owl (the roost, game/owl.js), the elephant (the grove,
-   * game/elephant.js) and the tiger (the trail, game/tiger.js) are born into the
-   * life cycle: the whole roster of the story table is playable now.
+   * game/elephant.js), the tiger (the trail, game/tiger.js) and now the reserve
+   * roster: the gecko (game/gecko.js) and the bat (game/bat.js) are born into the
+   * life cycle as well.
    */
   {
     id: 'worm',
@@ -273,6 +278,19 @@ export const FORMS = Object.freeze([
     lifeGoal: 'trail',
     maps: ['land'],
     abilities: { flying: false, climbing: false, small: false, stealth: true, tracker: true },
+  },
+  {
+    id: 'bat',
+    speed: 1,
+    waterSpeed: 0.8,
+    vision: -70,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 1.05,
+    rebirth: true,
+    lifeGoal: 'echo',
+    maps: ['land', 'air'],
+    abilities: { flying: true, climbing: false, small: false, echo: true },
   },
   {
     id: 'gecko',

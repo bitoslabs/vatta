@@ -49,6 +49,8 @@ export const EVENTS = Object.freeze({
   PROJECTOR_TOGGLE: 'projector:toggle',
   /** Payload: the H key was pressed (request to open help & settings). */
   HELP_KEY: 'help:key',
+  /** A body able to echolocate sent a pulse (the bat, and whoever it taught). */
+  ECHO_PULSE: 'echo:pulse',
   /** Payload: { largeType } after a display setting changed. */
   SETTINGS_CHANGED: 'settings:changed',
   /** Payload: the new form id (see content/forms.js). */

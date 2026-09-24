@@ -94,6 +94,25 @@ export function drawAnimalVector(ctx, animal, actor, moving, options = {}) {
       eye(23, -18 + crouch);
       break;
     }
+    case 'bat': {
+      // Wings spread on a beat, and the ears that do the seeing.
+      const flap = Math.sin(actor.phase * 1.6) * 8;
+      for (const side of [-1, 1]) {
+        line([[side * 4, -16], [side * 20, -20 - flap * .3], [side * 30, -14 - flap * .5], [side * 22, -8]], '#4a4356', 3);
+        line([[side * 8, -14], [side * 22, -16 - flap * .3], [side * 28, -12]], 'rgba(90,82,104,.8)', 1.4);
+      }
+      ellipse(0, -14, 8, 9, '#5d5468');
+      ellipse(0, -22, 6.5, 6, '#6d6379');
+      for (const side of [-1, 1]) {
+        line([[side * 3, -26], [side * 7, -34], [side * 4, -28]], '#4a4356', 2.2);
+      }
+      if (!active) { ellipse(-3, -21, 1.6, 1.8, '#1e1b24'); ellipse(3, -21, 1.6, 1.8, '#1e1b24'); }
+      if (active) for (let i = 0; i < 3; i++) {
+        ctx.strokeStyle = `rgba(203,214,234,${.5 - i * .14})`; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(0, -18, 14 + i * 9 + step * 2, 0, Math.PI * 2); ctx.stroke();
+      }
+      break;
+    }
     case 'gecko': {
       // A low splayed lizard: four legs out to the sides, a long tail, wide eyes.
       for (const side of [-1, 1]) for (const [legX, reach] of [[-6, 7], [5, 6]]) {

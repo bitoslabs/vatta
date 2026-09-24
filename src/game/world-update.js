@@ -28,6 +28,8 @@ import { updateOwl } from './owl.js';
 import { updateElephant } from './elephant.js';
 import { updateTiger } from './tiger.js';
 import { updateGecko } from './gecko.js';
+import { updateBat } from './bat.js';
+import { updateEcho } from '../systems/echo.js';
 import { isRestful, REST_RELIEF } from '../systems/rest.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
@@ -74,6 +76,8 @@ export function updateWorld(dt) {
   updateElephant();
   updateTiger();
   updateGecko();
+  updateBat();
+  updateEcho(dt);
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);
