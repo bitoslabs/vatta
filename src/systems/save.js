@@ -69,6 +69,8 @@ export function snapshot() {
       ...state.world,
       removed: Array.isArray(state.world.removed) ? [...state.world.removed] : [],
       crushed: Array.isArray(state.world.crushed) ? [...state.world.crushed] : [],
+      snags: Array.isArray(state.world.snags) ? [...state.world.snags] : [],
+      planks: Array.isArray(state.world.planks) ? state.world.planks.map((p) => ({ ...p })) : [],
       effects: sanitiseEffects(state.world.effects),
     },
     liberated: state.liberated,
@@ -178,10 +180,18 @@ export function applySaveRuntime(data) {
     cleared: false,
     removed: [],
     crushed: [],
+    snags: [],
+    planks: [],
     ...(data.world || {}),
   };
   state.world.removed = Array.isArray(state.world.removed) ? state.world.removed.filter((i) => Number.isInteger(i)) : [];
   state.world.crushed = Array.isArray(state.world.crushed) ? state.world.crushed.filter((id) => typeof id === 'string') : [];
+  state.world.snags = Array.isArray(state.world.snags)
+    ? state.world.snags.filter((id) => typeof id === 'string')
+    : [];
+  state.world.planks = Array.isArray(state.world.planks)
+    ? state.world.planks.filter((plank) => Number.isFinite(plank?.x) && Number.isFinite(plank?.y))
+    : [];
   state.world.effects = sanitiseEffects(data.world && data.world.effects);
   state.liberated = Boolean(data.liberated);
   state.journeyComplete = Boolean(data.journeyComplete);

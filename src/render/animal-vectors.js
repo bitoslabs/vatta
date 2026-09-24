@@ -94,6 +94,164 @@ export function drawAnimalVector(ctx, animal, actor, moving, options = {}) {
       eye(23, -18 + crouch);
       break;
     }
+    case 'boar': {
+      // Low and heavy: the snout down in the soil, the ridge bristled, short legs.
+      const root = moving ? Math.sin(actor.phase * 1.4) * 2.5 : 0;
+      // the body, a thick wedge, with the rump behind it
+      ellipse(-4, -11, 20, 12, '#6b5644');
+      ellipse(-18, -13, 9, 9, '#61503f');
+      // the bristled ridge along the back
+      for (let i = 0; i < 6; i++) {
+        const x = -18 + i * 5.4;
+        line([[x, -20], [x - 1.5, -26]], '#4a3a2c', 1.6);
+      }
+      // the head, low and forward, rooting into the ground
+      ellipse(15, -8 + root, 11, 9, '#5f4c3c');
+      ellipse(24, -5 + root, 5, 4, '#4d3d30');
+      eye(16, -12);
+      line([[13, -16], [10, -24], [16, -20]], '#5f4c3c', 2.4);
+      // small tusks, turned to the soil rather than to anyone
+      line([[27, -3 + root], [32, 1 + root]], '#e0d8c0', 2);
+      line([[27, -6 + root], [31, -11 + root]], '#e0d8c0', 2);
+      // short heavy legs
+      for (const [legX, lift] of [[-14, 0], [-6, 1], [4, 0], [12, 1]]) {
+        const stepLeg = step * (lift ? -1 : 1) * 1.4;
+        line([[legX, -3], [legX + stepLeg, 4]], '#5a4a3a', 3.4);
+      }
+      if (active) for (let i = 0; i < 4; i++) {
+        ellipse(30 + i * 5, 3 + i, 4 - i * .5, 2, 'rgba(150,128,92,.45)');
+      }
+      break;
+    }
+    case 'snail': {
+      // A spiral shell carried low, with the body stretching forward as it crawls.
+      const stretch = moving ? Math.abs(Math.sin(actor.phase * 0.6)) * 4 : 0;
+      // the foot: a long low smear that leads the shell
+      ellipse(6 + stretch, 0, 16, 4.5, '#b7a98d');
+      // the head and its two eye stalks
+      ellipse(19 + stretch, -2, 5, 4, '#c8bba0');
+      for (const side of [-1, 1]) {
+        line([[19 + stretch, -4], [21 + stretch + side * 1.5, -11]], '#a99b80', 1.4);
+        ellipse(21.5 + stretch + side * 1.5, -12, 1.6, 1.6, '#3d3a30');
+      }
+      // the shell: a spiral, the one shape everyone knows
+      ellipse(-6, -5, 10, 9, '#8a7355');
+      line([[-6, -5], [-2, -9], [-8, -12], [-12, -6], [-8, -2], [-4, -5]], '#c9b48f', 1.8);
+      if (active) for (let i = 0; i < 3; i++) {
+        ellipse(4 - i * 8, 3, 4 - i, 1.6, 'rgba(168,198,180,.5)');
+      }
+      break;
+    }
+    case 'buffalo': {
+      // A broad low body with a heavy head and horns; slow legs, a fly-swish tail.
+      const swish = Math.sin(actor.phase * 0.9) * 5;
+      line([[-18, -8], [-28, -10 + swish], [-33, -16 + swish * 1.5]], '#5a5348', 2.2);
+      ellipse(-2, -12, 22, 13, '#6d6459');
+      ellipse(16, -14, 12, 11, '#7c7266');
+      for (const side of [-1, 1]) {
+        line([[16, -20], [12, -27], [15 - side * 2, -30]], '#4f4a40', 3);
+      }
+      eye(20, -16);
+      ellipse(25, -9, 5, 4, '#8d8377');
+      for (const [legX, lift] of [[-12, 0], [-4, 1], [6, 0], [14, 1]]) {
+        const stepLeg = step * (lift ? -1 : 1) * 1.6;
+        line([[legX, -6], [legX + stepLeg, 2]], '#5a5348', 3.4);
+      }
+      if (active) for (let i = 0; i < 3; i++) {
+        ellipse(24 + i * 7, -4 + i * 2, 4, 2, 'rgba(160,140,100,.4)');
+      }
+      break;
+    }
+    case 'cat': {
+      // A long low body with a raised tail, drawn standing on the ridge of a wall:
+      // the tail is the balance, so it swings with the step.
+      const swing = Math.sin(actor.phase * 1.2) * 6;
+      line([[-14, -6], [-24, -10 + swing], [-30, -20 + swing * 1.6], [-26, -28 + swing]], '#6b6256', 3.6);
+      ellipse(-2, -8, 15, 8, '#8d8375');
+      ellipse(9, -11, 8, 7, '#9c9285');
+      for (const side of [-1, 1]) {
+        line([[10 + side * 3, -15], [13 + side * 4, -22]], '#7d7467', 2.6);
+      }
+      eye(12, -12);
+      line([[14, -9], [17, -7]], '#6b6256', 1.2);
+      for (const [legX, lift] of [[-8, 0], [-2, 1], [5, 0], [10, 1]]) {
+        const stepLeg = step * (lift ? -1 : 1) * 2.2;
+        line([[legX, -3], [legX + stepLeg, 1]], '#6b6256', 2.6);
+      }
+      if (active) for (let i = 0; i < 2; i++) {
+        ctx.strokeStyle = `rgba(216,200,168,${.4 - i * .14})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(12, -12, 6 + i * 6, -0.7, 0.7);
+        ctx.stroke();
+      }
+      break;
+    }
+    case 'bee': {
+      // A striped abdomen, two pairs of wings beating fast, and a pollen basket.
+      const beat = Math.sin(actor.phase * 4) * 4;
+      ctx.globalAlpha *= 0.75;
+      for (const side of [-1, 1]) {
+        ellipse(-2, -16 - beat * .3, 11, 4, 'rgba(226,232,240,.5)', side * .5);
+      }
+      ctx.globalAlpha /= 0.75;
+      ellipse(-8, -12, 9, 7, '#e0c05a');
+      for (let i = 0; i < 3; i++) {
+        line([[-11 + i * 3, -18], [-11 + i * 3, -6]], 'rgba(40,34,20,.75)', 2.2);
+      }
+      ellipse(4, -13, 7, 6, '#5a4a2e');
+      eye(7, -15);
+      line([[9, -16], [13, -21], [17, -22]], '#3f3420', 1.2);
+      line([[9, -12], [14, -15], [18, -14]], '#3f3420', 1.2);
+      for (const side of [-1, 1]) line([[-4, -8], [-6 + side, -4], [-3 + side, -3]], '#3f3420', 1.4);
+      // the pollen basket: fuller as the bee works (the flourish)
+      if (active) ellipse(-10, -6, 4.4, 3.4, '#e8c86a', .3);
+      else ellipse(-10, -6, 2.6, 2, 'rgba(232,200,106,.7)');
+      break;
+    }
+    case 'otter': {
+      // A long low body with a thick tapering tail, paddling: drawn in profile so
+      // the tail reads behind it.
+      const paddle = Math.sin(actor.phase * 1.5) * 3;
+      line([[-8, -6], [-20, -4 + paddle], [-30, -6 + paddle * 1.4]], '#6b5340', 4);
+      ellipse(-2, -8, 14, 8, '#8a6b4e');
+      ellipse(8, -11, 8, 6.5, '#9b7a58');
+      ellipse(12, -14, 4.5, 4, '#a8875f');
+      eye(13, -15);
+      line([[10, -9], [14, -7], [16, -4]], '#6b5340', 1.6);
+      for (const side of [-1, 1]) {
+        const swing = step * side * 2.6;
+        line([[-4, -3], [-1 + swing, 1], [2 + swing, 3]], '#6b5340', 2.4);
+        line([[4, -3], [7 - swing, 1], [10 - swing, 3]], '#6b5340', 2.4);
+      }
+      for (const side of [-1, 1]) {
+        line([[side * 3, -12], [side * 7, -17], [side * 11, -19]], '#6b5340', 2);
+      }
+      if (active) ellipse(18, -10, 6, 3.4, '#9fd6b8', .35);
+      break;
+    }
+    case 'crab': {
+      // A wide low shell with claws forward and legs out to the sides, walking
+      // sideways: the body is drawn as a shield, the legs tick in step.
+      for (const side of [-1, 1]) for (let i = 0; i < 3; i++) {
+        const x = side * (7 + i * 5);
+        const tick = step * side * 2.2 * (i % 2 ? -1 : 1);
+        line([[x, -4], [x + side * 4, -1 + tick * .3], [x + side * 7, 2 + tick * .5]], '#8a4f42', 2.2);
+      }
+      ellipse(0, -7, 13, 8, '#b5644f');
+      ellipse(0, -9, 10, 5, '#c9775f');
+      eye(-5, -12); eye(5, -12);
+      // claws, held up in front (and to the sides — this body faces you)
+      for (const side of [-1, 1]) {
+        const lift = active ? 3 : 0;
+        line([[side * 10, -8], [side * 15, -12 - lift], [side * 18, -16 - lift]], '#8a4f42', 2.6);
+        ellipse(side * 19, -17 - lift, 4.4, 3.4, '#c9775f', side * .4);
+      }
+      if (active) for (let i = 0; i < 3; i++) {
+        ellipse(-10 + i * 10, -20 - i * 2, 3, 1.4, 'rgba(159,198,221,.55)');
+      }
+      break;
+    }
     case 'squirrel': {
       // An upright body with a plume of a tail, and paws that hold a seed.
       const wag = Math.sin(actor.phase * 1.4) * 4;

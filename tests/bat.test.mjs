@@ -201,9 +201,11 @@ const chapterIds = Array.from({ length: 14 }, (_, i) => i + 1);
 const { candidatesFor } = await import('../src/systems/life-route.js');
 assert.equal(candidatesFor(2, ['land', 'air']).includes('bat'), true, 'the bat is offered where a flying body is carried');
 assert.equal(candidatesFor(2, ['land']).includes('bat'), true, 'a bat walks as well as flies');
+let route = { chapter: 1, lifeId: 1, history: [], chapterIds };
 for (let i = 0; i < 400; i++) {
-  const route = planNextLife({ chapter: chapterIds[i % 14], lifeId: i + 1, history: [], chapterIds });
-  if (route.formId === 'bat') sawBat = true;
+  const next = planNextLife(route);
+  if (next.formId === 'bat') sawBat = true;
+  route = { ...next, history: [...route.history, next.formId], chapterIds };
 }
 assert.equal(sawBat, true, 'the bat is born during a long journey');
 log('rebirth ok');

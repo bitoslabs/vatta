@@ -252,9 +252,11 @@ log('errand walkable ok');
 assert.equal(candidatesFor(3, ['land']).includes('squirrel'), true, 'the squirrel is offered where a climbing body is carried');
 let sawSquirrel = false;
 const chapterIds = Array.from({ length: 14 }, (_, i) => i + 1);
+let route = { chapter: 1, lifeId: 1, history: [], chapterIds };
 for (let i = 0; i < 400; i++) {
-  const route = planNextLife({ chapter: chapterIds[i % 14], lifeId: i + 1, history: [], chapterIds });
-  if (route.formId === 'squirrel') sawSquirrel = true;
+  const next = planNextLife(route);
+  if (next.formId === 'squirrel') sawSquirrel = true;
+  route = { ...next, history: [...route.history, next.formId], chapterIds };
 }
 assert.equal(sawSquirrel, true, 'the squirrel is born during a long journey');
 log('rebirth ok');

@@ -30,6 +30,20 @@ import { updateTiger } from './tiger.js';
 import { updateGecko } from './gecko.js';
 import { updateBat } from './bat.js';
 import { updateSquirrel } from './squirrel.js';
+import { updateCrab } from './crab.js';
+import { updateOtter } from './otter.js';
+import { updateBee } from './bee.js';
+import { updateCat } from './cat.js';
+import { updateBuffalo } from './buffalo.js';
+import { updateSnail } from './snail.js';
+import { updateBoar } from './boar.js';
+import { updateAsuraCity } from './asura-city.js';
+import { updateGarden } from './garden.js';
+import { updateMarket } from './market.js';
+import { updateMoisture } from '../systems/moisture.js';
+import { updateLight } from '../systems/light.js';
+import { updateDrift } from '../systems/drift.js';
+import { updateTide } from '../systems/tide.js';
 import { updateEcho } from '../systems/echo.js';
 import { isRestful, REST_RELIEF } from '../systems/rest.js';
 import { updateStory } from './story.js';
@@ -67,6 +81,12 @@ export function updateWorld(dt) {
   clearBouldersForStrongForms();
   updateLifeGoal();
   updateGuardian();
+  // A place's own act outranks a being standing beside it: the stones of the city
+  // gate and the ripe bed in the garden are the room's own business, and their
+  // beings stand a step away (design §7).
+  updateAsuraCity();
+  updateGarden();
+  updateMarket();
   updateEncounters();
   updateWorldMemory();
   updateAnt();
@@ -79,7 +99,18 @@ export function updateWorld(dt) {
   updateGecko();
   updateBat();
   updateSquirrel();
+  updateCrab();
+  updateOtter();
+  updateBee();
+  updateCat();
+  updateBuffalo();
+  updateSnail();
+  updateBoar();
   updateEcho(dt);
+  updateMoisture(dt);
+  updateLight(dt);
+  updateTide(dt);
+  updateDrift(dt);
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);

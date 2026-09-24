@@ -11,12 +11,12 @@ import { FORMS, mapsFor } from '../content/forms.js';
  * because its burrow map now exists — see game/burrow.js.
  */
 export const CHAPTER_ANIMALS = [
-  ['deer', 'dog', 'crane', 'snake', 'tiger'], ['turtle', 'dog', 'worm', 'ant', 'bat'],
-  ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko', 'squirrel'], ['dog', 'turtle', 'crane', 'frog', 'elephant'],
+  ['deer', 'dog', 'crane', 'snake', 'tiger', 'cat'], ['turtle', 'dog', 'worm', 'ant', 'bat', 'buffalo', 'boar'],
+  ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko', 'squirrel', 'bee', 'snail', 'boar'], ['dog', 'turtle', 'crane', 'frog', 'elephant', 'crab', 'otter'],
   ['butterfly', 'monkey', 'worm', 'snake', 'gecko'], ['crane', 'dog', 'turtle', 'tiger'],
-  ['turtle', 'deer', 'butterfly', 'frog', 'bat'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
-  ['deer', 'butterfly', 'turtle', 'rabbit', 'tiger'], ['monkey', 'crane', 'dog', 'frog', 'owl'],
-  ['crane', 'turtle', 'butterfly', 'ant', 'snake', 'bat'], ['butterfly', 'dog', 'deer', 'tiger'],
+  ['turtle', 'deer', 'butterfly', 'frog', 'bat', 'crab', 'cat', 'buffalo', 'boar'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
+  ['deer', 'butterfly', 'turtle', 'rabbit', 'tiger', 'otter', 'bee', 'cat', 'snail', 'boar'], ['monkey', 'crane', 'dog', 'frog', 'owl'],
+  ['crane', 'turtle', 'butterfly', 'ant', 'snake', 'bat', 'otter'], ['butterfly', 'dog', 'deer', 'tiger'],
   ['turtle', 'monkey', 'crane', 'snake', 'gecko'], ['deer', 'dog', 'butterfly', 'rabbit', 'owl', 'elephant'],
 ];
 
@@ -39,5 +39,12 @@ export function planNextLife({ chapter, lifeId, history = [], chapterIds, maps }
   const recent = history.slice(-2);
   const available = candidates.filter(id => !recent.includes(id));
   const pool = available.length ? available : candidates;
-  return { chapter: nextChapter, lifeId: lifeId + 1, formId: pool[(lifeId - 1) % pool.length] };
+
+  // Wear the bodies least worn so far. Indexing by `lifeId % pool.length` looked
+  // fair but was not: the pool length (7) divides the chapter cycle (14), so the
+  // same chapter always met the same body and some bodies were never born at all.
+  const worn = new Map(pool.map((id) => [id, history.filter((wornId) => wornId === id).length]));
+  const least = Math.min(...pool.map((id) => worn.get(id)));
+  const freshest = pool.filter((id) => worn.get(id) === least);
+  return { chapter: nextChapter, lifeId: lifeId + 1, formId: freshest[(lifeId - 1) % freshest.length] };
 }

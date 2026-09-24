@@ -142,6 +142,514 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The dry ridge and the damp garden (docs/animal-lives-story.md story table,
+ * "หอยทาก — ผ่านพื้นที่ชื้นและพักเมื่อแห้ง · รู้ข้อจำกัดและจังหวะของตัวเอง").
+ *
+ * A ridge of dry ground rings the garden at its end. For every body but one it is
+ * simply ground — nothing is sealed, and no one else notices it. For a body that
+ * needs the damp (`needsDamp`, content/forms.js) it is a wall except while the
+ * ground is damp (systems/moisture.js), so the snail crosses in the world's own
+ * rhythm, waits when it is dry, and loses nothing by waiting. A trail left damp by
+ * a snail that went before makes the crossing open to it at any hour
+ * (`damp-trail`).
+ *
+ * The only barrier in the game that exists for *one body*.
+ */
+export const DAMP = Object.freeze({
+  /** The damp hollow the life starts from. */
+  hollow: Object.freeze({ x: 700, y: 400 }),
+  /** The garden at the end of the crossing. */
+  garden: Object.freeze({ x: 1300, y: 600 }),
+  gardenRadius: 100,
+  ring: 150,
+  segments: 18,
+  ridgeRadius: 44,
+});
+
+/** Seeded dressing keeps off the hollow, the garden and the ridge between them. */
+export const DAMP_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: DAMP.hollow.x, y: DAMP.hollow.y, r: 220 }),
+  Object.freeze({ x: DAMP.garden.x, y: DAMP.garden.y, r: DAMP.ring + 160 }),
+]);
+
+/** The snail's crawl: the hollow → across the ridge → the garden. */
+export const DAMP_APPROACH = Object.freeze([
+  Object.freeze([900, 1000]),
+  Object.freeze([DAMP.hollow.x, DAMP.hollow.y]),
+  Object.freeze([DAMP.garden.x, DAMP.garden.y]),
+]);
+
+/**
+ * The market's alley (design §7, "ตลาดความอยาก — ร้านแตกแขนงเมื่อรับข้อเสนอบ่อย ·
+ * ผ่านช่องทางออกด้วยมือที่ว่าง").
+ *
+ * A walled alley off the craving plane's own street, and its one gate is a
+ * *narrow* gate: it lets a body through only while its hands are empty. Inside,
+ * the alley narrows into chambers behind curtains, and each curtain opens to a
+ * heavier pair of hands — take an offer, and the next curtain parts; carry
+ * nothing, and the only way on is out. So the design's line is the whole shape of
+ * the place: the shops branch as the offers accumulate, and the way through is
+ * passed with empty hands — a life can always put down what it picked up
+ * (`game/market.js`), and a life that did is remembered by the market itself: the
+ * first curtain does not stand in the next world (`hands-emptied`).
+ */
+export const MARKET = Object.freeze({
+  /** The point on the plane's street the alley opens off. */
+  anchor: Object.freeze({ x: 2570, y: 1530 }),
+  /** From the gate into the alley: straight away from the street. */
+  axis: Object.freeze({ x: 0.4744, y: 0.8811 }),
+  /** How far off the street the gate stands. */
+  gateGap: 110,
+  /**
+   * The alley: this long, this wide, in a wall this thick. The curtains stand
+   * further apart than twice their own reach, so each one leaves a real chamber
+   * behind it: a door you cannot walk past is not a branching.
+   */
+  length: 640,
+  halfWidth: 100,
+  wallRadius: 46,
+  /** The gate's own stones, and the curtains that branch the alley. */
+  gateRadius: 46,
+  curtainRadius: 56,
+  curtainAt: Object.freeze([150, 310, 470]),
+  curtainNeeds: Object.freeze([1, 2, 3]),
+  /**
+   * Where the offers stand, and how near a body must be to take one. One offer per
+   * chamber, so the curtains always have something to open on; kept off the
+   * alley's middle line, because the plane's being stands there.
+   */
+  gifts: Object.freeze([
+    Object.freeze({ d: 70, across: 34 }),
+    Object.freeze({ d: 230, across: 40 }),
+    Object.freeze({ d: 385, across: -34 }),
+    Object.freeze({ d: 550, across: 40 }),
+  ]),
+  giftRadius: 34,
+  offerRange: 60,
+});
+
+/** The point on the street, beside the gate (where the alley is entered from). */
+export function marketAnchor() {
+  return MARKET.anchor;
+}
+
+/** The narrow gate itself: empty hands pass, anything carried does not. */
+export function marketGate() {
+  return {
+    x: MARKET.anchor.x + MARKET.axis.x * MARKET.gateGap,
+    y: MARKET.anchor.y + MARKET.axis.y * MARKET.gateGap,
+  };
+}
+
+/** The middle of the alley, where its two halves meet. */
+export function marketCentre() {
+  const gate = marketGate();
+  return {
+    x: gate.x + MARKET.axis.x * (MARKET.length / 2),
+    y: gate.y + MARKET.axis.y * (MARKET.length / 2),
+  };
+}
+
+/** The first chamber, inside the gate: where the plane's being stands. */
+export function marketInside() {
+  const gate = marketGate();
+  return {
+    x: gate.x + MARKET.axis.x * 70,
+    y: gate.y + MARKET.axis.y * 70,
+  };
+}
+
+/** The far end, past the deepest curtain: the chamber the heaviest hands reach. */
+export function marketFar() {
+  const gate = marketGate();
+  return {
+    x: gate.x + MARKET.axis.x * (MARKET.length - 70),
+    y: gate.y + MARKET.axis.y * (MARKET.length - 70),
+  };
+}
+
+/** Seeded dressing keeps off the alley, its walls and its gate. */
+export const MARKET_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: MARKET.anchor.x + MARKET.axis.x * (MARKET.length / 2), y: MARKET.anchor.y + MARKET.axis.y * (MARKET.length / 2), r: 300 }),
+]);
+
+/** The way in: the street → the narrow gate → the alley. Kept clear of trunks. */
+export const MARKET_APPROACH = Object.freeze([
+  Object.freeze([MARKET.anchor.x, MARKET.anchor.y]),
+  Object.freeze([marketGate().x, marketGate().y]),
+  Object.freeze([marketCentre().x, marketCentre().y]),
+]);
+
+/**
+ * The light garden's gate (design §7, "สวนแสงไม่เที่ยง — สวนบานแล้วโรย ทางแสงมีอายุ ·
+ * ปล่อยดอกไม้เก่าเพื่อให้เมล็ดเดินทางต่อ").
+ *
+ * A hedge ring with one gate, and that gate is a *shadow* — dark ground no walker
+ * crosses except while the garden's light is on it (`systems/light.js`, the
+ * fastest of the world's three rhythms). So the way into the garden exists and
+ * then does not: the light path has an age. Inside are the bloom beds, each of
+ * them either still in flower or already ripe, and a life that releases a ripe bed
+ * lets its seeds travel on — into every later world, along this plane's own road
+ * (`seeds-released`).
+ */
+export const GARDEN = Object.freeze({
+  center: Object.freeze({ x: 2450, y: 2050 }),
+  ring: 200,
+  segments: 24,
+  hedgeRadius: 48,
+  /** Two hedge segments are left out for the gate the shadow lies across. */
+  gateSegments: 2,
+  shadowRadius: 46,
+  shadowPlugs: 4,
+  /** The beam of light that lies over the shadow: there only while it is lit. */
+  beamRadius: 92,
+  /** How far inside the gate counts as being in the garden. */
+  innerRadius: 104,
+  /** The bloom beds, each with its own age (seeded). */
+  beds: Object.freeze([
+    Object.freeze({ x: 2450, y: 1960 }),
+    Object.freeze({ x: 2528, y: 2095 }),
+    Object.freeze({ x: 2372, y: 2095 }),
+  ]),
+  bedRadius: 40,
+  /** The point on the garden plane's road the gate faces. */
+  road: Object.freeze({ x: 2309, y: 1696 }),
+});
+
+/** Where the ring is broken, and which way the gate faces the road. */
+export function gardenGate() {
+  const angle = Math.atan2(GARDEN.road.y - GARDEN.center.y, GARDEN.road.x - GARDEN.center.x);
+  return {
+    angle,
+    x: GARDEN.center.x + Math.cos(angle) * GARDEN.ring,
+    y: GARDEN.center.y + Math.sin(angle) * GARDEN.ring,
+  };
+}
+
+/** Seeded dressing keeps off the garden, its hedge and its gate. */
+export const GARDEN_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: GARDEN.center.x, y: GARDEN.center.y, r: GARDEN.ring + 150 }),
+]);
+
+/** The garden's way: the road → the gate → the beds. Kept clear of trunks. */
+export const GARDEN_APPROACH = Object.freeze([
+  Object.freeze([GARDEN.road.x, GARDEN.road.y]),
+  Object.freeze([GARDEN.center.x + 30, GARDEN.center.y - 150]),
+  Object.freeze([GARDEN.center.x, GARDEN.center.y]),
+]);
+
+/**
+ * The asura city's plaza (design §7, "นครอสุร — หอคอยและสะพานเปลี่ยนเมื่อมีการแย่ง
+ * หรือแบ่งทรัพยากร · หยุดสร้างหอแข่งกันแล้วสร้างสะพานร่วม").
+ *
+ * A walled plaza in the city's blocks, and its one gate a *broken* gate: the two
+ * rival towers that flank it have each eaten the span that used to be here, and
+ * what is left of the opening is a drop no walker crosses. A life that stops
+ * raising its own tower and lays the stones back as a shared span opens the plaza
+ * for every life after it (`span-built`, `state.world.spans`) — and inside is the
+ * city's shrine, which is a place to rest only once that span is there.
+ *
+ * The plaza sits off the plane's own street: the city's road must stay walkable
+ * for every body, so what the drop seals is this room, not the way.
+ */
+export const ASURA = Object.freeze({
+  plaza: Object.freeze({ x: 2740, y: 1760 }),
+  ring: 200,
+  segments: 24,
+  wallRadius: 48,
+  /** How many wall segments the broken gate leaves out: two, so it can be used. */
+  gateSegments: 2,
+  dropRadius: 46,
+  dropPlugs: 4,
+  /** A span is long: laid down, it clears the drop either side of the gate. */
+  spanRadius: 96,
+  shrine: Object.freeze({ x: 2740, y: 1760 }),
+  shrineRadius: 92,
+  /** The stretch of wall that rests the mind, once the span is there. */
+  restRadius: 130,
+  /** The point on the city street the gate faces (street x=2400→2820, y≈1500). */
+  road: Object.freeze({ x: 2700, y: 1477 }),
+});
+
+/** Where the ring is broken, and which way the gate faces the street. */
+export function asuraGate() {
+  const angle = Math.atan2(ASURA.road.y - ASURA.plaza.y, ASURA.road.x - ASURA.plaza.x);
+  return {
+    angle,
+    x: ASURA.plaza.x + Math.cos(angle) * ASURA.ring,
+    y: ASURA.plaza.y + Math.sin(angle) * ASURA.ring,
+  };
+}
+
+/** Seeded dressing keeps off the plaza, its ring and its gate. */
+export const ASURA_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: ASURA.plaza.x, y: ASURA.plaza.y, r: ASURA.ring + 150 }),
+]);
+
+/** The asura's way: the street → the broken gate → the shrine. Kept clear of trunks. */
+export const ASURA_APPROACH = Object.freeze([
+  Object.freeze([ASURA.road.x, ASURA.road.y]),
+  Object.freeze([ASURA.plaza.x + 60, ASURA.plaza.y - 130]),
+  Object.freeze([ASURA.plaza.x, ASURA.plaza.y]),
+]);
+
+/**
+ * The feeding ground (docs/animal-lives-story.md story table, "หมูป่า — ขุดดินหา
+ * รากอาหาร · ใช้กำลังพร้อมสังเกตชีวิตใต้พื้น").
+ *
+ * A ring of packed earth seals a patch of ground where four roots grow — and one
+ * of the four has a colony of small lives living under it. Only the boar roots
+ * through the ring (`mound` is solid to every body until a life opens it), and
+ * only the boar is heavy enough to tear a root patch open. It must eat three of
+ * the four, so the safe way always exists; whether it finds it is the awareness
+ * the story asks for — a boar that sniffs the soil first (`prompt.sniffSoil`)
+ * knows which patch is a roof and which is only a roof of roots, and the colonies
+ * it crushes are lost to every life after it (`state.world.coloniesLost`). The
+ * soil it turns when it is done is a gift that keeps giving (`soil-turned`, new
+ * roots in every later world).
+ */
+export const BOAR = Object.freeze({
+  /** The wallow the life starts from and closes at. */
+  wallow: Object.freeze({ x: 3600, y: 2620 }),
+  wallowRadius: 96,
+  /** The sealed feeding ground. */
+  feed: Object.freeze({ x: 3900, y: 2440 }),
+  ring: 170,
+  segments: 14,
+  moundRadius: 44,
+  /**
+   * The root patches, close to the middle: four in every world, and one of them a
+   * colony's roof. They sit well inside the ring so that a boar at the ring is out
+   * of rooting reach of them — which is what makes *looking* at the ground before
+   * rooting it a real step (`TELL_RANGE`).
+   */
+  patches: Object.freeze([
+    Object.freeze({ x: 3860, y: 2410 }),
+    Object.freeze({ x: 3945, y: 2415 }),
+    Object.freeze({ x: 3930, y: 2485 }),
+    Object.freeze({ x: 3865, y: 2480 }),
+  ]),
+  patchRadius: 34,
+  /** The boar must eat this many of them: with a colony under one, that is one more than safe. */
+  need: 3,
+});
+
+/** Seeded dressing keeps off the feed, the ring and the wallow. */
+export const BOAR_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: BOAR.feed.x, y: BOAR.feed.y, r: BOAR.ring + 170 }),
+  Object.freeze({ x: BOAR.wallow.x, y: BOAR.wallow.y, r: 200 }),
+]);
+
+/** The boar's errand: the road side → the wallow → the ring → the feeding ground. */
+export const BOAR_APPROACH = Object.freeze([
+  Object.freeze([3760, 2020]),
+  Object.freeze([3640, 2320]),
+  Object.freeze([BOAR.wallow.x, BOAR.wallow.y]),
+  Object.freeze([BOAR.feed.x, BOAR.feed.y]),
+]);
+
+/**
+ * The ford (docs/animal-lives-story.md story table, ch.11 "ควาย — ลุยโคลนและลากไม้ ·
+ * ความร่วมมือและความอดทน").
+ *
+ * A mud flat in the eastern forest, a fallen log lying on the near side, and the
+ * far pasture walled by a chasm: a leap's width for anyone with the legs for it,
+ * and a wall for everyone else. The buffalo is the one body that wades the mud at
+ * full pace (`wade`, systems/terrain.js) and the one that can *drag* the log
+ * across — the first life that moves a thing to change the shape of the map, and
+ * the first whose bridge stands for every life after it (`ford-bridged`,
+ * `state.world.planks`).
+ */
+export const FORD = Object.freeze({
+  /** The mud flat, on the near side (clear of the road, which runs north of it). */
+  mud: Object.freeze({ x: 3260, y: 1900 }),
+  mudRadius: 200,
+  /** The fallen log the buffalo hauls. */
+  log: Object.freeze({ x: 3300, y: 1860 }),
+  logRadius: 70,
+  /** The far pasture, ringed by the chasm. */
+  pasture: Object.freeze({ x: 3500, y: 2000 }),
+  pastureRadius: 110,
+  ring: 170,
+  segments: 22,
+  chasmRadius: 44,
+  /** A log is long: laid across, it clears the chasm either side of where it lands. */
+  plankRadius: 92,
+});
+
+/** Where the ring of chasm faces the log: the span a dragged log bridges. */
+export function fordBridge() {
+  const angle = Math.atan2(FORD.log.y - FORD.pasture.y, FORD.log.x - FORD.pasture.x);
+  return {
+    x: FORD.pasture.x + Math.cos(angle) * FORD.ring,
+    y: FORD.pasture.y + Math.sin(angle) * FORD.ring,
+  };
+}
+
+/** Seeded dressing keeps off the mud, the log, the chasm ring and the pasture. */
+export const FORD_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: FORD.mud.x, y: FORD.mud.y, r: FORD.mudRadius + 90 }),
+  Object.freeze({ x: FORD.log.x, y: FORD.log.y, r: 150 }),
+  Object.freeze({ x: FORD.pasture.x, y: FORD.pasture.y, r: FORD.ring + 160 }),
+]);
+
+/** The buffalo's errand: the road → the mud → the log → the pasture. */
+export const FORD_APPROACH = Object.freeze([
+  Object.freeze([3420, 1500]),
+  Object.freeze([3320, 1700]),
+  Object.freeze([FORD.mud.x, FORD.mud.y]),
+  Object.freeze([FORD.log.x, FORD.log.y]),
+  Object.freeze([FORD.pasture.x, FORD.pasture.y]),
+]);
+
+/**
+ * The homes the cat peers at (docs/animal-lives-story.md reserve table, "แมว —
+ * ทรงตัวบนกำแพงและฟังเสียงเล็ก · ความอยากรู้อยากเห็นกับการเคารพพื้นที่ผู้อื่น").
+ *
+ * Three homes other lives have built in this forest — the rabbit's warren, the
+ * bee's hive, the marsh where the frog spawns — with a low wall beside each. The
+ * wall is the whole point: the cat climbs it and looks in from above
+ * (`cling`, gated in game/cat.js) rather than walking in, and whether it looks or
+ * rummages at all three is what it leaves behind for every life that follows
+ * (`hearths-respected`).
+ */
+export const HOMES = Object.freeze([
+  Object.freeze({ id: 'warren', x: 860, y: 2560, wall: Object.freeze({ x: 930, y: 2600 }) }),
+  Object.freeze({ id: 'hive', x: 1260, y: 1700, wall: Object.freeze({ x: 1330, y: 1650 }) }),
+  Object.freeze({ id: 'marsh', x: 2620, y: 2260, wall: Object.freeze({ x: 2560, y: 2210 }) }),
+]);
+
+/** The warm stone the cat's life ends on: the ledge it always comes back to. */
+export const WARM_STONE = Object.freeze({ x: 900, y: 1500 });
+
+export const HOME_WALL_RADIUS = 44;
+export const HOME_SIGHT = 150;
+export const WARM_STONE_RADIUS = 92;
+export const HEARTH_RADIUS = 120;
+
+/** Seeded dressing keeps off the three walls and the warm stone. */
+export const HOMES_KEEPOUTS = Object.freeze([
+  ...HOMES.map((home) => Object.freeze({ x: home.wall.x, y: home.wall.y, r: 150 })),
+  Object.freeze({ x: WARM_STONE.x, y: WARM_STONE.y, r: 150 }),
+]);
+
+/** The cat's round: the warm stone → each wall → back to the stone. */
+export const HOMES_APPROACH = Object.freeze([
+  Object.freeze([WARM_STONE.x, WARM_STONE.y]),
+  ...HOMES.map((home) => Object.freeze([home.wall.x, home.wall.y])),
+]);
+
+/**
+ * The bee's flowers, hive and far meadow (docs/animal-lives-story.md reserve
+ * table, "ผึ้ง — เชื่อมดอกไม้หลายจุด · งานเล็กของแต่ละตัวส่งผลต่อทั้งป่า").
+ *
+ * A chain of flowers runs from the hive to a meadow across the forest, and each
+ * one is within a comfortable flight of the last (`flightRange`): so the way to
+ * the far field is not a wall to break but a *series of hops* — the first route in
+ * the game that is about reach rather than about tools. Nothing is lost by flying
+ * back and starting a hop again, and the meadow is where the life's one question
+ * is asked: leave the pollen in the far field, or carry every grain home.
+ */
+export const BLOOMS = Object.freeze({
+  hive: Object.freeze({ x: 1260, y: 1700 }),
+  flowers: Object.freeze([
+    Object.freeze({ x: 1500, y: 1700 }),
+    Object.freeze({ x: 1700, y: 1640 }),
+    Object.freeze({ x: 1980, y: 1600 }),
+    Object.freeze({ x: 2230, y: 1690 }),
+    Object.freeze({ x: 2480, y: 1750 }),
+    Object.freeze({ x: 2720, y: 1760 }),
+    Object.freeze({ x: 2960, y: 1820 }),
+  ]),
+  meadow: Object.freeze({ x: 3180, y: 1880 }),
+  flightRange: 420,
+  bloomRadius: 74,
+  hiveRadius: 96,
+  meadowRadius: 104,
+});
+
+/** Seeded dressing keeps off the hive, the flowers and the meadow. */
+export const BLOOMS_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: BLOOMS.hive.x, y: BLOOMS.hive.y, r: 170 }),
+  ...BLOOMS.flowers.map((flower) => Object.freeze({ x: flower.x, y: flower.y, r: 120 })),
+  Object.freeze({ x: BLOOMS.meadow.x, y: BLOOMS.meadow.y, r: 170 }),
+]);
+
+/** The bee's errand: the hive → each flower in turn → the meadow → home. */
+export const BLOOMS_APPROACH = Object.freeze([
+  ...BLOOMS.flowers.map((flower) => Object.freeze([flower.x, flower.y])),
+  Object.freeze([BLOOMS.meadow.x, BLOOMS.meadow.y]),
+  Object.freeze([BLOOMS.hive.x, BLOOMS.hive.y]),
+]);
+
+/**
+ * The otter's holt (docs/animal-lives-story.md reserve table, "นาก — ว่ายน้ำและ
+ * ช่วยจับของลอย · การเล่นร่วมกับการดูแลกัน").
+ *
+ * A burrow on the river's bank, where the life ends and its one question is asked:
+ * give what the current carried back to the river, or keep it. Cut into the east
+ * bank of the bend, out of the way of everything else.
+ */
+export const OTTER = Object.freeze({
+  holt: Object.freeze({ x: 1650, y: 2200 }),
+  holtRadius: 96,
+});
+
+/** Seeded dressing keeps off the holt and the water in front of it. */
+export const OTTER_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: OTTER.holt.x, y: OTTER.holt.y, r: 200 }),
+]);
+
+/**
+ * The flooded channel and the crab's pools (docs/animal-lives-story.md reserve
+ * table, "ปู — รักษาที่อยู่ท่ามกลางน้ำขึ้นลง").
+ *
+ * The spawning pool on the far bank sits inside a wall of stone whose only way in
+ * is a channel the river runs through. At high water the channel is deep — a
+ * swimmer goes through and nothing else does; at low water anyone can wade across
+ * (systems/tide.js, and `crossCauseway` in systems/worldgen.js). So this is the
+ * game's first passage that opens and closes with a world rhythm, and the first one
+ * a past life can leave shallow for good (`channel-kept`).
+ *
+ * The sand bar is scenery and the way in: it is what the water covers at high tide.
+ */
+export const TIDE = Object.freeze({
+  /** The sand bar across the river bend: the way in, and the crab's approach. */
+  causeway: Object.freeze([
+    Object.freeze([1650, 950]),
+    Object.freeze([1200, 950]),
+  ]),
+  causewayRadius: 46,
+  /** The spawning pool on the far bank, sealed by stone and one channel. */
+  farPool: Object.freeze({ x: 1000, y: 950 }),
+  ring: 190,
+  segments: 22,
+  wallRadius: 44,
+  floodRadius: 40,
+  floodPlugs: 5,
+  /** The crab's home pool, on the near bank — where the life ends. */
+  home: Object.freeze({ x: 1800, y: 900 }),
+  homeRadius: 92,
+  poolRadius: 96,
+});
+
+/** Seeded dressing keeps off the bar, the ring and both pools. */
+export const TIDE_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: 1650, y: 950, r: 190 }),
+  Object.freeze({ x: 1200, y: 950, r: 190 }),
+  Object.freeze({ x: TIDE.farPool.x, y: TIDE.farPool.y, r: 330 }),
+  Object.freeze({ x: TIDE.home.x, y: TIDE.home.y, r: 190 }),
+]);
+
+/** The crab's errand: the home bank → the bar → the channel → the far pool. */
+export const TIDE_APPROACH = Object.freeze([
+  Object.freeze([TIDE.home.x, TIDE.home.y]),
+  Object.freeze([TIDE.causeway[0][0], TIDE.causeway[0][1]]),
+  Object.freeze([TIDE.causeway[1][0], TIDE.causeway[1][1]]),
+  Object.freeze([TIDE.farPool.x, TIDE.farPool.y]),
+]);
+
+/**
  * The seed trees and the cache (docs/animal-lives-story.md reserve table,
  * "กระรอก — ปีนและกระจายเมล็ด · การสะสมกับการแบ่งปัน").
  *
@@ -593,6 +1101,37 @@ export const GATES = [
   { x: 3450, y: 2330, from: { x: 3120, y: 1650 }, parts: makeGateParts() },
 ];
 
+/** How long a polyline is, in world units. */
+export function routeLength(route) {
+  let total = 0;
+  for (let i = 0; i < route.length - 1; i++) {
+    total += Math.hypot(route[i + 1][0] - route[i][0], route[i + 1][1] - route[i][1]);
+  }
+  return total;
+}
+
+/**
+ * The point a fraction of the way along a polyline: `0` is the first point,
+ * `1` the last. Used by the drifting things the current carries (systems/drift.js)
+ * and by anything else that thinks in "how far along the river" rather than x/y.
+ */
+export function pointAlongRoute(route, fraction) {
+  const total = routeLength(route) || 1;
+  let target = Math.max(0, Math.min(1, fraction)) * total;
+  for (let i = 0; i < route.length - 1; i++) {
+    const [ax, ay] = route[i];
+    const [bx, by] = route[i + 1];
+    const segment = Math.hypot(bx - ax, by - ay);
+    if (target <= segment) {
+      const t = segment ? target / segment : 0;
+      return { x: ax + (bx - ax) * t, y: ay + (by - ay) * t };
+    }
+    target -= segment;
+  }
+  const last = route[route.length - 1];
+  return { x: last[0], y: last[1] };
+}
+
 /** Alternating left/right footprints along any road. */
 export function footprintsAlong(route) {
   const foot = [];
@@ -658,6 +1197,25 @@ export const TREES = (() => {
     if (CAVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (SEEDS_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (distToPoly(SEEDS_APPROACH, x, y) < 84) continue;
+    if (TIDE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(TIDE_APPROACH, x, y) < 84) continue;
+    if (OTTER_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (BLOOMS_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(BLOOMS_APPROACH, x, y) < 84) continue;
+    if (HOMES_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(HOMES_APPROACH, x, y) < 84) continue;
+    if (FORD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(FORD_APPROACH, x, y) < 84) continue;
+    if (DAMP_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(DAMP_APPROACH, x, y) < 84) continue;
+    if (BOAR_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(BOAR_APPROACH, x, y) < 84) continue;
+    if (ASURA_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(ASURA_APPROACH, x, y) < 84) continue;
+    if (GARDEN_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(GARDEN_APPROACH, x, y) < 84) continue;
+    if (MARKET_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(MARKET_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }

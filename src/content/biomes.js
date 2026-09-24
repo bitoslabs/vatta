@@ -26,7 +26,7 @@ export const BIOMES = Object.freeze({
     veil: null,
     ambient: 0.87,
     features: ['thicket', 'boulders', 'pond', 'clearing'],
-    sites: ['marsh', 'crevice', 'field', 'grove', 'enclosure', 'seeds'],
+    sites: ['marsh', 'crevice', 'field', 'grove', 'enclosure', 'seeds', 'tide', 'homes', 'ford', 'damp', 'boar'],
     site: null,
   },
   'under-root': {
@@ -62,7 +62,7 @@ export const BIOMES = Object.freeze({
     veil: 'rgba(70,90,130,.06)',
     ambient: 0.8,
     features: ['tower', 'tower', 'bridge'],
-    sites: [],
+    sites: ['asura'],
     site: 'asura',
   },
   'light-garden': {
@@ -74,7 +74,7 @@ export const BIOMES = Object.freeze({
     veil: 'rgba(230,240,200,.05)',
     ambient: 0.62,
     features: ['bloom', 'bloom', 'clearing', 'pond'],
-    sites: [],
+    sites: ['garden'],
     site: 'garden',
   },
   'craving-market': {
@@ -86,7 +86,7 @@ export const BIOMES = Object.freeze({
     veil: 'rgba(200,150,60,.06)',
     ambient: 0.84,
     features: ['stall', 'stall', 'clearing'],
-    sites: [],
+    sites: ['market'],
     site: 'market',
   },
   formless: {

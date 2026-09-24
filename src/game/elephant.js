@@ -94,7 +94,8 @@ function chooseLift() {
  */
 export function liftLog(careful = true) {
   if (isLifted()) return { opened: false, crushed: [] };
-  const log = dynamicFeatures().find((feature) => feature.type === 'log');
+  // Its own log, not the ford's: there is more than one log in this forest now.
+  const log = dynamicFeatures().find((feature) => feature.type === 'log' && feature.site === 'grove');
   if (!log) return { opened: false, crushed: [] };
 
   const crushed = careful ? [] : GROVE.nests

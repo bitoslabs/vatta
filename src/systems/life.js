@@ -146,6 +146,13 @@ export function advanceLife() {
     enclosure: { key: 'life.goal.enclosure', color: '#b9c9a8' },
     echo: { key: 'life.goal.echo', color: '#cbd6ea' },
     seeds: { key: 'life.goal.seeds', color: '#bfd0a0' },
+    tide: { key: 'life.goal.tide', color: '#9fc6dd' },
+    current: { key: 'life.goal.current', color: '#9fd6b8' },
+    bloom: { key: 'life.goal.bloom', color: '#e0c8a0' },
+    wall: { key: 'life.goal.wall', color: '#d8c8a8' },
+    ford: { key: 'life.goal.ford', color: '#c9a97a' },
+    damp: { key: 'life.goal.damp', color: '#a8c6b4' },
+    soil: { key: 'life.goal.soil', color: '#c2a878' },
   }[lifeGoal];
   if (hint) {
     const goal = goalFor();

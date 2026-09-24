@@ -42,6 +42,20 @@
  *                      that only sound maps
  *              'seeds' the cache a squirrel ends at, once it has climbed for
  *                      seeds and decided where they should go
+ *              'tide'  the home pool a crab returns to, once it has crossed the
+ *                      flooded channel and decided what the water should do
+ *              'current' the holt an otter ends at, once it has brought in what
+ *                      the river was carrying and decided what to do with it
+ *              'bloom' the hive a bee ends at, once it has worked its way along
+ *                      the flowers and decided where the pollen should go
+ *              'wall'  the warm stone a cat ends on, once it has looked in on the
+ *                      homes of the forest without walking into them
+ *              'ford'  the far pasture a buffalo ends in, once it has dragged the
+ *                      log across the chasm for every body that follows
+ *              'damp'  the garden a snail ends in, once it has crossed the dry
+ *                      ridge in the ground's own rhythm
+ *              'soil'  the wallow a boar ends in, once it has rooted its food out
+ *                      of the ground without crushing what lives under it
  * maps       the maps that can carry this body (see systems/life-route.js):
  *              'land' the forest road · 'water' the river · 'burrow' the soil
  *              under the great root · 'air' anywhere above the ground
@@ -179,7 +193,8 @@ export const FORMS = Object.freeze([
     rebirth: true,
     lifeGoal: 'water',
     maps: ['water'],
-    abilities: { flying: false, climbing: false, small: false },
+    // A fish goes through the deepest water there is, at any tide.
+    abilities: { flying: false, climbing: false, small: false, swimDeep: true },
   },
 
   /*
@@ -190,8 +205,12 @@ export const FORMS = Object.freeze([
    * snake (the crevice, game/snake.js), the rabbit (the field, game/rabbit.js)
    * the owl (the roost, game/owl.js), the elephant (the grove,
    * game/elephant.js), the tiger (the trail, game/tiger.js) and now the reserve
-   * roster: the gecko (game/gecko.js), the bat (game/bat.js) and the squirrel
-   * (game/squirrel.js) are born into the life cycle as well.
+   * roster: the gecko (game/gecko.js), the bat (game/bat.js), the squirrel
+   * (game/squirrel.js), the crab (game/crab.js), the otter (game/otter.js), the bee
+   * (game/bee.js) and the cat (game/cat.js) are born into the life cycle — the
+   * whole reserve table is playable now — and the last animals of the story table
+   * arrive as their own systems are built: the buffalo (`wade`, terrain and the
+   * ford) and the snail (`needsDamp`, the ground's own dampness).
    */
   {
     id: 'worm',
@@ -281,6 +300,99 @@ export const FORMS = Object.freeze([
     lifeGoal: 'trail',
     maps: ['land'],
     abilities: { flying: false, climbing: false, small: false, stealth: true, tracker: true },
+  },
+  {
+    id: 'snail',
+    speed: 0.45,
+    waterSpeed: 0.6,
+    vision: -20,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 0.8,
+    rebirth: true,
+    lifeGoal: 'damp',
+    maps: ['land', 'water'],
+    abilities: { flying: false, climbing: false, small: true, needsDamp: true },
+  },
+  {
+    id: 'buffalo',
+    speed: 0.7,
+    waterSpeed: 0.85,
+    vision: 10,
+    waterBound: false,
+    canSpeak: false,
+    strong: true,
+    fearGuard: 1.2,
+    rebirth: true,
+    lifeGoal: 'ford',
+    maps: ['land', 'water'],
+    abilities: { flying: false, climbing: false, small: false, wade: true },
+  },
+  {
+    id: 'boar',
+    speed: 0.95,
+    waterSpeed: 0.75,
+    vision: 20,
+    waterBound: false,
+    canSpeak: false,
+    strong: true,
+    fearGain: 0.95,
+    rebirth: true,
+    lifeGoal: 'soil',
+    maps: ['land', 'water'],
+    abilities: { flying: false, climbing: false, small: false },
+  },
+  {
+    id: 'cat',
+    speed: 1.25,
+    waterSpeed: 0.7,
+    vision: 40,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 1.15,
+    rebirth: true,
+    lifeGoal: 'wall',
+    maps: ['land'],
+    abilities: { flying: false, climbing: true, small: false, cling: true, leap: true },
+  },
+  {
+    id: 'bee',
+    speed: 1.2,
+    waterSpeed: 0.8,
+    vision: 30,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 1.15,
+    rebirth: true,
+    lifeGoal: 'bloom',
+    maps: ['land', 'air'],
+    abilities: { flying: true, climbing: false, small: true },
+  },
+  {
+    id: 'otter',
+    speed: 1.05,
+    waterSpeed: 1.25,
+    vision: 20,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 1.05,
+    rebirth: true,
+    lifeGoal: 'current',
+    maps: ['water', 'land'],
+    abilities: { flying: false, climbing: false, small: false, swimDeep: true },
+  },
+  {
+    id: 'crab',
+    speed: 0.9,
+    waterSpeed: 1.15,
+    vision: -10,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 1.05,
+    rebirth: true,
+    lifeGoal: 'tide',
+    maps: ['water', 'land'],
+    abilities: { flying: false, climbing: false, small: true, swimDeep: true },
   },
   {
     id: 'squirrel',

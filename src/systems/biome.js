@@ -24,6 +24,9 @@ export function currentBiomeId() {
 
   const realm = realmById(state.realmId);
   if (realm) {
+    // The asura realm has a city of its own (design §7): it is the one apāya plane
+    // that is not the woeful one.
+    if (realm.id === 'asurakaya') return 'asura-city';
     if (realm.group === 'apaya') return 'woeful';
     if (realm.group === 'arupa') return 'formless';
     if (realm.group === 'rupa') return 'light-garden';

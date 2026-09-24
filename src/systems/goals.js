@@ -18,11 +18,18 @@ import { settleRange, tigerGoal } from '../game/tiger.js';
 import { geckoGoal, settleRefuge } from '../game/gecko.js';
 import { batGoal, settleRoost as settleBatRoost } from '../game/bat.js';
 import { settleCache, squirrelGoal } from '../game/squirrel.js';
+import { crabGoal, settleHome } from '../game/crab.js';
+import { otterGoal, settleHolt } from '../game/otter.js';
+import { beeGoal, settleHive } from '../game/bee.js';
+import { catGoal, settleHomes } from '../game/cat.js';
+import { buffaloGoal, settlePasture } from '../game/buffalo.js';
+import { settleGarden, snailGoal } from '../game/snail.js';
+import { boarGoal, settleWallow } from '../game/boar.js';
 
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure', 'dark-roost', 'cache']);
+const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure', 'dark-roost', 'cache', 'home', 'holt', 'hive', 'warm-stone', 'pasture', 'damp-garden', 'wallow']);
 
 function nearestRiverPoint(target) {
   let best = RIVER[0];
@@ -75,6 +82,27 @@ function nearestRiverPoint(target) {
  *   cache  the squirrel's gathering: climb into three crowns for seeds, then
  *          decide at the old cache whether to keep them or scatter them — the
  *          only life that accumulates before it answers (game/squirrel.js)
+ *   home   the crab's tide: cross the flooded channel to the spawning pool, decide
+ *          what the water should do, and come home through the place you changed —
+ *          the only passage in the game that opens with the hour (game/crab.js)
+ *   holt   the otter's current: swim down three things the river is carrying, then
+ *          decide at the holt whether the water is left clear for those who come
+ *          after — the only life whose objects move on their own (game/otter.js)
+ *   hive   the bee's flowers: work a chain of hops to the far meadow, then decide
+ *          whether the pollen is left there for the forest or carried home — the
+ *          only route in the game that is about reach rather than tools (game/bee.js)
+ *   warm-stone the cat's round: peer over the wall beside three homes of the
+ *          forest, and the homes stay open to everyone only if all three were
+ *          looked at and none walked into (game/cat.js)
+ *   pasture the buffalo's ford: drag the fallen log over the chasm and the way to
+ *          the far pasture stands for everyone — the first life that changes the
+ *          shape of the map rather than finding a way through it (game/buffalo.js)
+ *   damp-garden the snail's ridge: cross the dry ground while the ground itself is
+ *          damp, then decide whether the crossing stays damp behind you — the only
+ *          barrier in the game that exists for one body (game/snail.js)
+ *   wallow  the boar's feeding ground: root three of four root patches out of the
+ *          sealed ground, seeing which one is alive underneath before breaking it,
+ *          then decide what the soil you opened should give (game/boar.js)
  */
 export function goalFor() {
   if (isWaterBound() || getForm().lifeGoal === 'water') {
@@ -97,6 +125,13 @@ export function goalFor() {
   if (lifeGoal === 'enclosure') return geckoGoal();
   if (lifeGoal === 'echo') return batGoal();
   if (lifeGoal === 'seeds') return squirrelGoal();
+  if (lifeGoal === 'tide') return crabGoal();
+  if (lifeGoal === 'current') return otterGoal();
+  if (lifeGoal === 'bloom') return beeGoal();
+  if (lifeGoal === 'wall') return catGoal();
+  if (lifeGoal === 'ford') return buffaloGoal();
+  if (lifeGoal === 'damp') return snailGoal();
+  if (lifeGoal === 'soil') return boarGoal();
   return { x: TEMPLE.x, y: TEMPLE.y, r: LAND_GOAL_RADIUS, kind: 'land' };
 }
 
@@ -125,6 +160,13 @@ export function updateLifeGoal() {
     if (goal.kind === 'enclosure') settleRefuge();
     if (goal.kind === 'dark-roost') settleBatRoost();
     if (goal.kind === 'cache') settleCache();
+    if (goal.kind === 'home') settleHome();
+    if (goal.kind === 'holt') settleHolt();
+    if (goal.kind === 'hive') settleHive();
+    if (goal.kind === 'warm-stone') settleHomes();
+    if (goal.kind === 'pasture') settlePasture();
+    if (goal.kind === 'damp-garden') settleGarden();
+    if (goal.kind === 'wallow') settleWallow();
     emit(EVENTS.LIFE_COMPLETE, goal.kind);
   }
 }

@@ -108,7 +108,10 @@ assert.equal(goal.x, GROVE.grove.x, 'the grove, in x');
 state.mode = 'world';
 // the world this life walks: the forest plane, where the walled grove stands
 initDynamicWorld(2);
-assert(state.dynamic.features.some((f) => f.type === 'log'), 'the log is on the map this life walks');
+assert(
+  state.dynamic.features.some((f) => f.type === 'log' && f.site === 'grove'),
+  'the grove log is on the map this life walks',
+);
 player.x = GROVE.log.x;
 player.y = GROVE.log.y;
 elephant.updateElephant();
@@ -127,7 +130,11 @@ assert(getKarma().akusala === 0, 'and no harm was recorded');
 
 // the log really left the world, and stays gone for later lives
 initDynamicWorld(2);
-assert(!state.dynamic.features.some((f) => f.type === 'log'), 'the log is gone from the map');
+// the ford's own log is another life's scenery: this is about the grove's
+assert(
+  !state.dynamic.features.some((f) => f.type === 'log' && f.site === 'grove'),
+  'the grove log is gone from the map',
+);
 log('careful lift ok');
 
 // ---- 3. the nest that was spared is cover for small lives ----

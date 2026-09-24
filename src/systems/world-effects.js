@@ -25,6 +25,16 @@ export const WORLD_EFFECTS = Object.freeze({
   'gate-opened': { key: 'effect.gateOpened', color: '#b9c9a8' },
   'echo-shared': { key: 'effect.echoShared', color: '#cbd6ea' },
   'seeds-scattered': { key: 'effect.seedsScattered', color: '#bfd0a0' },
+  'channel-kept': { key: 'effect.channelKept', color: '#9fc6dd' },
+  'river-tended': { key: 'effect.riverTended', color: '#9fd6b8' },
+  'forest-pollinated': { key: 'effect.forestPollinated', color: '#e0c8a0' },
+  'hearths-respected': { key: 'effect.hearthsRespected', color: '#d8c8a8' },
+  'ford-bridged': { key: 'effect.fordBridged', color: '#c9a97a' },
+  'damp-trail': { key: 'effect.dampTrail', color: '#a8c6b4' },
+  'soil-turned': { key: 'effect.soilTurned', color: '#c2a878' },
+  'span-built': { key: 'effect.spanBuilt', color: '#b9c3d0' },
+  'seeds-released': { key: 'effect.seedsReleased', color: '#e6d8a8' },
+  'hands-emptied': { key: 'effect.handsEmptied', color: '#e9c46a' },
 });
 
 /** The effect store, created on demand so old saves need no migration. */

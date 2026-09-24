@@ -4,10 +4,11 @@ import { MODE, PATH_WIDTH, PLAYER, TEMPLE, SALA, WORLD } from '../core/constants
 import { clamp, dist, distToPoly } from '../core/math.js';
 import { state } from '../core/state.js';
 import { input, isMindful } from '../systems/input.js';
-import { getForm, inWater, isWaterBound, speedMultiplier } from '../systems/forms.js';
+import { formAbilities, getForm, inWater, isWaterBound, speedMultiplier } from '../systems/forms.js';
 import { debrisBlocked } from '../game/world-memory.js';
-import { dynamicBlocked } from '../systems/worldgen.js';
+import { dynamicBlocked, dynamicFeatures } from '../systems/worldgen.js';
 import { isOnRoute } from '../world/rooms.js';
+import { terrainSpeed } from '../systems/terrain.js';
 import { currentBiomeId } from '../systems/biome.js';
 import { getRealmModifier } from '../systems/samsara.js';
 import { TREES } from '../world/world-data.js';
@@ -79,6 +80,9 @@ export function updatePlayer(dt) {
 
   // The form (ร่าง) decides how this terrain is crossed.
   speed *= speedMultiplier(player.x, player.y);
+  // The ground has its own say: mud costs most bodies more than half their pace,
+  // and the buffalo nothing (systems/terrain.js, content/forms.js `wade`).
+  speed *= terrainSpeed(dynamicFeatures(), player.x, player.y, formAbilities());
 
   const nextX = clamp(player.x + ax * speed * dt, PLAYER.margin, WORLD.w - PLAYER.margin);
   const nextY = clamp(player.y + ay * speed * dt, PLAYER.margin, WORLD.h - PLAYER.margin);

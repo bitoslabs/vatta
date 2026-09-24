@@ -33,6 +33,20 @@ import { nightWatched, owlFound, owlSite, perceivesLost } from '../game/owl.js';
 import { groveSite, nestCrashed, waysJoined } from '../game/elephant.js';
 import { caveSite, perceivesPup } from '../game/bat.js';
 import { crownPicked, seedsScattered, seedsSite } from '../game/squirrel.js';
+import { channelKept, tideSite, waterLevel } from '../game/crab.js';
+import { holtSite, riverTended } from '../game/otter.js';
+import { drifterPositions } from '../systems/drift.js';
+import { bloomsSite, flowerVisited, forestPollinated, reachableFlower } from '../game/bee.js';
+import { hearthsRespected, homeVisited, homesSite, peekedAt, warmStone } from '../game/cat.js';
+import { bridgePoint, fordBridged, fordSite } from '../game/buffalo.js';
+import { dampSite, trailKept } from '../game/snail.js';
+import { boarSite, coloniesLost, groundTells, turnedSoil } from '../game/boar.js';
+import { asuraSite, gatePoint, spanBuilt, spans } from '../game/asura-city.js';
+import { gardenSite, gatePoint as gardenGatePoint, releasedBeds } from '../game/garden.js';
+import { isLit, lightLevel } from '../systems/light.js';
+import { carriedCount, gatePoint as marketGatePoint, giftTaken, marketSite } from '../game/market.js';
+import { isDamp as isDampNow, moistureLevel } from '../systems/moisture.js';
+import { isHighTide as isHighTideNow } from '../systems/tide.js';
 import { canTrack, inHollowRest, isHunted, tracksRead, trailSite } from '../game/tiger.js';
 import { enclosureSite, gateOpened as geckoGateOpened } from '../game/gecko.js';
 import { visionRadius } from '../systems/vision.js';
@@ -103,6 +117,17 @@ export function renderWorld() {
   drawEnclosure(dawn);
   drawCave(dawn);
   drawSquirrelSeeds(dawn);
+  drawTide(dawn);
+  drawDrift(dawn);
+  drawBlooms(dawn);
+  drawHomes(dawn);
+  drawFord(dawn);
+  drawDampGround(dawn);
+  drawBoarGround(dawn);
+  drawAsuraRooms(dawn);
+  drawGardenRooms(dawn);
+  drawMarketRooms(dawn);
+  drawHolt(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -812,6 +837,825 @@ function drawEnclosure(dawn) {
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(center.x, center.y, ENCLOSURE.ring, Math.PI / 2 - 0.12, Math.PI / 2 + 0.12);
+    ctx.stroke();
+  }
+}
+
+/**
+ * The dry ridge and the damp garden (story table, หอยทาก): pale cracked ground that
+ * is a wall to one body only, the garden inside it, and the sheen the whole world
+ * takes on while the ground is damp (systems/moisture.js). A trail an earlier snail
+ * left keeps the crossing damp, and is drawn as such.
+ */
+function drawDampGround(dawn) {
+  const { hollow, garden, ring } = dampSite();
+  const damp = isDampNow();
+  const trail = trailKept();
+
+  // The sheen: while the ground is damp, the whole floor catches the light a little.
+  if (damp) {
+    ctx.fillStyle = `rgba(168,198,180,${0.04 + moistureLevel() * 0.05})`;
+    ctx.fillRect(0, 0, viewport.W, viewport.H);
+  }
+
+  if (getForm().lifeGoal !== 'damp' && !trail) return;
+
+  // The ridge: dry, cracked, and drawn as what it is.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'dry') continue;
+    ctx.fillStyle = dawn ? 'rgba(150,140,116,.55)' : 'rgba(96,90,74,.5)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.7, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = trail
+      ? `rgba(168,198,180,${0.4 + Math.sin(performance.now() * 0.002) * 0.12})`
+      : 'rgba(120,110,88,.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(feature.x - feature.r * 0.6, feature.y - feature.r * 0.3);
+    ctx.lineTo(feature.x + feature.r * 0.5, feature.y + feature.r * 0.2);
+    ctx.stroke();
+  }
+
+  // The garden at the end, and the hollow it set out from.
+  ctx.fillStyle = dawn ? 'rgba(86,112,74,.5)' : 'rgba(40,56,38,.55)';
+  ctx.beginPath();
+  ctx.ellipse(garden.x, garden.y, ring - 44, (ring - 44) * 0.8, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = dawn ? 'rgba(70,96,120,.5)' : 'rgba(30,48,64,.55)';
+  ctx.beginPath();
+  ctx.ellipse(hollow.x, hollow.y, 84, 58, 0, 0, TAU);
+  ctx.fill();
+
+  if (trail) {
+    // The damp trail a snail left: a wet line from the hollow to the garden.
+    ctx.strokeStyle = `rgba(168,198,180,${0.3 + Math.sin(performance.now() * 0.0016) * 0.08})`;
+    ctx.lineWidth = 14;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(hollow.x, hollow.y);
+    ctx.lineTo(garden.x, garden.y);
+    ctx.stroke();
+  }
+}
+
+/**
+ * The feeding ground (story table, หมูป่า): the ring of packed earth — opened where
+ * a life rooted through it — the root patches inside, the quiet bare places where
+ * colonies were crushed, and the shoots that come up where a life turned the soil.
+ *
+ * The tell is the whole story: within reach of its nose a boar *sees* which patch
+ * has small lives under it (`groundTells`), so the ground itself is what the life
+ * asks the player to notice.
+ */
+function drawBoarGround(dawn) {
+  const { feed, wallow, ring } = boarSite();
+  const tells = groundTells();
+  const turned = turnedSoil();
+  const lost = coloniesLost();
+
+  // The wallow, and the ground inside the ring.
+  ctx.fillStyle = dawn ? 'rgba(74,60,42,.5)' : 'rgba(28,22,14,.55)';
+  ctx.beginPath();
+  ctx.ellipse(wallow.x, wallow.y, 78, 52, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = dawn ? 'rgba(96,86,58,.28)' : 'rgba(46,40,26,.3)';
+  ctx.beginPath();
+  ctx.ellipse(feed.x, feed.y, ring - 50, (ring - 50) * 0.84, 0, 0, TAU);
+  ctx.fill();
+
+  // The ring: packed earth, hollow where a life opened it.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'mound') continue;
+    if (feature.dug === true) {
+      // Broken open: a shallow hollow of turned earth, and a way through.
+      ctx.fillStyle = dawn ? 'rgba(112,96,64,.4)' : 'rgba(52,44,28,.45)';
+      ctx.beginPath();
+      ctx.ellipse(feature.x, feature.y, feature.r * 0.8, feature.r * 0.58, 0, 0, TAU);
+      ctx.fill();
+      continue;
+    }
+    ctx.fillStyle = dawn ? 'rgba(126,108,74,.55)' : 'rgba(58,48,32,.6)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.72, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(150,132,96,.22)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r * 0.55, feature.r * 0.38, 0, 0, TAU);
+    ctx.stroke();
+  }
+
+  // The root patches, and the tell: a patch with a colony under it stirs.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'root') continue;
+    ctx.fillStyle = feature.regrown === true
+      ? (dawn ? 'rgba(104,120,64,.5)' : 'rgba(52,64,34,.55)')
+      : (dawn ? 'rgba(96,84,54,.5)' : 'rgba(48,40,26,.55)');
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.7, 0, 0, TAU);
+    ctx.fill();
+    // Roots showing through: short strokes.
+    ctx.strokeStyle = 'rgba(160,142,96,.35)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 4; i++) {
+      const angle = i * 1.7 + feature.x * 0.01;
+      ctx.beginPath();
+      ctx.moveTo(feature.x, feature.y);
+      ctx.lineTo(feature.x + Math.cos(angle) * feature.r * 0.8, feature.y + Math.sin(angle) * feature.r * 0.55);
+      ctx.stroke();
+    }
+    const told = tells.find((tell) => tell.x === feature.x && tell.y === feature.y);
+    if (told && told.colony === true) {
+      // Something is alive under it: the ground breathes.
+      const pulse = 0.35 + Math.sin(performance.now() * 0.004) * 0.25;
+      ctx.strokeStyle = `rgba(214,176,132,${pulse.toFixed(2)})`;
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.ellipse(feature.x, feature.y, feature.r * (0.3 + i * 0.22), feature.r * (0.2 + i * 0.15), 0, 0, TAU);
+        ctx.stroke();
+      }
+    } else if (turned && feature.regrown === true) {
+      // Turned soil keeps giving: new shoots.
+      ctx.strokeStyle = 'rgba(150,178,104,.5)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 3; i++) {
+        const x = feature.x - 12 + i * 12;
+        ctx.beginPath();
+        ctx.moveTo(x, feature.y + 4);
+        ctx.lineTo(x + 2, feature.y - 8);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Where a colony was crushed: bare, hard, and quiet.
+  for (const spot of lost) {
+    ctx.fillStyle = dawn ? 'rgba(88,78,58,.5)' : 'rgba(34,30,20,.55)';
+    ctx.beginPath();
+    ctx.ellipse(spot.x, spot.y, 30, 21, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(24,20,14,.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(spot.x - 9, spot.y - 6);
+    ctx.lineTo(spot.x + 9, spot.y + 6);
+    ctx.moveTo(spot.x + 9, spot.y - 6);
+    ctx.lineTo(spot.x - 9, spot.y + 6);
+    ctx.stroke();
+  }
+}
+
+/**
+ * The asura city's plaza (design §7, นครอสุร): the cut-stone ring with its gate
+ * left out, the drop where the span used to be, the two rival towers that ate it,
+ * and — once a life lays its stones back — the span itself and the shrine it
+ * leads to, which is where the city lets the mind rest.
+ */
+function drawAsuraRooms(dawn) {
+  const { plaza, ring } = asuraSite();
+  const gate = gatePoint();
+  const laid = spanBuilt();
+
+  // The plaza floor.
+  ctx.fillStyle = dawn ? 'rgba(120,124,112,.3)' : 'rgba(46,50,46,.36)';
+  ctx.beginPath();
+  ctx.ellipse(plaza.x, plaza.y, ring - 54, (ring - 54) * 0.85, 0, 0, TAU);
+  ctx.fill();
+
+  // The shrine: a stepped stone platform at the middle.
+  ctx.fillStyle = dawn ? 'rgba(150,152,140,.45)' : 'rgba(70,74,70,.5)';
+  ctx.beginPath();
+  ctx.ellipse(plaza.x, plaza.y, 62, 52, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = dawn ? 'rgba(176,178,164,.5)' : 'rgba(88,92,86,.55)';
+  ctx.beginPath();
+  ctx.ellipse(plaza.x, plaza.y, 34, 28, 0, 0, TAU);
+  ctx.fill();
+  if (laid) {
+    // Rest comes off the stones: a slow pale ring.
+    ctx.strokeStyle = `rgba(200,214,226,${0.3 + Math.sin(performance.now() * 0.0018) * 0.1})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(plaza.x, plaza.y, 74 + Math.sin(performance.now() * 0.0012) * 4, 62, 0, 0, TAU);
+    ctx.stroke();
+  }
+
+  // The ring: cut stone, a course at a time.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'citywall') continue;
+    ctx.fillStyle = dawn ? 'rgba(132,132,124,.6)' : 'rgba(52,54,52,.66)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.78, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(168,168,156,.2)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r * 0.62, feature.r * 0.48, 0, 0, TAU);
+    ctx.stroke();
+  }
+
+  // The drop at the gate: a dark gap with rubble, and the span over it if it was
+  // laid back down.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'drop') continue;
+    ctx.fillStyle = dawn ? 'rgba(22,24,26,.7)' : 'rgba(6,8,10,.85)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.8, 0, 0, TAU);
+    ctx.fill();
+  }
+  const spanList = spans().length ? spans() : (laid ? [gate] : []);
+  for (const spot of spanList) {
+    // Stones laid back across: wider than the gap, pale, and clearly someone's doing.
+    ctx.fillStyle = dawn ? 'rgba(178,180,168,.7)' : 'rgba(104,108,104,.7)';
+    ctx.beginPath();
+    ctx.ellipse(spot.x, spot.y, 92, 34, gate.angle + Math.PI / 2, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(212,214,200,.3)';
+    ctx.lineWidth = 2;
+    for (let i = -1; i <= 1; i++) {
+      ctx.beginPath();
+      ctx.moveTo(spot.x + Math.sin(gate.angle) * i * 26, spot.y - Math.cos(gate.angle) * i * 26);
+      ctx.lineTo(spot.x + Math.cos(gate.angle) * 80 + Math.sin(gate.angle) * i * 26,
+        spot.y + Math.sin(gate.angle) * 80 - Math.cos(gate.angle) * i * 26);
+      ctx.stroke();
+    }
+  }
+
+  // The two rival towers outside the gate: the ones that ate the span. With the
+  // span laid, the near one is shorter — its stones are the bridge.
+  const face = { x: Math.cos(gate.angle), y: Math.sin(gate.angle) };
+  const side = { x: -face.y, y: face.x };
+  for (const which of [-1, 1]) {
+    const bx = gate.x - face.x * 70 + side.x * 96 * which;
+    const by = gate.y - face.y * 70 + side.y * 96 * which;
+    const height = laid && which === 1 ? 34 : 62;
+    ctx.fillStyle = dawn ? 'rgba(120,120,112,.5)' : 'rgba(48,50,48,.6)';
+    ctx.beginPath();
+    ctx.moveTo(bx - 26, by + 18);
+    ctx.lineTo(bx - 20, by - height);
+    ctx.lineTo(bx + 20, by - height);
+    ctx.lineTo(bx + 26, by + 18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(178,178,164,.22)';
+    ctx.lineWidth = 1.5;
+    for (let i = 1; i <= 3; i++) {
+      const y = by + 18 - (height + 18) * (i / 4);
+      ctx.beginPath();
+      ctx.moveTo(bx - 22, y);
+      ctx.lineTo(bx + 22, y);
+      ctx.stroke();
+    }
+  }
+}
+
+/**
+ * The light garden (design §7, สวนแสงไม่เที่ยง): the hedge ring, the shadow at its
+ * gate, the beam of light that lies over it only while the light is on — and the
+ * beds inside, in flower, ripe, or already let go (a seedfall where a life released
+ * one). The garden's own veil comes and goes with the light, because the light
+ * path has an age.
+ */
+function drawGardenRooms(dawn) {
+  const { center, ring } = gardenSite();
+  const gate = gardenGatePoint();
+  const lit = isLit();
+  const level = lightLevel();
+  const released = releasedBeds();
+
+  // The garden's light, over the whole garden and nowhere else.
+  const glow = 0.04 + level * 0.07;
+  ctx.fillStyle = `rgba(240,238,196,${glow.toFixed(3)})`;
+  ctx.beginPath();
+  ctx.ellipse(center.x, center.y, ring + 60, (ring + 60) * 0.85, 0, 0, TAU);
+  ctx.fill();
+
+  // The beds and the floor inside the hedge.
+  ctx.fillStyle = dawn ? 'rgba(96,116,72,.34)' : 'rgba(44,58,38,.4)';
+  ctx.beginPath();
+  ctx.ellipse(center.x, center.y, ring - 56, (ring - 56) * 0.85, 0, 0, TAU);
+  ctx.fill();
+
+  // The hedge ring: soft, dark, and continuous.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'hedge') continue;
+    ctx.fillStyle = dawn ? 'rgba(52,76,44,.6)' : 'rgba(24,38,22,.65)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.82, 0, 0, TAU);
+    ctx.fill();
+  }
+
+  // The shadow at the gate, and the beam of light over it.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'shadow') continue;
+    ctx.fillStyle = dawn ? 'rgba(18,22,26,.66)' : 'rgba(4,6,8,.8)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.8, 0, 0, TAU);
+    ctx.fill();
+  }
+  if (lit) {
+    // The way in, while the light lasts: a shaft laid across the dark.
+    const alpha = 0.16 + level * 0.28 + Math.sin(performance.now() * 0.004) * 0.05;
+    ctx.save();
+    ctx.translate(gate.x, gate.y);
+    ctx.rotate(gate.angle);
+    ctx.fillStyle = `rgba(244,240,196,${alpha.toFixed(3)})`;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 92, 26, 0, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // The beds: in flower, ripe (bright, asking), or a seedfall where one was let go.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type === 'seedfall') {
+      ctx.strokeStyle = 'rgba(230,216,168,.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(feature.x - 10, feature.y + 6);
+      ctx.quadraticCurveTo(feature.x, feature.y - 14, feature.x + 12, feature.y - 4);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(230,216,168,.6)';
+      ctx.beginPath();
+      ctx.ellipse(feature.x + 12, feature.y - 4, 4, 3, 0, 0, TAU);
+      ctx.fill();
+      continue;
+    }
+    if (feature.type !== 'bloombed') continue;
+    const petals = feature.ripe === true ? 6 : 4;
+    const reach = feature.ripe === true ? feature.r * 0.7 : feature.r * 0.42;
+    const alpha = feature.ripe === true ? 0.5 + level * 0.35 : 0.3;
+    ctx.fillStyle = `rgba(226,214,166,${alpha.toFixed(3)})`;
+    for (let i = 0; i < petals; i++) {
+      const angle = (i / petals) * TAU + feature.x * 0.01;
+      ctx.beginPath();
+      ctx.ellipse(
+        feature.x + Math.cos(angle) * reach * 0.6,
+        feature.y + Math.sin(angle) * reach * 0.45,
+        reach * 0.5, reach * 0.34, angle, 0, TAU,
+      );
+      ctx.fill();
+    }
+    ctx.fillStyle = feature.ripe === true ? 'rgba(248,244,206,.75)' : 'rgba(180,176,140,.45)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, reach * 0.3, reach * 0.22, 0, 0, TAU);
+    ctx.fill();
+  }
+
+  // Where a released bed was: a bare bed and the seed's own line out of it.
+  for (const spot of released) {
+    if (dynamicFeatures().some((f) => f.type === 'seedfall' && f.x === spot.x && f.y === spot.y)) continue;
+    ctx.fillStyle = dawn ? 'rgba(94,84,62,.4)' : 'rgba(42,36,24,.45)';
+    ctx.beginPath();
+    ctx.ellipse(spot.x, spot.y, 30, 21, 0, 0, TAU);
+    ctx.fill();
+  }
+}
+
+/**
+ * The market alley (design §7, ตลาดความอยาก): the cut stone of its two walls, the
+ * narrow gate — drawn with its bar lifted while the hands are empty, because that
+ * is the rule — the curtains across the chambers, each parted as far as the hands
+ * have filled, and the goods on offer, dimmed once a life has taken them.
+ */
+function drawMarketRooms(dawn) {
+  const { length, halfWidth } = marketSite();
+  const gate = marketGatePoint();
+  const axis = { x: 0.4744, y: 0.8811 };
+  const held = carriedCount();
+
+  // The alley floor: a worn street between the walls.
+  ctx.save();
+  ctx.translate(gate.x + axis.x * (length / 2), gate.y + axis.y * (length / 2));
+  ctx.rotate(Math.atan2(axis.y, axis.x));
+  ctx.fillStyle = dawn ? 'rgba(126,118,96,.34)' : 'rgba(52,48,38,.4)';
+  ctx.fillRect(-length / 2, -(halfWidth - 46), length, (halfWidth - 46) * 2);
+  ctx.strokeStyle = 'rgba(180,168,132,.12)';
+  ctx.lineWidth = 2;
+  for (let i = -length / 2; i < length / 2; i += 44) {
+    ctx.beginPath();
+    ctx.moveTo(i, -(halfWidth - 46));
+    ctx.lineTo(i + 16, halfWidth - 46);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // The walls.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'marketwall') continue;
+    ctx.fillStyle = dawn ? 'rgba(140,132,112,.6)' : 'rgba(58,54,44,.66)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.82, 0, 0, TAU);
+    ctx.fill();
+  }
+
+  // The gate: two posts and a bar. The bar is up while the hands are empty.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'narrowgate') continue;
+    ctx.fillStyle = dawn ? 'rgba(96,90,74,.6)' : 'rgba(38,36,30,.7)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r * 0.34, feature.r * 0.34, 0, 0, TAU);
+    ctx.fill();
+  }
+  ctx.save();
+  ctx.translate(gate.x, gate.y);
+  ctx.rotate(Math.atan2(axis.y, axis.x));
+  ctx.strokeStyle = held === 0 ? 'rgba(210,214,196,.25)' : 'rgba(226,196,120,.6)';
+  ctx.lineWidth = 5;
+  for (const across of [-46, 0, 46]) {
+    ctx.beginPath();
+    ctx.moveTo(0, across);
+    ctx.lineTo(held === 0 ? 6 : 30, across);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // The curtains: cloth, parted as far as the hands have filled.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'curtain') continue;
+    const need = feature.needs || 1;
+    const open = held >= need;
+    const fullness = 0.3 + need * 0.2;
+    ctx.fillStyle = open
+      ? `rgba(226,196,120,${(fullness * 0.5).toFixed(2)})`
+      : `rgba(150,120,86,${fullness.toFixed(2)})`;
+    ctx.save();
+    ctx.translate(feature.x, feature.y);
+    ctx.rotate(Math.atan2(axis.y, axis.x));
+    // Parted curtains show a way; shut ones are one flat panel.
+    const parts = open ? [-1, 1] : [0];
+    for (const side of parts) {
+      ctx.beginPath();
+      ctx.moveTo(0, side * 6);
+      ctx.lineTo(0, side * 46);
+      ctx.lineTo(-10, side * (open ? 20 : 50));
+      ctx.lineTo(-10, side * (open ? 0 : 6));
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // The goods on offer.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'gift') continue;
+    const taken = giftTaken(feature);
+    ctx.fillStyle = taken
+      ? 'rgba(120,110,88,.28)'
+      : (dawn ? 'rgba(226,196,120,.6)' : 'rgba(198,160,74,.66)');
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r * 0.62, feature.r * 0.5, 0, 0, TAU);
+    ctx.fill();
+    if (!taken) {
+      ctx.strokeStyle = 'rgba(246,226,168,.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(feature.x - feature.r * 0.4, feature.y - feature.r * 0.2);
+      ctx.lineTo(feature.x + feature.r * 0.4, feature.y - feature.r * 0.2);
+      ctx.stroke();
+    }
+  }
+}
+
+/**
+ * The ford (story table ch.11, ควาย): the mud flat, the fallen log, the chasm that
+ * rings the pasture, and the bridge a dragged log leaves standing. The bridge is
+ * the one piece of the map a *life* draws: it is there in later lives because
+ * someone hauled it there.
+ */
+function drawFord(dawn) {
+  const { mud, log, pasture, ring, mudRadius } = fordSite();
+  const bridge = bridgePoint();
+
+  // The mud flat: darker, wetter ground.
+  ctx.fillStyle = dawn ? 'rgba(58,48,34,.55)' : 'rgba(26,22,14,.6)';
+  ctx.beginPath();
+  ctx.ellipse(mud.x, mud.y, mudRadius, mudRadius * 0.72, 0, 0, TAU);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(120,104,72,.25)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 5; i++) {
+    const angle = i * 1.3;
+    ctx.beginPath();
+    ctx.ellipse(
+      mud.x + Math.cos(angle) * mudRadius * 0.45,
+      mud.y + Math.sin(angle) * mudRadius * 0.32,
+      mudRadius * 0.22, mudRadius * 0.12, angle, 0, TAU,
+    );
+    ctx.stroke();
+  }
+
+  // The chasm ring, and the pasture inside it.
+  ctx.fillStyle = dawn ? 'rgba(96,104,72,.3)' : 'rgba(44,54,36,.35)';
+  ctx.beginPath();
+  ctx.ellipse(pasture.x, pasture.y, ring - 44, (ring - 44) * 0.8, 0, 0, TAU);
+  ctx.fill();
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'gully') continue;
+    ctx.fillStyle = dawn ? 'rgba(34,30,22,.85)' : 'rgba(12,10,8,.9)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r * 1.05, feature.r * 0.75, 0, 0, TAU);
+    ctx.fill();
+  }
+
+  // The log on the near side, unless a life has hauled it across.
+  if (!fordBridged() && !state.world.planks?.length) {
+    ctx.save();
+    ctx.translate(log.x, log.y);
+    ctx.rotate(0.35);
+    ctx.fillStyle = dawn ? 'rgba(140,112,72,.95)' : 'rgba(86,68,44,.95)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 46, 15, 0, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // The bridge: what a life left over the chasm.
+  if (state.world.planks?.length || fordBridged()) {
+    ctx.save();
+    ctx.translate(bridge.x, bridge.y);
+    ctx.rotate(Math.atan2(log.y - pasture.y, log.x - pasture.x));
+    ctx.fillStyle = dawn ? 'rgba(160,130,84,.95)' : 'rgba(96,76,48,.95)';
+    ctx.fillRect(-14, -54, 28, 108);
+    ctx.strokeStyle = 'rgba(40,30,18,.5)';
+    ctx.lineWidth = 1.6;
+    for (const dy of [-30, 0, 30]) {
+      ctx.beginPath();
+      ctx.moveTo(-14, dy);
+      ctx.lineTo(14, dy);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+/**
+ * The cat's round (reserve table, แมว): the low wall beside each home, the homes
+ * themselves, and the warm stone the life ends on. The walls are drawn as what
+ * they are — a step up, not a barrier — because the point is that a cat stands on
+ * them and looks in.
+ */
+function drawHomes(dawn) {
+  if (getForm().lifeGoal !== 'wall' && !hearthsRespected()) return;
+  const homes = homesSite();
+  const stone = warmStone();
+
+  for (const home of homes) {
+    // the home itself
+    ctx.fillStyle = dawn ? 'rgba(74,60,42,.9)' : 'rgba(32,26,18,.92)';
+    ctx.beginPath();
+    ctx.ellipse(home.x, home.y, 34, 24, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = dawn ? 'rgba(22,16,10,.9)' : 'rgba(10,8,5,.92)';
+    ctx.beginPath();
+    ctx.ellipse(home.x, home.y + 5, 14, 10, 0, 0, TAU);
+    ctx.fill();
+
+    // the wall a step away: a low ridge of stone
+    ctx.save();
+    ctx.translate(home.wall.x, home.wall.y);
+    ctx.fillStyle = dawn ? 'rgba(120,116,104,.9)' : 'rgba(58,60,54,.92)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 46, 20, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = dawn ? 'rgba(168,164,150,.4)' : 'rgba(120,124,116,.35)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-34, -4);
+    ctx.lineTo(34, -4);
+    ctx.stroke();
+    ctx.restore();
+
+    if (homeVisited(home.id)) {
+      ctx.strokeStyle = peekedAt(home.id)
+        ? `rgba(216,200,168,${0.35 + Math.sin(performance.now() * 0.002) * 0.12})`
+        : 'rgba(201,138,122,.35)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(home.wall.x, home.wall.y, 58, 0, TAU);
+      ctx.stroke();
+    }
+    if (hearthsRespected()) {
+      ctx.fillStyle = 'rgba(224,208,168,.1)';
+      ctx.beginPath();
+      ctx.arc(home.x, home.y, 86, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  // The warm stone the cat always comes back to.
+  ctx.fillStyle = dawn ? 'rgba(126,110,84,.95)' : 'rgba(62,54,42,.95)';
+  ctx.beginPath();
+  ctx.ellipse(stone.x, stone.y, 40, 26, 0, 0, TAU);
+  ctx.fill();
+  ctx.strokeStyle = hearthsRespected()
+    ? `rgba(224,208,168,${0.3 + Math.sin(performance.now() * 0.002) * 0.1})`
+    : 'rgba(214,180,120,.25)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(stone.x, stone.y, 48, 32, 0, 0, TAU);
+  ctx.stroke();
+}
+
+/**
+ * The bee's chain (reserve table, ผึ้ง): the hive, the flowers that open as they
+ * are worked, and the far meadow. Flowers a past life pollinated are dressing and
+ * drawn with the rest of the world; these are the ones this life walks.
+ */
+function drawBlooms(dawn) {
+  if (getForm().lifeGoal !== 'bloom') return;
+  const { hive, flowers, meadow } = bloomsSite();
+
+  // The far meadow: paler grass, and the place the pollen is decided at.
+  ctx.fillStyle = dawn ? 'rgba(96,110,64,.35)' : 'rgba(44,56,34,.4)';
+  ctx.beginPath();
+  ctx.ellipse(meadow.x, meadow.y, 104, 70, 0, 0, TAU);
+  ctx.fill();
+
+  // The hive: a small striped dome on the branch of nothing — simply its own home.
+  ctx.fillStyle = dawn ? 'rgba(190,150,80,.95)' : 'rgba(140,106,54,.95)';
+  ctx.beginPath();
+  ctx.ellipse(hive.x, hive.y, 34, 26, 0, 0, TAU);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(90,62,28,.5)';
+  ctx.lineWidth = 1.6;
+  for (const dy of [-10, 0, 10]) {
+    ctx.beginPath();
+    ctx.ellipse(hive.x, hive.y + dy, 30 - Math.abs(dy) * 0.5, 4, 0, 0, TAU);
+    ctx.stroke();
+  }
+  if (forestPollinated()) {
+    ctx.strokeStyle = `rgba(224,200,160,${0.2 + Math.sin(performance.now() * 0.002) * 0.07})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(hive.x, hive.y, 54, 0, TAU);
+    ctx.stroke();
+  }
+
+  for (const [index, flower] of flowers.entries()) {
+    const worked = flowerVisited(index);
+    // stem and leaves
+    ctx.strokeStyle = dawn ? 'rgba(110,140,84,.8)' : 'rgba(84,112,70,.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(flower.x, flower.y + 16);
+    ctx.lineTo(flower.x, flower.y - 6);
+    ctx.stroke();
+    // petals: open and pale once the bee has been, tight and dim before that
+    const petals = worked ? 6 : 4;
+    const spread = worked ? 15 : 9;
+    ctx.fillStyle = worked
+      ? (dawn ? 'rgba(236,214,168,.95)' : 'rgba(226,200,150,.95)')
+      : (dawn ? 'rgba(150,132,104,.75)' : 'rgba(96,86,68,.8)');
+    for (let i = 0; i < petals; i++) {
+      const angle = (i / petals) * TAU;
+      ctx.beginPath();
+      ctx.ellipse(
+        flower.x + Math.cos(angle) * spread * 0.6,
+        flower.y - 8 + Math.sin(angle) * spread * 0.6,
+        spread * 0.55, spread * 0.38, angle, 0, TAU,
+      );
+      ctx.fill();
+    }
+    ctx.fillStyle = worked ? '#e8c86a' : '#6b5a44';
+    ctx.beginPath();
+    ctx.arc(flower.x, flower.y - 8, 4.4, 0, TAU);
+    ctx.fill();
+    if (!worked && reachableFlower()?.index === index) {
+      ctx.strokeStyle = `rgba(224,200,160,${0.35 + Math.sin(performance.now() * 0.003) * 0.15})`;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(flower.x, flower.y - 8, 30, 0, TAU);
+      ctx.stroke();
+    }
+  }
+}
+
+/**
+ * What the current carries (reserve table, นาก): the driftwood riding the river,
+ * the holt it is brought to, and — if a life piled it by the water — the jam it
+ * becomes in a later life. These are the only objects in the game that move on
+ * their own (systems/drift.js).
+ */
+function drawDrift(dawn) {
+  const driftWood = drifterPositions();
+  for (const piece of driftWood) {
+    const bob = Math.sin(performance.now() * 0.002 + piece.t * 40) * 2.4;
+    ctx.save();
+    ctx.translate(piece.x, piece.y + bob);
+    ctx.rotate(0.5 + Math.sin(performance.now() * 0.0007 + piece.t * 20) * 0.12);
+    ctx.fillStyle = dawn ? 'rgba(140,112,72,.95)' : 'rgba(86,68,44,.95)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 22, 7, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(210,190,150,.25)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(-18, 0);
+    ctx.lineTo(18, 0);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Snags: the same wood, jammed across the channel in a later life.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'snag') continue;
+    ctx.save();
+    ctx.translate(feature.x, feature.y);
+    ctx.rotate(1.1);
+    ctx.fillStyle = dawn ? 'rgba(120,96,62,.95)' : 'rgba(66,52,34,.95)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, feature.r, feature.r * 0.3, 0, 0, TAU);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(6, 8, feature.r * 0.7, feature.r * 0.24, 0.5, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+/** The otter's holt, when that life is in play. */
+function drawHolt(dawn) {
+  if (getForm().lifeGoal !== 'current') return;
+  const { holt } = holtSite();
+  ctx.fillStyle = dawn ? 'rgba(84,66,44,.9)' : 'rgba(38,30,20,.92)';
+  ctx.beginPath();
+  ctx.ellipse(holt.x, holt.y, 62, 42, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = dawn ? 'rgba(26,20,12,.9)' : 'rgba(12,9,5,.92)';
+  ctx.beginPath();
+  ctx.ellipse(holt.x, holt.y + 8, 24, 17, 0, 0, TAU);
+  ctx.fill();
+  if (riverTended()) {
+    ctx.strokeStyle = `rgba(159,214,184,${0.2 + Math.sin(performance.now() * 0.002) * 0.08})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(holt.x, holt.y, 78, 0, TAU);
+    ctx.stroke();
+  }
+}
+
+/**
+ * The flooded channel and the crab's pools (reserve table, ปู): the walled
+ * spawning pool, the channel the river runs through, the sand bar, and the water
+ * itself — which is why the river band is drawn wider when the tide is in
+ * (systems/tide.js). Nothing else in the game changes the ground under a body.
+ */
+function drawTide(dawn) {
+  const { farPool, home, ring, causeway } = tideSite();
+  const level = waterLevel();
+  const deep = isHighTideNow();
+
+  // The river's own band, at the height the tide is at.
+  ctx.strokeStyle = deep
+    ? (dawn ? 'rgba(60,110,150,.5)' : 'rgba(24,60,92,.55)')
+    : (dawn ? 'rgba(60,110,150,.35)' : 'rgba(24,60,92,.4)');
+  ctx.lineWidth = RIVER_WIDTH * 2 * (1 + level * 0.18);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(RIVER[0][0], RIVER[0][1]);
+  for (let i = 1; i < RIVER.length; i++) ctx.lineTo(RIVER[i][0], RIVER[i][1]);
+  ctx.stroke();
+
+  // The sand bar: pale at low water, nearly gone at high water.
+  ctx.strokeStyle = `rgba(${dawn ? '190,176,140' : '150,140,112'},${0.55 - Math.max(0, level) * 0.4})`;
+  ctx.lineWidth = tideSite().causewayRadius * 2;
+  ctx.beginPath();
+  ctx.moveTo(causeway[0][0], causeway[0][1]);
+  ctx.lineTo(causeway[1][0], causeway[1][1]);
+  ctx.stroke();
+
+  // The walled pool, and the channel in it: bright when the water is out and a
+  // body could wade, dark and deep when it is in.
+  ctx.strokeStyle = dawn ? 'rgba(150,146,132,.3)' : 'rgba(110,112,104,.28)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(farPool.x, farPool.y, ring, 0, TAU);
+  ctx.stroke();
+  ctx.strokeStyle = deep
+    ? (dawn ? 'rgba(70,130,175,.9)' : 'rgba(28,70,105,.9)')
+    : (dawn ? 'rgba(200,190,150,.8)' : 'rgba(150,144,116,.75)');
+  ctx.lineWidth = 10;
+  const doorAngle = Math.atan2(causeway[1][1] - farPool.y, causeway[1][0] - farPool.x);
+  ctx.beginPath();
+  ctx.arc(farPool.x, farPool.y, ring, doorAngle - 0.2, doorAngle + 0.2);
+  ctx.stroke();
+
+  // The two pools.
+  for (const pool of [home, farPool]) {
+    ctx.fillStyle = dawn ? 'rgba(58,116,158,.85)' : 'rgba(22,56,84,.9)';
+    ctx.beginPath();
+    ctx.ellipse(pool.x, pool.y, 84, 58, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = channelKept() && pool === farPool
+      ? `rgba(159,198,221,${0.5 + Math.sin(performance.now() * 0.002) * 0.15})`
+      : 'rgba(159,198,221,.25)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(pool.x, pool.y, 90, 64, 0, 0, TAU);
     ctx.stroke();
   }
 }

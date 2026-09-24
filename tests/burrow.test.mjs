@@ -64,12 +64,19 @@ for (const feature of underRoot) {
 
 // only the tunnelling plane carries it
 assert(BIOMES['under-root'].sites.includes('burrow'), 'the soil is the plane that carries the burrow');
+// Each plane carries exactly the fixed sites it declares (design §7: a plane may
+// now have rooms of its own — the asura city's plaza, the forest's many sites) and
+// a plane with none is pure seed dressing.
 for (const id of Object.keys(BIOMES)) {
-  if (id === 'under-root') continue;
-  // The forest plane has its own fixed site (the marsh — tests/frog.test.mjs);
-  // every other plane is pure seed dressing.
-  if (id === 'memory-forest') continue;
-  assert(assembleRooms(4242, id).every((feature) => !feature.fixed), `${id} has no root chamber`);
+  const declared = new Set(BIOMES[id].sites || []);
+  if (declared.size === 0) {
+    assert(assembleRooms(4242, id).every((feature) => !feature.fixed), `${id} has no fixed site`);
+    continue;
+  }
+  for (const feature of assembleRooms(4242, id).filter((f) => f.fixed)) {
+    assert(feature.site !== undefined && declared.has(feature.site),
+      `${id} only carries the sites it declares (saw ${feature.type} of ${feature.site})`);
+  }
 }
 for (const feature of assembleRooms(4242, 'under-root').filter((f) => f.fixed)) {
   assert(feature.type === 'rootwall' || feature.type === 'burrow' || feature.type === 'crack',

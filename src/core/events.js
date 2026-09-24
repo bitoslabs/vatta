@@ -51,6 +51,12 @@ export const EVENTS = Object.freeze({
   HELP_KEY: 'help:key',
   /** A body able to echolocate sent a pulse (the bat, and whoever it taught). */
   ECHO_PULSE: 'echo:pulse',
+  /** Payload: 'low' | 'high' — the tide reached its mark (systems/tide.js). */
+  TIDE_TURNED: 'tide:turned',
+  /** Payload: 'damp' | 'dry' — the ground reached its mark (systems/moisture.js). */
+  MOISTURE_TURNED: 'moisture:turned',
+  /** Payload: 'lit' | 'dim' — the garden's light reached its mark (systems/light.js). */
+  LIGHT_TURNED: 'light:turned',
   /** Payload: { largeType } after a display setting changed. */
   SETTINGS_CHANGED: 'settings:changed',
   /** Payload: the new form id (see content/forms.js). */

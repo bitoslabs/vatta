@@ -75,8 +75,10 @@ export const ENCOUNTERS = Object.freeze([
     id: 'asura-bridge',
     kind: 'asura',
     biome: 'asura-city',
-    x: 1500,
-    y: 2400,
+    // Inside the city's plaza, past the broken gate a life must lay its own
+    // stones back over to enter (world-data.js#ASURA, game/asura-city.js).
+    x: 2740,
+    y: 1760,
     r: 130,
     promptKey: 'prompt.talkAsuraBridge',
     choices: [
@@ -88,8 +90,10 @@ export const ENCOUNTERS = Object.freeze([
     id: 'garden-bloom',
     kind: 'garden',
     biome: 'light-garden',
-    x: 3700,
-    y: 1200,
+    // Inside the light garden, past the shadow that only the light opens
+    // (world-data.js#GARDEN, game/garden.js).
+    x: 2450,
+    y: 2050,
     r: 130,
     promptKey: 'prompt.talkGardenBloom',
     choices: [
@@ -101,8 +105,12 @@ export const ENCOUNTERS = Object.freeze([
     id: 'market-stall',
     kind: 'market',
     biome: 'craving-market',
-    x: 2120,
-    y: 1200,
+    // In the alley's second chamber, across from that chamber's own stall: the
+    // market's being is only met by a body that has already taken an offer and can
+    // still open the first curtain, and standing with it is not standing at a stall
+    // (world-data.js#MARKET, game/market.js).
+    x: 2767,
+    y: 1811,
     r: 130,
     promptKey: 'prompt.talkMarketStall',
     choices: [
