@@ -6,11 +6,50 @@ import { exportEchoes, importEchoes } from './karma-memory.js';
 import { exportPath, importPath } from './path.js';
 import { exportPrecepts, importPrecepts } from './precepts.js';
 
-const KEY = 'vimutti.save.v1';
 const VERSION = 1;
+const SLOTS = 3;
+const ACTIVE_KEY = 'vimutti.save.active';
+const slotKey = (slot) => `vimutti.save.s${slot}`;
+
+let activeSlot = 1;
 
 function emptyStats() {
   return { caught: 0, lost: 0, time: 0, retaliations: 0, looted: 0, clung: 0, selfish: 0, reps: 0 };
+}
+
+export function slotCount() {
+  return SLOTS;
+}
+
+function validSlot(slot) {
+  return Number.isInteger(slot) && slot >= 1 && slot <= SLOTS;
+}
+
+/** Restore which slot is active (defaults to 1). */
+export function initSave() {
+  let stored = null;
+  try {
+    stored = localStorage.getItem(ACTIVE_KEY);
+  } catch {
+    stored = null;
+  }
+  const slot = Number.parseInt(stored, 10);
+  activeSlot = validSlot(slot) ? slot : 1;
+}
+
+export function getActiveSlot() {
+  return activeSlot;
+}
+
+export function setActiveSlot(slot) {
+  if (!validSlot(slot)) return false;
+  activeSlot = slot;
+  try {
+    localStorage.setItem(ACTIVE_KEY, String(slot));
+  } catch {
+    /* storage may be unavailable — the slot still applies for this session */
+  }
+  return true;
 }
 
 export function snapshot() {
@@ -28,19 +67,21 @@ export function snapshot() {
   };
 }
 
-export function saveRun() {
+export function saveRun(slot = activeSlot) {
+  if (!validSlot(slot)) return false;
   try {
-    localStorage.setItem(KEY, JSON.stringify(snapshot()));
+    localStorage.setItem(slotKey(slot), JSON.stringify(snapshot()));
     return true;
   } catch {
     return false;
   }
 }
 
-/** Read + validate the stored snapshot, or null when absent/corrupt/incompatible. */
-export function readSave() {
+/** Read + validate a stored slot, or null when absent/corrupt/incompatible. */
+export function readSave(slot = activeSlot) {
+  if (!validSlot(slot)) return null;
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(slotKey(slot));
     if (!raw) return null;
     const data = JSON.parse(raw);
     if (!data || data.v !== VERSION || typeof data.chapter !== 'number') return null;
@@ -50,16 +91,35 @@ export function readSave() {
   }
 }
 
-export function hasSave() {
-  return readSave() !== null;
+export function hasSave(slot = activeSlot) {
+  return readSave(slot) !== null;
 }
 
-export function clearSave() {
+export function clearSave(slot = activeSlot) {
+  if (!validSlot(slot)) return;
   try {
-    localStorage.removeItem(KEY);
+    localStorage.removeItem(slotKey(slot));
   } catch {
     /* storage may be unavailable — nothing to clear */
   }
+}
+
+/** Every slot with a light summary, for the title screen's slot list. */
+export function listSaves() {
+  const slots = [];
+  for (let slot = 1; slot <= SLOTS; slot++) {
+    const data = readSave(slot);
+    slots.push({
+      slot,
+      filled: data !== null,
+      chapter: data ? data.chapter : null,
+      savedAt: data ? data.savedAt : null,
+      merit: data && data.karma ? data.karma.merit : 0,
+      demerit: data && data.karma ? data.karma.demerit : 0,
+      liberated: Boolean(data && data.liberated),
+    });
+  }
+  return slots;
 }
 
 /**

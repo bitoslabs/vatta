@@ -3,6 +3,7 @@
 import { initAudioControls } from './systems/audio.js';
 import { initI18n } from './systems/i18n.js';
 import { initTeacher } from './systems/teacher.js';
+import { initSave } from './systems/save.js';
 import { initInput } from './systems/input.js';
 import { initViewport } from './systems/viewport.js';
 import { initChoices } from './ui/choices.js';
@@ -11,6 +12,8 @@ import { initDialogue } from './ui/dialogue.js';
 import { initEndScreen } from './ui/end-screen.js';
 import { initLanguageSwitcher } from './ui/language-switcher.js';
 import { initPathNotice } from './ui/path-notice.js';
+import { initRecap } from './ui/journey-recap.js';
+import { initSaveSlots } from './ui/save-slots.js';
 import { initTeacherPanel } from './ui/teacher-panel.js';
 import { initTitleScreen } from './ui/title-screen.js';
 import { initTouchControls } from './ui/touch.js';
@@ -21,6 +24,7 @@ import { startLoop } from './game/loop.js';
 
 function bootstrap() {
   initTeacher();
+  initSave();
   initI18n();
   initViewport();
   initTextures();
@@ -36,6 +40,8 @@ function bootstrap() {
   initLanguageSwitcher();
   initPathNotice();
   initTeacherPanel();
+  initSaveSlots();
+  initRecap();
   initCodex();
   startLoop();
 }

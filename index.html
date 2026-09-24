@@ -64,8 +64,13 @@
         <div class="chapter-label" data-i18n="title.chapters">เลือกบท</div>
         <div id="chapterSelect" class="chapter-list"></div>
       </div>
+      <div class="chapters">
+        <div class="chapter-label" data-i18n="save.slots.label">ช่องบันทึก</div>
+        <div id="saveSlots" class="chapter-list"></div>
+      </div>
       <button type="button" class="link-btn" id="codexBtn" data-i18n="title.codex">ไตรภูมิ 31</button>
       <button type="button" class="link-btn" id="teacherBtn" data-i18n="teacher.toggle.off">โหมดครู: ปิด</button>
+      <button type="button" class="link-btn" id="recapBtn" data-i18n="recap.title">สรุปการเดินทาง</button>
     </div>
   </div>
 
@@ -111,6 +116,7 @@
         <div id="preceptSummary" class="precept-summary"></div>
       </div>
       <button class="btn hidden" id="nextBtn" data-i18n="end.next">ไปบทต่อไป</button>
+      <button type="button" class="link-btn" id="recapEndBtn" data-i18n="recap.title">สรุปการเดินทาง</button>
       <button class="btn" id="restartBtn" data-i18n="end.restart">ภาวนาอีกครั้ง</button>
     </div>
   </div>
@@ -134,6 +140,17 @@
       <div id="rebirthPali" class="realm-pali"></div>
       <div id="rebirthDesc" class="realm-desc"></div>
       <div id="rebirthReason" class="realm-reason"></div>
+    </div>
+  </div>
+
+  <!-- ============ Journey recap ============ -->
+  <div id="recapOverlay" class="hidden">
+    <div class="recap-card">
+      <div class="recap-head">
+        <div class="recap-card-title" data-i18n="recap.title">สรุปการเดินทาง</div>
+        <button type="button" class="link-btn" id="recapClose" data-i18n="codex.close">ปิด</button>
+      </div>
+      <div id="recapBody" class="recap-body"></div>
     </div>
   </div>
 

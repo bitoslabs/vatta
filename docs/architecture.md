@@ -40,7 +40,7 @@ src/
 │   ├── path.js            มรรค 8 — เปิดตามการปฏิบัติ + รวมผลต่อการรับรู้
 │   ├── precepts.js        ศีล 5 — สถานะตามการกระทำ (ไม่ตัดสิน)
 │   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
-│   ├── save.js            บันทึก/โหลดรอบเล่น (autosave + เล่นต่อ)
+│   ├── save.js            บันทึก/โหลด 3 ช่อง (autosave + เล่นต่อ + สรุปช่อง)
 │   ├── teacher.js         โหมดครู — เปิด/ปิด, จุดสำคัญ, guided tour
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
@@ -67,6 +67,8 @@ src/
 │   ├── rebirth-interlude.js  การ์ดจุติ–ปฏิสนธิเมื่อตาย
 │   ├── path-notice.js     แจ้งเตือนเมื่อมรรคข้อใหม่เปิด
 │   ├── teacher-panel.js   แผงคำบรรยายโหมดครู
+│   ├── save-slots.js      แถวเลือกช่องบันทึกบนหน้า Title
+│   ├── journey-recap.js   หน้าสรุปการเดินทาง (กรรม–มรรค–ศีล–ภูมิ)
 │   ├── language-switcher.js
 │   └── touch.js           joystick + ปุ่มสัมผัส
 ├── game/                  การประสานฉาก
