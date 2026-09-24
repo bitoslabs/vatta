@@ -24,6 +24,7 @@ import { burrowSite, rootWatered } from '../game/burrow.js';
 import { isCarrying, nestSite, seedCarried } from '../game/ant.js';
 import { marshSite, waterOpened } from '../game/frog.js';
 import { creviceSite, isLinked } from '../game/snake.js';
+import { fieldSite, isSheltered, warrenIsConnected } from '../game/rabbit.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome } from '../systems/biome.js';
 import { getForm, isWaterBound } from '../systems/forms.js';
@@ -63,6 +64,7 @@ export function renderWorld() {
   drawNest(dawn);
   drawMarsh(dawn);
   drawCrevice(dawn);
+  drawField(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -452,6 +454,64 @@ function drawCrevice(dawn) {
     ctx.lineTo(spring.x + 30, spring.y + 30);
     ctx.stroke();
   }
+}
+
+/**
+ * The field, the washed rim and the warrens (docs/animal-lives-story.md ch.10):
+ * a gully only a leap crosses, the warrens the rabbit joins one by one, and the
+ * meadow the life finishes in. Once the shelter was shared, the warrens glow
+ * faintly — they are shelters for every body now.
+ */
+function drawField(dawn) {
+  const features = dynamicFeatures();
+  const hasGully = features.some((feature) => feature.type === 'gully');
+  if (!hasGully) return;
+  const { meadow, warrens } = fieldSite();
+  const sheltered = isSheltered();
+
+  for (const feature of features) {
+    if (feature.type !== 'gully') continue;
+    ctx.fillStyle = dawn ? 'rgba(96,80,54,.85)' : 'rgba(46,38,24,.9)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r * 1.1, feature.r * 0.8, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = dawn ? 'rgba(150,128,88,.35)' : 'rgba(110,92,60,.35)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(feature.x, feature.y, feature.r * 0.6, 0, TAU);
+    ctx.stroke();
+  }
+
+  for (const warren of warrens) {
+    const joined = warrenIsConnected(warren.id);
+    ctx.fillStyle = dawn ? 'rgba(84,64,40,.9)' : 'rgba(38,28,16,.92)';
+    ctx.beginPath();
+    ctx.ellipse(warren.x, warren.y, 58, 40, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = dawn ? 'rgba(28,20,10,.9)' : 'rgba(12,8,4,.92)';
+    ctx.beginPath();
+    ctx.ellipse(warren.x, warren.y + 8, 22, 15, 0, 0, TAU);
+    ctx.fill();
+    if (joined) {
+      ctx.strokeStyle = sheltered ? 'rgba(226,206,148,.75)' : 'rgba(200,182,140,.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(warren.x, warren.y - 4, 40 + Math.sin(performance.now() * 0.002) * 2, 0, TAU);
+      ctx.stroke();
+    }
+    if (sheltered) {
+      ctx.fillStyle = 'rgba(233,217,160,.16)';
+      ctx.beginPath();
+      ctx.arc(warren.x, warren.y - 4, 62, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  // The open field: grass, and the storm the life is preparing for.
+  ctx.fillStyle = dawn ? 'rgba(74,96,54,.5)' : 'rgba(34,52,30,.55)';
+  ctx.beginPath();
+  ctx.ellipse(meadow.x, meadow.y, 96, 62, 0, 0, TAU);
+  ctx.fill();
 }
 
 /** A bridge built in an earlier life, and the debris its upkeep left behind. */

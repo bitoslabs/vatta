@@ -13,6 +13,7 @@ import { resetRelease } from './release.js';
 import { resetAnt } from './ant.js';
 import { resetFrog } from './frog.js';
 import { resetSnake } from './snake.js';
+import { resetRabbit } from './rabbit.js';
 import { getKarma } from '../systems/karma.js';
 import { resolveRebirth } from '../systems/rebirth.js';
 import { enterRealm } from '../systems/samsara.js';
@@ -458,6 +459,7 @@ export function loadChapter(id, { autosave = true } = {}) {
   resetAnt();
   resetFrog();
   resetSnake();
+  resetRabbit();
   // You are reborn into this chapter in the plane your kamma has earned.
   enterRealm(resolveRebirth(getKarma()).realmId);
   // Conduct so far may have opened further factors of the path.

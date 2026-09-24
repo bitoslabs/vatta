@@ -12,12 +12,12 @@ import { FORMS, mapsFor } from '../content/forms.js';
  */
 export const CHAPTER_ANIMALS = [
   ['deer', 'dog', 'crane', 'snake'], ['turtle', 'dog', 'worm', 'ant'],
-  ['monkey', 'butterfly', 'deer'], ['dog', 'turtle', 'crane', 'frog'],
+  ['monkey', 'butterfly', 'deer', 'rabbit'], ['dog', 'turtle', 'crane', 'frog'],
   ['butterfly', 'monkey', 'worm', 'snake'], ['crane', 'dog', 'turtle'],
   ['turtle', 'deer', 'butterfly', 'frog'], ['dog', 'monkey', 'worm', 'ant'],
-  ['deer', 'butterfly', 'turtle'], ['monkey', 'crane', 'dog', 'frog'],
+  ['deer', 'butterfly', 'turtle', 'rabbit'], ['monkey', 'crane', 'dog', 'frog'],
   ['crane', 'turtle', 'butterfly', 'ant', 'snake'], ['butterfly', 'dog', 'deer'],
-  ['turtle', 'monkey', 'crane', 'snake'], ['deer', 'dog', 'butterfly'],
+  ['turtle', 'monkey', 'crane', 'snake'], ['deer', 'dog', 'butterfly', 'rabbit'],
 ];
 
 /** A body may only be offered for a chapter whose map carries it. */

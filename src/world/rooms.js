@@ -5,6 +5,7 @@ import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
 import {
   BURROW, BURROW_KEEPOUT, CREVICE, CREVICE_APPROACH, CREVICE_KEEPOUT,
+  FIELD, FIELD_APPROACH, FIELD_KEEPOUTS,
   MARSH, MARSH_APPROACH, MARSH_KEEPOUT, MARSH_PONDS,
   NEST, NEST_KEEPOUT, PATH, RIVER, RIVER_WIDTH,
 } from './world-data.js';
@@ -50,6 +51,13 @@ export const MARSH_FEATURE_TYPES = Object.freeze(['mire']);
  */
 export const CREVICE_FEATURE_TYPES = Object.freeze(['crevice']);
 
+/**
+ * The field's own kind: `gully` is a washed-out channel a leaping body crosses —
+ * it is a line, not a ring, so it divides the field rather than sealing a place
+ * (docs/animal-lives-story.md ch.10).
+ */
+export const FIELD_FEATURE_TYPES = Object.freeze(['gully']);
+
 const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone']);
 
 function featureRadius(type, rng) {
@@ -67,6 +75,7 @@ function featureRadius(type, rng) {
   if (type === 'mire') return MARSH.mireRadius;
   if (type === 'crevice') return CREVICE.gapRadius;
   if (type === 'stone') return CREVICE.wallRadius;
+  if (type === 'gully') return FIELD.gully.radius;
   if (type === 'pebble') return 18 + rng() * 10;
   return 62;
 }
@@ -96,6 +105,7 @@ export function blockedAt(features, x, y, abilities = {}) {
     if (feature.type === 'crack') return abilities.small !== true && featureAt(feature, x, y);
     if (feature.type === 'mire') return abilities.leap !== true && featureAt(feature, x, y);
     if (feature.type === 'crevice') return abilities.slither !== true && featureAt(feature, x, y);
+    if (feature.type === 'gully') return abilities.leap !== true && featureAt(feature, x, y);
     if (!SOLID_TYPES.has(feature.type)) return false;
     if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
     if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
@@ -117,6 +127,8 @@ function mayPlace(type, x, y, radius) {
   if (dist(x, y, MARSH_KEEPOUT.x, MARSH_KEEPOUT.y) < MARSH_KEEPOUT.r + radius) return false;
   // Nor the stone ring, or a trunk could close the crevice.
   if (dist(x, y, CREVICE_KEEPOUT.x, CREVICE_KEEPOUT.y) < CREVICE_KEEPOUT.r + radius) return false;
+  // Nor the field, or a trunk could break the relay or dam the gully.
+  if (FIELD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   void type;
   return true;
 }
@@ -314,6 +326,32 @@ export function assembleCrevice() {
   return features;
 }
 
+/**
+ * The field and the washed rim (docs/animal-lives-story.md ch.10, "ที่หลบก่อนพายุ").
+ *
+ * The gully is an unbroken ring of overlapping channels around the far warren:
+ * a leaping body crosses anywhere along it and no other body crosses at all. The
+ * warrens themselves are not features — they are places a life visits, not walls.
+ */
+export function assembleField() {
+  const features = [];
+  const { gully } = FIELD;
+  const step = TAU / gully.segments;
+  for (let i = 0; i < gully.segments; i++) {
+    const angle = i * step;
+    features.push({
+      i: 0,
+      site: 'field',
+      type: 'gully',
+      fixed: true,
+      x: gully.x + Math.cos(angle) * gully.ring,
+      y: gully.y + Math.sin(angle) * gully.ring,
+      r: gully.radius,
+    });
+  }
+  return features;
+}
+
 /** Assemble the seed's dressing: the plane's own kinds beside the true path. */
 export function assembleRooms(seed, biomeId = 'memory-forest') {
   const rng = mulberry32(seed);
@@ -341,6 +379,7 @@ export function assembleRooms(seed, biomeId = 'memory-forest') {
   if (sites.includes('nest')) for (const f of assembleNest()) features.push({ ...f, i: features.length });
   if (sites.includes('marsh')) for (const f of assembleMarsh()) features.push({ ...f, i: features.length });
   if (sites.includes('crevice')) for (const f of assembleCrevice()) features.push({ ...f, i: features.length });
+  if (sites.includes('field')) for (const f of assembleField()) features.push({ ...f, i: features.length });
 
   // Occasionally silt builds up in the river — which the route check must catch.
   if (rng() < 0.35) {
@@ -526,6 +565,26 @@ export function validateFrogRoute(features, abilities = {}) {
   const smallReaches = reachableBetween(features, from, MARSH.inlet, { ...base, leap: false, small: true });
   const ok = leapReaches && !walkerReaches && !tunnelReaches && !smallReaches;
   return { ok, leapReaches, walkerReaches, tunnelReaches, smallReaches };
+}
+
+/**
+ * Prove the far warren is reachable by leaping the gully (docs/animal-lives-story.md
+ * ch.10). There is deliberately no timing here: the design says speed is not a
+ * score, so the proof is only about the leap — walking bodies, small bodies,
+ * tunnellers and slitherers are all stopped by the washed-out channel.
+ */
+export function validateRabbitRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false };
+  const start = FIELD_APPROACH[0];
+  const from = { x: start[0], y: start[1] };
+  const far = FIELD.warrens.find((warren) => warren.id === 'c');
+  const leapReaches = reachableBetween(features, from, far, { ...base, leap: true });
+  const walkerReaches = reachableBetween(features, from, far, { ...base, leap: false });
+  const smallReaches = reachableBetween(features, from, far, { ...base, leap: false, small: true });
+  const tunnelReaches = reachableBetween(features, from, far, { ...base, leap: false, burrow: true });
+  const slitherReaches = reachableBetween(features, from, far, { ...base, leap: false, slither: true });
+  const ok = leapReaches && !walkerReaches && !smallReaches && !tunnelReaches && !slitherReaches;
+  return { ok, leapReaches, walkerReaches, smallReaches, tunnelReaches, slitherReaches };
 }
 
 /**

@@ -23,12 +23,15 @@ import { updateWorldMemory } from './world-memory.js';
 import { updateAnt } from './ant.js';
 import { updateFrog } from './frog.js';
 import { updateSnake } from './snake.js';
+import { inShelter, updateRabbit } from './rabbit.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
 import { updateTour } from '../systems/teacher.js';
 import { updateLifeGoal } from '../systems/goals.js';
 
 let heartCd = 0;
+/** Fear relief inside a warren whose shelter was shared in an earlier life. */
+const SHELTER_RELIEF = 0.18;
 
 /** Per-frame update of the explorable world scene. */
 export function updateWorld(dt) {
@@ -63,6 +66,7 @@ export function updateWorld(dt) {
   updateAnt();
   updateFrog();
   updateSnake();
+  updateRabbit();
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);
@@ -90,6 +94,9 @@ function updateFear(dt, { frozen, mind, running }) {
   else if (!player.moving) state.fear -= FEAR.idleRelief * relief * dt;
   else state.fear -= FEAR.walkRelief * relief * dt;
   if (inSafeZone(player.x, player.y)) state.fear -= FEAR.safeRelief * relief * dt;
+  // A sheltered field is felt, not just recorded: warrens opened by an earlier
+  // life settle the mind of any body that stands in them (game/rabbit.js).
+  if (inShelter(player.x, player.y)) state.fear -= SHELTER_RELIEF * relief * dt;
 
   state.fear = clamp(state.fear, 0, 1);
 }

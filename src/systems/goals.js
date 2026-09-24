@@ -11,11 +11,12 @@ import { waterRoot } from '../game/burrow.js';
 import { antGoal, deliverSeed } from '../game/ant.js';
 import { frogGoal, spawnAtBank } from '../game/frog.js';
 import { linkWater, snakeGoal } from '../game/snake.js';
+import { rabbitGoal, tendField } from '../game/rabbit.js';
 
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link']);
+const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm']);
 
 function nearestRiverPoint(target) {
   let best = RIVER[0];
@@ -47,6 +48,9 @@ function nearestRiverPoint(target) {
  *   link   the snake's crevice: the sealed spring inside the stone first, then
  *          the outflow that links to the river (world/rooms.js#validateSnakeRoute
  *          proves only a slithering body fits through the slot)
+ *   storm  the rabbit's field: join the warrens, leap the washed rim, answer for
+ *          the shelter, then finish in the open field — a relay with no clock
+ *          (world/rooms.js#validateRabbitRoute proves only the leap)
  */
 export function goalFor() {
   if (isWaterBound() || getForm().lifeGoal === 'water') {
@@ -60,13 +64,15 @@ export function goalFor() {
   if (lifeGoal === 'nest') return antGoal();
   if (lifeGoal === 'spawn') return frogGoal();
   if (lifeGoal === 'crevice') return snakeGoal();
+  if (lifeGoal === 'storm') return rabbitGoal();
   return { x: TEMPLE.x, y: TEMPLE.y, r: LAND_GOAL_RADIUS, kind: 'land' };
 }
 
 /**
  * In life mode a water, burrow, nest or spawn life completes at its own goal. A
- * 'land' life is ended by its chapter, and a 'seed', 'inlet' or 'spring' marker
- * only shows the body where its errand begins — standing there is not an ending.
+ * 'land' life is ended by its chapter, and a 'seed', 'inlet', 'spring', 'warren'
+ * or 'shelter' marker only shows the body where its errand goes next — standing
+ * there is not an ending.
  */
 export function updateLifeGoal() {
   if (state.mode !== MODE.WORLD) return;
@@ -80,6 +86,7 @@ export function updateLifeGoal() {
     if (goal.kind === 'nest') deliverSeed();
     if (goal.kind === 'spawn') spawnAtBank();
     if (goal.kind === 'link') linkWater();
+    if (goal.kind === 'storm') tendField();
     emit(EVENTS.LIFE_COMPLETE, goal.kind);
   }
 }

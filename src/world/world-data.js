@@ -41,6 +41,47 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The field and its warrens (docs/animal-lives-story.md ch.10, "ที่หลบก่อนพายุ").
+ *
+ * A washed-out gully rings the far warren, so the only way in is a leap. The
+ * rabbit's life is a *relay*, not a race: join the warrens, leap the washed rim,
+ * and decide at the far shelter whether to leave it open for the slow ones.
+ * Nothing here is timed — the design is explicit that speed is not a score, so
+ * `world/rooms.js#validateRabbitRoute` proves only the leap, never the clock.
+ */
+export const FIELD = Object.freeze({
+  warrens: Object.freeze([
+    Object.freeze({ x: 600, y: 2350, id: 'a' }),
+    Object.freeze({ x: 860, y: 2560, id: 'b' }),
+    Object.freeze({ x: 1150, y: 2700, id: 'c' }),
+  ]),
+  meadow: Object.freeze({ x: 700, y: 2700 }),
+  /** The washed rim around the far warren: unbroken, and only a leap crosses. */
+  gully: Object.freeze({ x: 1150, y: 2700, ring: 190, segments: 24, radius: 44 }),
+  warrenRadius: 74,
+  meadowRadius: 96,
+});
+
+/** Keep seeded dressing out of the warrens, the meadow and the washed rim. */
+export const FIELD_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: 600, y: 2350, r: 150 }),
+  Object.freeze({ x: 860, y: 2560, r: 150 }),
+  Object.freeze({ x: 1150, y: 2700, r: 330 }),
+  Object.freeze({ x: 700, y: 2700, r: 160 }),
+]);
+
+/** The rabbit's errand: road → the warrens → the washed rim → the field. Kept clear of trunks. */
+export const FIELD_APPROACH = Object.freeze([
+  Object.freeze([1130, 1560]),
+  Object.freeze([1000, 1880]),
+  Object.freeze([820, 2180]),
+  Object.freeze([700, 2700]),
+  Object.freeze([600, 2350]),
+  Object.freeze([860, 2560]),
+  Object.freeze([1150, 2700]),
+]);
+
+/**
  * The crevice and the sealed spring (docs/animal-lives-story.md ch.6, "ช่องแคบ").
  *
  * A spring is shut inside a ring of stone whose only way in is a narrow crevice:
@@ -243,6 +284,8 @@ export const TREES = (() => {
     if (distToPoly(MARSH_APPROACH, x, y) < 84) continue;
     if (dist(x, y, CREVICE_KEEPOUT.x, CREVICE_KEEPOUT.y) < CREVICE_KEEPOUT.r) continue;
     if (distToPoly(CREVICE_APPROACH, x, y) < 84) continue;
+    if (FIELD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(FIELD_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }
