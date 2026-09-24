@@ -97,6 +97,12 @@ export function initLifeSummary() {
   const close = $('#lifeClose');
   if (close) close.addEventListener('click', () => overlay.classList.add('hidden'));
 
+  // A water-bound life cannot reach the temple; its river goal ends the life.
+  on(EVENTS.LIFE_COMPLETE, () => {
+    if (!overlay.classList.contains('hidden')) return;
+    showLifeSummary();
+  });
+
   on(EVENTS.LOCALE_CHANGED, () => {
     if (!overlay.classList.contains('hidden')) renderLifeSummary();
   });

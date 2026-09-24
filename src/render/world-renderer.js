@@ -21,6 +21,8 @@ import { drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, dr
 import { getLures } from '../game/lures.js';
 import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
+import { isWaterBound } from '../systems/forms.js';
+import { goalFor } from '../systems/goals.js';
 import { GUARDIAN } from '../game/npc.js';
 
 function drawPath(points, width, color) {
@@ -57,6 +59,7 @@ export function renderWorld() {
   drawLightGates(mind);
   drawSparks();
   drawLures();
+  drawLifeGoal();
   drawGuardian(GUARDIAN.x, GUARDIAN.y);
   drawEntities(dawn);
   drawTeacherOverlay();
@@ -303,6 +306,13 @@ function drawTeacherOverlay() {
   }
   const target = tourTarget();
   if (target) drawTourMarker(target.x, target.y);
+}
+
+/** A pulsing ring over this life's goal (a fish's river pool, for instance). */
+function drawLifeGoal() {
+  if (!state.lifeMode || !isWaterBound()) return;
+  const goal = goalFor();
+  drawTourMarker(goal.x, goal.y);
 }
 
 function drawInteractionPrompt() {

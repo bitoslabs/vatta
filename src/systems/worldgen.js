@@ -2,6 +2,7 @@
 
 import { state } from '../core/state.js';
 import { assembleRooms, buildDynamicWorld, blockedAt, waterAt } from '../world/rooms.js';
+import { getForm } from './forms.js';
 
 /**
  * The generated world for the current life and chapter (design §3).
@@ -16,7 +17,7 @@ export function seedFor(chapterId, lifeId = state.lifeId) {
 
 export function initDynamicWorld(chapterId) {
   const seed = seedFor(chapterId);
-  const built = buildDynamicWorld(seed, state.formId);
+  const built = buildDynamicWorld(seed, state.formId, getForm().abilities || {});
   state.dynamic = { ...built, seed };
   return state.dynamic;
 }

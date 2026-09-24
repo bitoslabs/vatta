@@ -453,6 +453,7 @@ export default {
     'teacher.seed': 'seed {seed} · {route}',
     'teacher.route.ok': 'route validated',
     'teacher.route.fallback': 'fallback map',
+    'life.goal.water': 'A fish life comes home only by water — swim to the pool beside the temple',
     'projector.toggle.on': 'Projector mode: on',
     'projector.toggle.off': 'Projector mode: off',
     'ws.title': 'Classroom worksheets',

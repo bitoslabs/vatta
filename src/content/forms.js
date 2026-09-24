@@ -12,6 +12,7 @@
  * waterBound fish may not leave the river at all
  * vision     ± pixels of sight (deer hear far; fish see poorly on land)
  * canSpeak   flavour only for now: animals would use gestures for dialogue
+ * abilities  fed to the route checker: a flying form ignores ground solids
  */
 export const FORMS = Object.freeze([
   {
@@ -21,6 +22,7 @@ export const FORMS = Object.freeze([
     vision: 0,
     waterBound: false,
     canSpeak: true,
+    abilities: { flying: false, climbing: false },
   },
   {
     id: 'deer',
@@ -29,6 +31,7 @@ export const FORMS = Object.freeze([
     vision: 60,
     waterBound: false,
     canSpeak: false,
+    abilities: { flying: false, climbing: false },
   },
   {
     id: 'fish',
@@ -37,6 +40,7 @@ export const FORMS = Object.freeze([
     vision: -30,
     waterBound: true,
     canSpeak: false,
+    abilities: { flying: false, climbing: false },
   },
 ]);
 

@@ -454,6 +454,7 @@ export default {
     'teacher.seed': 'seed {seed} · {route}',
     'teacher.route.ok': 'เส้นทางผ่านการตรวจ',
     'teacher.route.fallback': 'ใช้แผนสำรอง',
+    'life.goal.water': 'ชีวิตปลากลับบ้านได้เพียงทางน้ำ — ว่ายไปยังวังน้ำริมโบสถ์',
     'projector.toggle.on': 'โหมดฉายภาพ: เปิด',
     'projector.toggle.off': 'โหมดฉายภาพ: ปิด',
     'ws.title': 'ใบงานห้องเรียน',

@@ -453,6 +453,7 @@ export default {
     'teacher.seed': 'seed {seed} · {route}',
     'teacher.route.ok': 'ເສັ້ນທາງຜ່ານການກວດ',
     'teacher.route.fallback': 'ໃຊ້ແຜນສຳຮອງ',
+    'life.goal.water': 'ຊີວິດປາກັບບ້ານໄດ້ພຽງທາງນ້ຳ — ລອຍໄປວັງນ້ຳຂ້າງໂບດ',
     'projector.toggle.on': 'ໂຫມດສາຍ: ເປີດ',
     'projector.toggle.off': 'ໂຫມດສາຍ: ປິດ',
     'ws.title': 'ໃບວຽກຫ້ອງຮຽນ',

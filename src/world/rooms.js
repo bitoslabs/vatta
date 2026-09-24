@@ -102,8 +102,9 @@ function nearestFreeCell(blocked, cols, rows, cell) {
  * grid, using the *same* rules the player moves by: solids block everyone, and
  * a water-bound form may only cross water.
  */
-export function validateRoute(features, formId) {
+export function validateRoute(features, formId, abilities = {}) {
   const waterBound = formId === 'fish';
+  const flying = abilities.flying === true;
   const route = routeFor(formId);
   const start = route[0];
   const goal = route[route.length - 1];
@@ -122,7 +123,7 @@ export function validateRoute(features, formId) {
     for (let c = 0; c < cols; c++) {
       const x = minX + c * GRID_CELL + GRID_CELL / 2;
       const y = minY + r * GRID_CELL + GRID_CELL / 2;
-      const solid = blockedAt(features, x, y);
+      const solid = flying ? false : blockedAt(features, x, y);
       const water = waterAt(features, x, y);
       blocked[index(c, r)] = (solid || (waterBound && !water)) ? 1 : 0;
     }
@@ -163,11 +164,11 @@ export function validateRoute(features, formId) {
 }
 
 /** Try seeds until one validates for this form; fall back to an empty world. */
-export function buildDynamicWorld(seed, formId) {
+export function buildDynamicWorld(seed, formId, abilities = {}) {
   for (let attempt = 0; attempt < MAX_SEED_TRIES; attempt++) {
     const trySeed = (seed + attempt) >>> 0;
     const features = assembleRooms(trySeed);
-    const validation = validateRoute(features, formId);
+    const validation = validateRoute(features, formId, abilities);
     if (validation.ok) return { seed: trySeed, features, validation, attempts: attempt + 1 };
   }
   return {

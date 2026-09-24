@@ -2,7 +2,11 @@
 
 import { state } from '../core/state.js';
 import { getKarmaMemory } from './karma-memory.js';
-import { getForm, nextFormId, setForm } from './forms.js';
+import { getForm, isWaterBound, nextFormId, setForm } from './forms.js';
+import { addFloater } from './effects.js';
+import { goalFor } from './goals.js';
+import { t } from './i18n.js';
+import { player } from '../entities/player.js';
 import { CHAPTERS, loadChapter } from '../game/chapters.js';
 
 /** The first prototype slice: three connected lives (design §12). */
@@ -69,5 +73,16 @@ export function advanceLife() {
 
   const index = (state.lifeId - 1) % CHAPTERS.length;
   loadChapter(CHAPTERS[index].id);
+
+  if (isWaterBound()) {
+    const goal = goalFor();
+    addFloater(
+      (player.x + goal.x) / 2,
+      Math.min(player.y, goal.y) - 120,
+      t('life.goal.water'),
+      '#9fc6dd',
+      15,
+    );
+  }
   return true;
 }

@@ -17,6 +17,7 @@ import { updateWorldMemory } from './world-memory.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
 import { updateTour } from '../systems/teacher.js';
+import { updateLifeGoal } from '../systems/goals.js';
 
 let heartCd = 0;
 
@@ -43,6 +44,7 @@ export function updateWorld(dt) {
   if (!state.story.released) updateGhosts(dt, mind, frozen);
 
   updateStory(dt);
+  updateLifeGoal();
   updateGuardian();
   updateWorldMemory();
   updateEchoes();

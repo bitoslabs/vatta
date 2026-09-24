@@ -42,6 +42,7 @@ src/
 │   ├── path.js            มรรค 8 — เปิดตามการปฏิบัติ + รวมผลต่อการรับรู้
 │   ├── forms.js           ร่างปัจจุบัน, ความเร็ว/การมองเห็น, แม่น้ำที่ปลาออกไม่ได้
 │   ├── worldgen.js        seed ต่อชาติ/บท, ประกอบโลก, ผลตรวจเส้นทาง
+│   ├── goals.js           เป้าหมายชีวิตตามร่าง (น้ำ = วังน้ำ) + LIFE_COMPLETE
 │   ├── life.js            วงจรชีวิต — เริ่ม/สรุปชาติ/เกิดใหม่ด้วยร่างใหม่
 │   ├── precepts.js        ศีล 5 — สถานะตามการกระทำ (ไม่ตัดสิน)
 │   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
@@ -154,6 +155,8 @@ MEMORY      → renderMemoryScene(dt)
 | `teacher:tour` | { index, total, done } | teacher → panel |
 | `projector:key` | — | input → projector (P) |
 | `projector:toggle` | boolean | projector → panel/title |
+| `form:changed` | formId | forms → interested UI |
+| `life:complete` | goal kind | goals → life-summary |
 | `precept:broken` | preceptId | precepts → path-notice |
 
 ## 5. Chapter system
