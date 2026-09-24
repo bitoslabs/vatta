@@ -6,7 +6,7 @@ import { state } from '../core/state.js';
 import { emit, EVENTS } from '../core/events.js';
 import { getForm, isWaterBound } from './forms.js';
 import { player } from '../entities/player.js';
-import { BURROW, GROVE, RIVER } from '../world/world-data.js';
+import { BURROW, GROVE, nearestRiverPoint } from '../world/world-data.js';
 import { waterRoot } from '../game/burrow.js';
 import { antGoal, deliverSeed } from '../game/ant.js';
 import { frogGoal, spawnAtBank } from '../game/frog.js';
@@ -29,20 +29,7 @@ import { boarGoal, settleWallow } from '../game/boar.js';
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure', 'dark-roost', 'cache', 'home', 'holt', 'hive', 'warm-stone', 'pasture', 'damp-garden', 'wallow']);
-
-function nearestRiverPoint(target) {
-  let best = RIVER[0];
-  let bestDist = Infinity;
-  for (const point of RIVER) {
-    const d = dist(point[0], point[1], target.x, target.y);
-    if (d < bestDist) {
-      bestDist = d;
-      best = point;
-    }
-  }
-  return { x: best[0], y: best[1] };
-}
+export const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure', 'dark-roost', 'cache', 'home', 'holt', 'hive', 'warm-stone', 'pasture', 'damp-garden', 'wallow']);
 
 /**
  * Where this life can actually finish (design §12 acceptance: the route must be

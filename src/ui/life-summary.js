@@ -7,7 +7,14 @@ import { on, EVENTS } from '../core/events.js';
 import { initAudio, playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { formAbilityKey, formNameKey } from '../content/forms.js';
-import { advanceLife, isJourneyComplete, isPrototypeComplete, nextLifePlan, recordLife, startLifeMode, summariseLife } from '../systems/life.js';
+import {
+  advanceLife, beginLifeEnding, isJourneyComplete, isPrototypeComplete, plannedNextLife, recordLife,
+  startLifeMode, summariseLife,
+} from '../systems/life.js';
+import { isReducedMotion } from '../systems/settings.js';
+import { addLifeLight } from '../systems/effects.js';
+import { pendingTransition } from '../systems/transition.js';
+import { player } from '../entities/player.js';
 import { loadChapter, CHAPTERS } from '../game/chapters.js';
 import { setTeacher } from '../systems/teacher.js';
 import { openMirrorCourt } from './mirror-court.js';
@@ -23,7 +30,10 @@ let paused = false;
 
 function stopTimer() { clearInterval(timer); timer = null; }
 function continueLife() {
-  if (shownLife !== state.lifeId || overlay.classList.contains('hidden')) return;
+  // The reservation is the contract: a pending transition may be resumed even from
+  // a reload, when there is no summary card on screen any more.
+  const pending = pendingTransition();
+  if (!pending && (shownLife !== state.lifeId || overlay.classList.contains('hidden'))) return;
   stopTimer(); shownLife = null;
   if (isPrototypeComplete()) { finishJourney(); return; }
   overlay.classList.add('hidden');
@@ -74,8 +84,15 @@ export function renderLifeSummary() {
   body.appendChild(row(t('life.form'), t(formNameKey(summary.formId))));
   body.appendChild(row(t('life.ability'), t(formAbilityKey(summary.formId))));
   if (!isPrototypeComplete()) {
-    const next = nextLifePlan();
+    // The card shows the *reserved* life, so what the player reads and what they
+    // are born into cannot drift apart.
+    const next = plannedNextLife();
     body.appendChild(row(t('life.next'), `${t(formNameKey(next.formId))} · ${t(`chapter${next.chapter}.name`)}`));
+    // If the draw is what chose the body, the player sees the real chance it had —
+    // never a percentage that is not one (systems/rebirth.js).
+    if (Number.isFinite(next.probability)) {
+      body.appendChild(row(t('life.odds'), t('life.odds.value', { percent: Math.round(next.probability * 1000) / 10 })));
+    }
   }
   body.appendChild(row(t('life.auto'), paused ? t('life.paused') : t('life.countdown', { seconds })));
   $('#lifeClose').textContent = t(paused ? 'life.resume' : 'life.pause');
@@ -92,9 +109,19 @@ export function renderLifeSummary() {
   }
 }
 
-export function showLifeSummary() {
+export function showLifeSummary(endingKind) {
   if (!state.lifeMode || state.liberated || state.journeyComplete) return;
   if (shownLife === state.lifeId && !overlay.classList.contains('hidden')) return;
+  // Reserve the next life first: the scene may be skipped, hidden or reloaded, and
+  // none of that may change which life comes next (systems/transition.js).
+  const pending = beginLifeEnding(typeof endingKind === 'string' ? endingKind : 'goal');
+  if (!pending.begun && pending.transition) {
+    // Already ending: show the same card again rather than a second ending.
+    renderLifeSummary();
+    overlay.classList.remove('hidden');
+    return;
+  }
+  addLifeLight(player.x, player.y, isReducedMotion());
   state.mode = MODE.END;
   state.interact = null;
   shownLife = state.lifeId;
@@ -110,6 +137,22 @@ export function showLifeSummary() {
 function finishJourney() {
   overlay.classList.add('hidden');
   openMirrorCourt();
+}
+
+/**
+ * Resume an ending that was interrupted by a close or a reload: the summary comes
+ * back with the same reserved life, or — if the reservation had already been
+ * applied — the new life simply continues. Returns true when it took over.
+ */
+export function resumeLifeIfPending() {
+  const pending = pendingTransition();
+  if (!pending) return false;
+  if (pending.phase === 'resolving' || pending.phase === 'spawning') {
+    continueLife();
+    return true;
+  }
+  showLifeSummary(pending.completionId);
+  return true;
 }
 
 export function initLifeSummary() {
@@ -150,9 +193,9 @@ export function initLifeSummary() {
   });
 
   // A water-bound life cannot reach the temple; its river goal ends the life.
-  on(EVENTS.LIFE_COMPLETE, () => {
+  on(EVENTS.LIFE_COMPLETE, (kind) => {
     if (!overlay.classList.contains('hidden')) return;
-    showLifeSummary();
+    showLifeSummary(kind);
   });
 
   on(EVENTS.LOCALE_CHANGED, () => {

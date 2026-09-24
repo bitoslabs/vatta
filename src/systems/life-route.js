@@ -8,15 +8,18 @@ import { FORMS, mapsFor } from '../content/forms.js';
  * A chapter's pool may only offer bodies its map can carry (the design's rule
  * against stranding a body: "ไม่ให้ปลาเกิดบนบก"), and only bodies the life cycle
  * is allowed to be born into (`form.rebirth`). The earthworm joins a few pools
- * because its burrow map now exists — see game/burrow.js.
+ * because its burrow map now exists — see game/burrow.js. The fish joins only the
+ * pools that already carry water bodies, and a water-bound life enters a chapter in
+ * the water nearest its start (game/chapters.js#chapterSpawn), so the rule holds in
+ * fact and not only in the list.
  */
 export const CHAPTER_ANIMALS = [
   ['deer', 'dog', 'crane', 'snake', 'tiger', 'cat'], ['turtle', 'dog', 'worm', 'ant', 'bat', 'buffalo', 'boar'],
-  ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko', 'squirrel', 'bee', 'snail', 'boar'], ['dog', 'turtle', 'crane', 'frog', 'elephant', 'crab', 'otter'],
+  ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko', 'squirrel', 'bee', 'snail', 'boar'], ['fish', 'dog', 'turtle', 'crane', 'frog', 'elephant', 'crab', 'otter'],
   ['butterfly', 'monkey', 'worm', 'snake', 'gecko'], ['crane', 'dog', 'turtle', 'tiger'],
-  ['turtle', 'deer', 'butterfly', 'frog', 'bat', 'crab', 'cat', 'buffalo', 'boar'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
+  ['fish', 'turtle', 'deer', 'butterfly', 'frog', 'bat', 'crab', 'cat', 'buffalo', 'boar'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
   ['deer', 'butterfly', 'turtle', 'rabbit', 'tiger', 'otter', 'bee', 'cat', 'snail', 'boar'], ['monkey', 'crane', 'dog', 'frog', 'owl'],
-  ['crane', 'turtle', 'butterfly', 'ant', 'snake', 'bat', 'otter'], ['butterfly', 'dog', 'deer', 'tiger'],
+  ['fish', 'crane', 'turtle', 'butterfly', 'ant', 'snake', 'bat', 'otter'], ['butterfly', 'dog', 'deer', 'tiger'],
   ['turtle', 'monkey', 'crane', 'snake', 'gecko'], ['deer', 'dog', 'butterfly', 'rabbit', 'owl', 'elephant'],
 ];
 

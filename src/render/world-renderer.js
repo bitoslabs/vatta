@@ -8,7 +8,7 @@ import { isMindful } from '../systems/input.js';
 import { t } from '../systems/i18n.js';
 import { getRealm } from '../systems/samsara.js';
 import { teacherLandmarks, tourTarget } from '../systems/teacher.js';
-import { floaters, screenNotes, sparks } from '../systems/effects.js';
+import { floaters, lifeLights, screenNotes, sparks } from '../systems/effects.js';
 import { ctx, viewport } from '../systems/viewport.js';
 import { textures } from '../world/textures.js';
 import {
@@ -45,6 +45,7 @@ import { asuraSite, gatePoint, spanBuilt, spans } from '../game/asura-city.js';
 import { gardenSite, gatePoint as gardenGatePoint, releasedBeds } from '../game/garden.js';
 import { isLit, lightLevel } from '../systems/light.js';
 import { carriedCount, gatePoint as marketGatePoint, giftTaken, marketSite } from '../game/market.js';
+import { marketAxis } from '../world/world-data.js';
 import { isDamp as isDampNow, moistureLevel } from '../systems/moisture.js';
 import { isHighTide as isHighTideNow } from '../systems/tide.js';
 import { canTrack, inHollowRest, isHunted, tracksRead, trailSite } from '../game/tiger.js';
@@ -1223,7 +1224,7 @@ function drawGardenRooms(dawn) {
 function drawMarketRooms(dawn) {
   const { length, halfWidth } = marketSite();
   const gate = marketGatePoint();
-  const axis = { x: 0.4744, y: 0.8811 };
+  const axis = marketAxis();
   const held = carriedCount();
 
   // The alley floor: a worn street between the walls.
@@ -1897,7 +1898,29 @@ function drawLightGates(mind) {
   }
 }
 
+/**
+ * The light a life leaves when it ends (docs/rebirth-effects.md): one ring, opening
+ * once and fading — no white flash, no face, no violence.
+ */
+function drawLifeLights() {
+  for (const light of lifeLights) {
+    const k = light.t / light.life;
+    const alpha = clamp(1 - k, 0, 1) * 0.7;
+    const radius = 12 + k * 74;
+    ctx.strokeStyle = `rgba(246,232,186,${(alpha * 0.7).toFixed(3)})`;
+    ctx.lineWidth = 3 - k * 2;
+    ctx.beginPath();
+    ctx.arc(light.x, light.y - 14, radius, 0, TAU);
+    ctx.stroke();
+    ctx.fillStyle = `rgba(255,240,200,${(alpha * 0.25).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(light.x, light.y - 14, radius * 0.5, 0, TAU);
+    ctx.fill();
+  }
+}
+
 function drawSparks() {
+  drawLifeLights();
   for (const spark of sparks) {
     const alpha = clamp(1 - spark.t / spark.life, 0, 1);
     ctx.fillStyle = `rgba(255,224,160,${alpha * 0.8})`;

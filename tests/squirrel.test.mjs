@@ -28,6 +28,7 @@ globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} }
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
+const { GATE_OUT, WORLD } = await import('../src/core/constants.js');
 const { on, emit, EVENTS } = await import('../src/core/events.js');
 const { FORMS, mapsFor, isRebirthForm } = await import('../src/content/forms.js');
 const { SEEDS, saplingsAlong, routeForPlane, TREES } = await import('../src/world/world-data.js');
@@ -203,8 +204,8 @@ state.world.removed = [];
 initDynamicWorld(1);
 const features = state.dynamic.features;
 const step = 18;
-const cols = Math.ceil((await import('../src/core/constants.js')).WORLD.w / step);
-const rows = Math.ceil((await import('../src/core/constants.js')).WORLD.h / step);
+const cols = Math.ceil(WORLD.w / step);
+const rows = Math.ceil(WORLD.h / step);
 const index = (c, r) => r * cols + c;
 const build = (abilities) => {
   const blocked = new Uint8Array(cols * rows);
@@ -241,7 +242,11 @@ const reaches = (blocked, from, to) => {
   }
   return false;
 };
-const road = { x: 1560, y: 1580 };
+// Where a life of this plane actually enters the world. A road point of *another*
+// plane is not a place: the city's plaza may legitimately stand there (its keepouts
+// are keyed to the plane's own road), so the errand is walked from the temple gate,
+// which every plane shares.
+const road = { x: GATE_OUT.x, y: GATE_OUT.y };
 const climber = build({ climbing: true });
 for (const spot of [...crowns, SEEDS.cache]) {
   assert.equal(reaches(climber, road, spot), true, 'the squirrel reaches every part of its errand');

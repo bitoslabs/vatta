@@ -2,6 +2,8 @@
 
 import { GATE_OUT, MODE, PLAYER, SALA } from '../core/constants.js';
 import { resetStoryFlags, state } from '../core/state.js';
+import { isWaterBound } from '../systems/forms.js';
+import { nearestRiverPoint } from '../world/world-data.js';
 import { floaters, screenNotes, sparks } from '../systems/effects.js';
 import { $ } from '../ui/dom.js';
 import { resetChoices } from '../ui/choices.js';
@@ -455,6 +457,17 @@ export function nextChapterId(id) {
 }
 
 /** Reset run state and enter a chapter in the world scene. */
+/**
+ * Where a life of this form enters a chapter: the chapter's own start for a body
+ * that walks, and the nearest water for one that cannot (systems/forms.js
+ * `waterBound`). Exported so the roster audit can check every form is born
+ * somewhere it can actually move.
+ */
+export function chapterSpawn(def, view = { waterBound: isWaterBound(), start: def.start }) {
+  if (!view.waterBound) return { x: view.start.x, y: view.start.y };
+  return nearestRiverPoint(view.start);
+}
+
 export function loadChapter(id, { autosave = true } = {}) {
   const def = chapterById(id);
   if (!def) return false;
@@ -510,8 +523,12 @@ export function loadChapter(id, { autosave = true } = {}) {
   // Assemble this life's world from its seed, validated for the form in play.
   initDynamicWorld(id);
 
-  player.x = def.start.x;
-  player.y = def.start.y;
+  // Where this body enters the chapter. A water-bound body cannot stand on the
+  // bank, so it enters the water nearest where the chapter begins (docs/
+  // rebirth-effects.md, เกณฑ์ตรวจ: "ปลาไม่เกิดบนบก").
+  const spawn = chapterSpawn(def);
+  player.x = spawn.x;
+  player.y = spawn.y;
   player.face = 1;
   player.moving = false;
   player.bob = 0;

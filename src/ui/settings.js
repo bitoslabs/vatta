@@ -4,7 +4,9 @@ import { on, emit, EVENTS } from '../core/events.js';
 import { isMuted, setMuted, toggleMute } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { getActiveSlot, getRunName, clearSave, listSaves, readSave } from '../systems/save.js';
-import { isLargeType, setLargeType, toggleLargeType } from '../systems/settings.js';
+import {
+  isLargeType, isReducedMotion, setLargeType, toggleLargeType, toggleReducedMotion,
+} from '../systems/settings.js';
 import { chapterById } from '../game/chapters.js';
 import { askConfirm, initConfirm } from './confirm.js';
 import { renderSaveSlots } from './save-slots.js';
@@ -21,6 +23,7 @@ import { $ } from './dom.js';
 const overlay = $('#settingsOverlay');
 const muteButton = $('#settingsMute');
 const typeButton = $('#settingsLarge');
+const motionButton = $('#settingsMotion');
 const resetButton = $('#settingsReset');
 const runInfo = $('#settingsRun');
 const closeButton = $('#settingsClose');
@@ -64,6 +67,10 @@ function renderButtons() {
   if (typeButton) {
     typeButton.textContent = t(isLargeType() ? 'help.type.large' : 'help.type.normal');
     typeButton.classList.toggle('is-on', isLargeType());
+  }
+  if (motionButton) {
+    motionButton.textContent = t(isReducedMotion() ? 'help.motion.reduced' : 'help.motion.full');
+    motionButton.classList.toggle('is-on', isReducedMotion());
   }
 }
 
@@ -110,6 +117,7 @@ export function initSettingsScreen() {
 
   if (muteButton) muteButton.addEventListener('click', (e) => { e.target.blur(); toggleMute(); renderButtons(); });
   if (typeButton) typeButton.addEventListener('click', (e) => { e.target.blur(); toggleLargeType(); renderButtons(); });
+  if (motionButton) motionButton.addEventListener('click', (e) => { e.target.blur(); toggleReducedMotion(); renderButtons(); });
   if (closeButton) closeButton.addEventListener('click', (e) => { e.target.blur(); closeSettings(); });
 
   if (resetButton) {

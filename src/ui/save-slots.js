@@ -9,7 +9,7 @@ import {
 import { chapterById, CHAPTERS, loadChapter } from '../game/chapters.js';
 import { initAudio, playBell } from '../systems/audio.js';
 import { $ } from './dom.js';
-import { showLifeSummary } from './life-summary.js';
+import { resumeLifeIfPending, showLifeSummary } from './life-summary.js';
 
 const container = $('#saveSlots');
 
@@ -34,7 +34,12 @@ function openSlot(slot) {
   applySaveRuntime(data);
   loadChapter(data.chapter, { autosave: false });
   applySaveRuntime(data);
-  if (data.lifeMode && !data.liberated && data.lifeLog?.some(entry => entry.lifeId === data.lifeId)) showLifeSummary();
+  // An interrupted ending resumes from its reservation; a save from before the
+  // reservation existed falls back to the old rule (its life is in the log).
+  if (data.lifeMode && !data.liberated) {
+    if (resumeLifeIfPending()) return;
+    if (data.lifeLog?.some((entry) => entry.lifeId === data.lifeId)) showLifeSummary();
+  }
 }
 
 export function renderSaveSlots() {

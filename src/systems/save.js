@@ -2,6 +2,8 @@
 
 import { state } from '../core/state.js';
 import { exportKarma, importKarma } from './karma.js';
+import { exportTransition, importTransition } from './transition.js';
+import { exportRebirth, importRebirth } from './rebirth.js';
 import { exportEchoes, importEchoes } from './karma-memory.js';
 import { exportPath, importPath } from './path.js';
 import { exportPrecepts, importPrecepts } from './precepts.js';
@@ -75,6 +77,12 @@ export function snapshot() {
     },
     liberated: state.liberated,
     journeyComplete: state.journeyComplete === true,
+    // A life that is mid-ending carries its reservation, so a reload resumes the
+    // life that was always going to happen (systems/transition.js).
+    transition: exportTransition(),
+    runId: state.runId || '',
+    // The rebirth draw's own stream: mode, seed and how many draws have been made.
+    rebirth: exportRebirth(),
     stats: { ...state.stats },
     karma: exportKarma(),
     path: exportPath(),
@@ -195,4 +203,7 @@ export function applySaveRuntime(data) {
   state.world.effects = sanitiseEffects(data.world && data.world.effects);
   state.liberated = Boolean(data.liberated);
   state.journeyComplete = Boolean(data.journeyComplete);
+  state.runId = typeof data.runId === 'string' ? data.runId : (state.runId || '');
+  importRebirth(data.rebirth);
+  importTransition(data.transition);
 }

@@ -87,7 +87,6 @@ export function updateWorld(dt) {
   updateAsuraCity();
   updateGarden();
   updateMarket();
-  updateEncounters();
   updateWorldMemory();
   updateAnt();
   updateFrog();
@@ -106,6 +105,10 @@ export function updateWorld(dt) {
   updateBuffalo();
   updateSnail();
   updateBoar();
+  // A being's word waits for the body's own act — the otter reaching for driftwood
+  // the current carries past a weir, a snake at its crevice — the way it already
+  // waits for a room's own act above. Generic talk never hides a specific doing.
+  updateEncounters();
   updateEcho(dt);
   updateMoisture(dt);
   updateLight(dt);

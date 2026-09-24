@@ -1,16 +1,8 @@
 import assert from 'node:assert/strict';
 import { planNextLife } from '../src/systems/life-route.js';
 import { FORMS } from '../src/content/forms.js';
-const chapterIds = Array.from({length:14},(_,i)=>i+1);
-let route = {chapter:1,lifeId:1,history:['human'],chapterIds};
-for(let i=0;i<140;i++) {
- const next=planNextLife(route);
- assert.equal(next.chapter,route.chapter%14+1);
- assert.ok(!route.history.slice(-2).includes(next.formId));
- assert.ok(FORMS.some(form=>form.id===next.formId && !form.waterBound));
- assert.deepEqual(next,planNextLife(route));
- route={...next,history:[...route.history,next.formId],chapterIds};
-}
+import { inWater } from '../src/systems/forms.js';
+
 const elements = new Map();
 function element() {
  const classes=new Set(['hidden']); const events={};
@@ -27,6 +19,27 @@ let nextTimer=0; const timers=new Map();
 globalThis.setInterval=fn=>{const id=++nextTimer;timers.set(id,fn);return id;};
 globalThis.clearInterval=id=>timers.delete(id);
 const tick=()=>[...timers.values()].forEach(fn=>fn());
+
+// A planned life must be one the body can actually start: a water-bound body is
+// born in water (game/chapters.js#chapterSpawn), not on the bank — the old rule was
+// simply "never offer a fish", before there was anywhere for it to be born.
+const { CHAPTERS, chapterSpawn } = await import('../src/game/chapters.js');
+const chapterIds = Array.from({length:14},(_,i)=>i+1);
+let route = {chapter:1,lifeId:1,history:['human'],chapterIds};
+for(let i=0;i<140;i++) {
+ const next=planNextLife(route);
+ assert.equal(next.chapter,route.chapter%14+1);
+ assert.ok(!route.history.slice(-2).includes(next.formId));
+ const form = FORMS.find(entry=>entry.id===next.formId);
+ assert.ok(form, `the planned form ${next.formId} exists`);
+ if (form.waterBound) {
+   const chapter = CHAPTERS.find(entry=>entry.id===next.chapter) || { start: { x: 0, y: 0 } };
+   const spawn = chapterSpawn(chapter, { waterBound: true, start: chapter.start });
+   assert.equal(inWater(spawn.x, spawn.y), true, 'a water-bound body is born in water');
+ }
+ assert.deepEqual(next,planNextLife(route));
+ route={...next,history:[...route.history,next.formId],chapterIds};
+}
 const {state}=await import('../src/core/state.js');
 const {MODE}=await import('../src/core/constants.js');
 const {showLifeSummary,initLifeSummary}=await import('../src/ui/life-summary.js');

@@ -2,7 +2,7 @@
 
 import { TEMPLE, SALA, WORLD, TAU } from '../core/constants.js';
 import { dist, distToPoly } from '../core/math.js';
-import { rng } from '../core/rng.js';
+import { mulberry32, rng, seedFrom } from '../core/rng.js';
 
 /** The real path — the only one with footprints. */
 export const PATH = [
@@ -116,6 +116,21 @@ export const RIVER = [
   [1520, 3000], [1420, 2430], [1620, 1930], [1310, 1420],
   [1460, 900], [1260, 430], [1360, 0],
 ];
+
+
+/** The river point nearest a place: where a water-bound body enters and where it goes. */
+export function nearestRiverPoint(target) {
+  let best = RIVER[0];
+  let bestDist = Infinity;
+  for (const point of RIVER) {
+    const d = Math.hypot(point[0] - target.x, point[1] - target.y);
+    if (d < bestDist) {
+      bestDist = d;
+      best = point;
+    }
+  }
+  return { x: best[0], y: best[1] };
+}
 export const RIVER_WIDTH = 95;
 
 /** False branches that lead to light gates. */
@@ -195,9 +210,9 @@ export const DAMP_APPROACH = Object.freeze([
  */
 export const MARKET = Object.freeze({
   /** The point on the plane's street the alley opens off. */
-  anchor: Object.freeze({ x: 2570, y: 1530 }),
-  /** From the gate into the alley: straight away from the street. */
-  axis: Object.freeze({ x: 0.4744, y: 0.8811 }),
+  anchor: Object.freeze({ x: 2348, y: 1293 }),
+  /** Which side of the street the alley runs: 1 is the road's left normal. */
+  side: 1,
   /** How far off the street the gate stands. */
   gateGap: 110,
   /**
@@ -233,45 +248,86 @@ export function marketAnchor() {
   return MARKET.anchor;
 }
 
+/**
+ * Which way the alley runs: straight away from the street it opens off.
+ *
+ * Derived from the roads rather than written down, so that moving the anchor (as
+ * the rooms were moved once, to stop sealing an animal's errand) cannot leave the
+ * alley pointing along a stale direction.
+ */
+export function marketAxis() {
+  const anchor = MARKET.anchor;
+  let best = { x: 1, y: 0, d: Infinity };
+  for (const route of Object.values(ROUTES)) {
+    for (let i = 1; i < route.length; i++) {
+      const [ax, ay] = route[i - 1];
+      const [bx, by] = route[i];
+      const dx = bx - ax;
+      const dy = by - ay;
+      const length = Math.hypot(dx, dy) || 1;
+      const t = Math.max(0, Math.min(1, ((anchor.x - ax) * dx + (anchor.y - ay) * dy) / (length * length)));
+      const px = ax + dx * t;
+      const py = ay + dy * t;
+      const d = dist(anchor.x, anchor.y, px, py);
+      if (d >= best.d) continue;
+      // The anchor sits *on* the street, so "which side" cannot be read from the
+      // geometry: the side is declared (MARKET.side), and only the tangent comes
+      // from the road. That keeps the alley pointing where the data says.
+      best = { x: (-dy / length) * MARKET.side, y: (dx / length) * MARKET.side, d };
+    }
+  }
+  return { x: best.x, y: best.y };
+}
+
 /** The narrow gate itself: empty hands pass, anything carried does not. */
 export function marketGate() {
+  const axis = marketAxis();
   return {
-    x: MARKET.anchor.x + MARKET.axis.x * MARKET.gateGap,
-    y: MARKET.anchor.y + MARKET.axis.y * MARKET.gateGap,
+    x: MARKET.anchor.x + axis.x * MARKET.gateGap,
+    y: MARKET.anchor.y + axis.y * MARKET.gateGap,
   };
 }
 
 /** The middle of the alley, where its two halves meet. */
 export function marketCentre() {
   const gate = marketGate();
+  const axis = marketAxis();
   return {
-    x: gate.x + MARKET.axis.x * (MARKET.length / 2),
-    y: gate.y + MARKET.axis.y * (MARKET.length / 2),
+    x: gate.x + axis.x * (MARKET.length / 2),
+    y: gate.y + axis.y * (MARKET.length / 2),
   };
 }
 
 /** The first chamber, inside the gate: where the plane's being stands. */
 export function marketInside() {
   const gate = marketGate();
+  const axis = marketAxis();
   return {
-    x: gate.x + MARKET.axis.x * 70,
-    y: gate.y + MARKET.axis.y * 70,
+    x: gate.x + axis.x * 70,
+    y: gate.y + axis.y * 70,
   };
 }
 
 /** The far end, past the deepest curtain: the chamber the heaviest hands reach. */
 export function marketFar() {
   const gate = marketGate();
+  const axis = marketAxis();
   return {
-    x: gate.x + MARKET.axis.x * (MARKET.length - 70),
-    y: gate.y + MARKET.axis.y * (MARKET.length - 70),
+    x: gate.x + axis.x * (MARKET.length - 70),
+    y: gate.y + axis.y * (MARKET.length - 70),
   };
 }
 
 /** Seeded dressing keeps off the alley, its walls and its gate. */
-export const MARKET_KEEPOUTS = Object.freeze([
-  Object.freeze({ x: MARKET.anchor.x + MARKET.axis.x * (MARKET.length / 2), y: MARKET.anchor.y + MARKET.axis.y * (MARKET.length / 2), r: 300 }),
-]);
+export const MARKET_KEEPOUTS = Object.freeze(
+  // A capsule along the whole alley, not a circle at its middle: seeded dressing
+  // must not be able to stand in the gate or on the far chamber.
+  [0, 0.25, 0.5, 0.75, 1].map((at) => Object.freeze({
+    x: marketGate().x + marketAxis().x * MARKET.length * at,
+    y: marketGate().y + marketAxis().y * MARKET.length * at,
+    r: 230,
+  })),
+);
 
 /** The way in: the street → the narrow gate → the alley. Kept clear of trunks. */
 export const MARKET_APPROACH = Object.freeze([
@@ -293,7 +349,7 @@ export const MARKET_APPROACH = Object.freeze([
  * (`seeds-released`).
  */
 export const GARDEN = Object.freeze({
-  center: Object.freeze({ x: 2450, y: 2050 }),
+  center: Object.freeze({ x: 3392, y: 1356 }),
   ring: 200,
   segments: 24,
   hedgeRadius: 48,
@@ -307,13 +363,13 @@ export const GARDEN = Object.freeze({
   innerRadius: 104,
   /** The bloom beds, each with its own age (seeded). */
   beds: Object.freeze([
-    Object.freeze({ x: 2450, y: 1960 }),
-    Object.freeze({ x: 2528, y: 2095 }),
-    Object.freeze({ x: 2372, y: 2095 }),
+    Object.freeze({ x: 3392, y: 1266 }),
+    Object.freeze({ x: 3470, y: 1401 }),
+    Object.freeze({ x: 3314, y: 1401 }),
   ]),
   bedRadius: 40,
   /** The point on the garden plane's road the gate faces. */
-  road: Object.freeze({ x: 2309, y: 1696 }),
+  road: Object.freeze({ x: 3331, y: 1078 }),
 });
 
 /** Where the ring is broken, and which way the gate faces the road. */
@@ -353,7 +409,7 @@ export const GARDEN_APPROACH = Object.freeze([
  * for every body, so what the drop seals is this room, not the way.
  */
 export const ASURA = Object.freeze({
-  plaza: Object.freeze({ x: 2740, y: 1760 }),
+  plaza: Object.freeze({ x: 1938, y: 1675 }),
   ring: 200,
   segments: 24,
   wallRadius: 48,
@@ -363,12 +419,12 @@ export const ASURA = Object.freeze({
   dropPlugs: 4,
   /** A span is long: laid down, it clears the drop either side of the gate. */
   spanRadius: 96,
-  shrine: Object.freeze({ x: 2740, y: 1760 }),
+  shrine: Object.freeze({ x: 1938, y: 1675 }),
   shrineRadius: 92,
   /** The stretch of wall that rests the mind, once the span is there. */
   restRadius: 130,
-  /** The point on the city street the gate faces (street x=2400→2820, y≈1500). */
-  road: Object.freeze({ x: 2700, y: 1477 }),
+  /** The point on the city street the gate faces (the street's own sample). */
+  road: Object.freeze({ x: 1877, y: 1396 }),
 });
 
 /** Where the ring is broken, and which way the gate faces the street. */
@@ -1162,62 +1218,85 @@ export function footprintsAlong(route) {
 /** The forest road's footprints, precomputed (other planes compute on demand). */
 export const FOOT = footprintsAlong(PATH);
 
-/** Seeded tree scatter that avoids paths, the temple and the sala. */
+/**
+ * May a trunk stand here? Every plane's road, the temple, the sala, and every fixed
+ * site's keepout and approach are left clear — a trunk must never wall an errand
+ * (world/rooms.js#mayPlace holds the same list for seeded dressing).
+ */
+function treeAllowed(x, y) {
+  if (dist(x, y, TEMPLE.x, TEMPLE.y) < TEMPLE.r + 50) return false;
+  if (dist(x, y, SALA.x, SALA.y) < 240) return false;
+  if (Object.values(ROUTES).some((route) => distToPoly(route, x, y) < 135)) return false;
+  if (distToPoly(FALSE_A, x, y) < 92) return false;
+  if (distToPoly(FALSE_B, x, y) < 92) return false;
+  if (dist(x, y, BURROW_KEEPOUT.x, BURROW_KEEPOUT.y) < BURROW_KEEPOUT.r) return false;
+  if (distToPoly(BURROW_APPROACH, x, y) < 84) return false;
+  if (dist(x, y, NEST_KEEPOUT.x, NEST_KEEPOUT.y) < NEST_KEEPOUT.r) return false;
+  if (distToPoly(NEST_APPROACH, x, y) < 84) return false;
+  if (dist(x, y, MARSH_KEEPOUT.x, MARSH_KEEPOUT.y) < MARSH_KEEPOUT.r) return false;
+  if (distToPoly(MARSH_APPROACH, x, y) < 84) return false;
+  if (dist(x, y, CREVICE_KEEPOUT.x, CREVICE_KEEPOUT.y) < CREVICE_KEEPOUT.r) return false;
+  if (distToPoly(CREVICE_APPROACH, x, y) < 84) return false;
+  if (FIELD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(FIELD_APPROACH, x, y) < 84) return false;
+  if (OWL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (GROVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(GROVE_APPROACH, x, y) < 84) return false;
+  if (TRAIL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(TRAIL_APPROACH, x, y) < 84) return false;
+  if (ENCLOSURE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(ENCLOSURE_APPROACH, x, y) < 84) return false;
+  if (CAVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (SEEDS_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(SEEDS_APPROACH, x, y) < 84) return false;
+  if (TIDE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(TIDE_APPROACH, x, y) < 84) return false;
+  if (OTTER_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (BLOOMS_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(BLOOMS_APPROACH, x, y) < 84) return false;
+  if (HOMES_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(HOMES_APPROACH, x, y) < 84) return false;
+  if (FORD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(FORD_APPROACH, x, y) < 84) return false;
+  if (DAMP_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(DAMP_APPROACH, x, y) < 84) return false;
+  if (BOAR_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(BOAR_APPROACH, x, y) < 84) return false;
+  if (ASURA_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(ASURA_APPROACH, x, y) < 84) return false;
+  if (GARDEN_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(GARDEN_APPROACH, x, y) < 84) return false;
+  if (MARKET_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(MARKET_APPROACH, x, y) < 84) return false;
+  return true;
+}
+
+/**
+ * Trunks stand where nothing else needs to be.
+ *
+ * The scatter is a **jittered grid**, and each cell's jitter comes from that cell
+ * alone. That is deliberate: an earlier version rejection-sampled a running
+ * sequence, so adding one site's keepout shifted every trunk after it — which
+ * silently walled an errand on the other side of the map (a squirrel's path in
+ * chapter one). Here a new keepout can only remove the trunks inside it, and the
+ * grid spacing keeps the scatter from crowding itself.
+ */
 export const TREES = (() => {
+  const CELL = 88;
+  const JITTER = 22;
   const trees = [];
-  let tries = 0;
-  while (trees.length < 920 && tries < 6000) {
-    tries++;
-    const x = 60 + rng() * (WORLD.w - 120);
-    const y = 60 + rng() * (WORLD.h - 120);
-    if (dist(x, y, TEMPLE.x, TEMPLE.y) < TEMPLE.r + 50) continue;
-    if (dist(x, y, SALA.x, SALA.y) < 240) continue;
-    // No road may be walled by a trunk: every plane's road is kept clear.
-    if (Object.values(ROUTES).some((route) => distToPoly(route, x, y) < 135)) continue;
-    if (distToPoly(FALSE_A, x, y) < 92) continue;
-    if (distToPoly(FALSE_B, x, y) < 92) continue;
-    // Leave the roads to the seed and the nest clear: roots, not trunks, own this ground.
-    if (dist(x, y, BURROW_KEEPOUT.x, BURROW_KEEPOUT.y) < BURROW_KEEPOUT.r) continue;
-    if (distToPoly(BURROW_APPROACH, x, y) < 84) continue;
-    if (dist(x, y, NEST_KEEPOUT.x, NEST_KEEPOUT.y) < NEST_KEEPOUT.r) continue;
-    if (distToPoly(NEST_APPROACH, x, y) < 84) continue;
-    if (dist(x, y, MARSH_KEEPOUT.x, MARSH_KEEPOUT.y) < MARSH_KEEPOUT.r) continue;
-    if (distToPoly(MARSH_APPROACH, x, y) < 84) continue;
-    if (dist(x, y, CREVICE_KEEPOUT.x, CREVICE_KEEPOUT.y) < CREVICE_KEEPOUT.r) continue;
-    if (distToPoly(CREVICE_APPROACH, x, y) < 84) continue;
-    if (FIELD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(FIELD_APPROACH, x, y) < 84) continue;
-    if (OWL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (GROVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(GROVE_APPROACH, x, y) < 84) continue;
-    if (TRAIL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(TRAIL_APPROACH, x, y) < 84) continue;
-    if (ENCLOSURE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(ENCLOSURE_APPROACH, x, y) < 84) continue;
-    if (CAVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (SEEDS_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(SEEDS_APPROACH, x, y) < 84) continue;
-    if (TIDE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(TIDE_APPROACH, x, y) < 84) continue;
-    if (OTTER_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (BLOOMS_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(BLOOMS_APPROACH, x, y) < 84) continue;
-    if (HOMES_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(HOMES_APPROACH, x, y) < 84) continue;
-    if (FORD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(FORD_APPROACH, x, y) < 84) continue;
-    if (DAMP_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(DAMP_APPROACH, x, y) < 84) continue;
-    if (BOAR_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(BOAR_APPROACH, x, y) < 84) continue;
-    if (ASURA_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(ASURA_APPROACH, x, y) < 84) continue;
-    if (GARDEN_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(GARDEN_APPROACH, x, y) < 84) continue;
-    if (MARKET_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
-    if (distToPoly(MARKET_APPROACH, x, y) < 84) continue;
-    if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
-    trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
+  const cols = Math.floor(WORLD.w / CELL);
+  const rows = Math.floor(WORLD.h / CELL);
+  for (let cx = 0; cx < cols; cx++) {
+    for (let cy = 0; cy < rows; cy++) {
+      const cell = mulberry32(seedFrom(`tree:${cx}:${cy}`));
+      const x = cx * CELL + CELL / 2 + (cell() * 2 - 1) * JITTER;
+      const y = cy * CELL + CELL / 2 + (cell() * 2 - 1) * JITTER;
+      if (!treeAllowed(x, y)) continue;
+      // Not every cell: a thin scatter reads better than a plantation.
+      if (cell() < 0.34) continue;
+      trees.push({ x, y, r: 16 + cell() * 14, c: 52 + cell() * 64, s: cell() });
+    }
   }
   return trees;
 })();

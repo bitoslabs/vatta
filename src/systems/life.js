@@ -4,11 +4,16 @@ import { state } from '../core/state.js';
 import { getKarmaMemory } from './karma-memory.js';
 import { getForm, isWaterBound, setForm } from './forms.js';
 import { planNextLife } from './life-route.js';
+import { drawNextLife, resetRebirth } from './rebirth.js';
 import { addFloater } from './effects.js';
 import { goalFor } from './goals.js';
 import { t } from './i18n.js';
 import { player } from '../entities/player.js';
 import { CHAPTERS, loadChapter } from '../game/chapters.js';
+import {
+  beginLifeEnd, finishTransition, isTransitioning, pendingTransition, reservedNextLife,
+  resetTransition, setTransitionPhase, transitionIdFor,
+} from './transition.js';
 
 /** The first prototype slice: three connected lives (design §12). */
 export const PROTOTYPE_LIVES = 3;
@@ -30,8 +35,38 @@ export function startLifeMode(chapterId = CHAPTERS[0].id) {
   state.formHistory = ['human'];
   state.lifeLog = [];
   state.journeyComplete = false;
+  // This run's own id, so a life that ended in an earlier run can never be
+  // mistaken for this one's (systems/transition.js).
+  state.runId = `run-${Date.now().toString(36)}-${state.lifeLog.length}`;
+  resetTransition(state.runId);
+  // This run's own draw stream: the same seed and history must give the same life.
+  resetRebirth(state.runId);
   setForm('human');
   loadChapter(chapterId);
+}
+
+/**
+ * A life has ended (docs/rebirth-effects.md): reserve the next one *now*, before
+ * the closing scene, so the scene, a skip, a closed page and a reload all lead to
+ * the same life. Refused when this life has already ended.
+ */
+export function beginLifeEnding(kind) {
+  // A life that is already ending keeps the reservation it made: a reopened
+  // summary must not draw again (that is what makes reloading change nothing).
+  const existing = pendingTransition();
+  const completionId = typeof kind === 'string' && kind ? kind : 'goal';
+  const id = transitionIdFor(state.lifeId, completionId);
+  if (existing && existing.id === id) return { begun: false, transition: existing };
+  return beginLifeEnd({
+    lifeId: state.lifeId,
+    completionId,
+    plan: nextLifePlan(),
+  });
+}
+
+/** The next life as reserved, for the summary card and for the rebirth itself. */
+export function plannedNextLife() {
+  return reservedNextLife() || nextLifePlan();
 }
 
 /** What this life did, read from what kamma remembers (design §2 summary). */
@@ -85,7 +120,18 @@ export function isPrototypeComplete() {
   return state.chapter === CHAPTERS.at(-1).id && journeyReadiness().ready;
 }
 
+/**
+ * The next life: a seeded weighted draw over the bodies this chapter can carry
+ * (systems/rebirth.js). The draw consumes one number from the run's stream, and it
+ * is made once — when the life is reserved, never when the scene is shown.
+ */
 export function nextLifePlan() {
+  return drawNextLife({ chapter: state.chapter, lifeId: state.lifeId,
+    history: state.formHistory, chapterIds: CHAPTERS.map(chapter => chapter.id) });
+}
+
+/** The old rotation, kept for callers that must not consume a draw. */
+export function plannedRotation() {
   return planNextLife({ chapter: state.chapter, lifeId: state.lifeId,
     history: state.formHistory, chapterIds: CHAPTERS.map(chapter => chapter.id) });
 }
@@ -125,11 +171,27 @@ export function recordJourneyComplete() {
  */
 export function advanceLife() {
   if (!isLifeMode() || state.liberated || state.journeyComplete) return false;
-  const next = nextLifePlan();
+  // A life may only advance once it has actually ended — it is in the log — and
+  // only once: the new life is not in the log, so a stray second call (a late
+  // timer, a double click, a resumed save) can never invent another life.
+  const ended = state.lifeLog.some((entry) => entry.lifeId === state.lifeId);
+  if (!ended && !isTransitioning()) return false;
+  if (!isTransitioning()) {
+    // An ending that never reserved one (an older save, the mirror court): reserve
+    // now, so that even this path goes through the same single reservation.
+    beginLifeEnd({ lifeId: state.lifeId, completionId: 'continue', plan: nextLifePlan() });
+  }
+  // The reserved life wins over any recomputation: that is what makes a reload
+  // mid-scene land in the same life instead of repeating one.
+  const next = reservedNextLife() || nextLifePlan();
+  setTransitionPhase('resolving');
   state.lifeId = next.lifeId;
   setForm(next.formId);
   state.formHistory.push(next.formId);
   loadChapter(next.chapter);
+  // The new life is in the world: nothing is pending any more.
+  setTransitionPhase('spawning');
+  finishTransition();
 
   // A life whose end is not the temple is told where it can go (systems/goals.js).
   const form = getForm();

@@ -10,7 +10,7 @@ import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
-import { MARKET, marketGate } from '../world/world-data.js';
+import { MARKET, marketAxis, marketGate } from '../world/world-data.js';
 import { animatePlayer, player } from '../entities/player.js';
 
 /**

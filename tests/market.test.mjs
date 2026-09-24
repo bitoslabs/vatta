@@ -31,7 +31,7 @@ globalThis.performance = { now: () => 0 };
 const { state } = await import('../src/core/state.js');
 const { on, emit, EVENTS } = await import('../src/core/events.js');
 const { dist } = await import('../src/core/math.js');
-const { MARKET, TREES, marketGate } = await import('../src/world/world-data.js');
+const { MARKET, TREES, marketAxis, marketGate } = await import('../src/world/world-data.js');
 const {
   assembleRooms, assembleMarketRooms, validateMarketRoute, blockedAt, validateRoute,
 } = await import('../src/world/rooms.js');
@@ -116,7 +116,11 @@ assert.equal(blockedAt(dynamicFeatures(), gatePoint.x, gatePoint.y, worldAbiliti
 // The market's being stands behind the first curtain, where only a laden body goes.
 const being = encountersHere().find((encounter) => encounter.id === 'market-stall');
 assert(being, 'the market being is in this plane');
-assert.equal(being.y > MARKET.anchor.y, true, 'standing inside the alley, away from the street');
+{
+  const axis = marketAxis();
+  const along = (being.x - MARKET.anchor.x) * axis.x + (being.y - MARKET.anchor.y) * axis.y;
+  assert(along > 0, 'standing inside the alley, further along it than the street');
+}
 log('the room ok');
 
 // Take one offer.

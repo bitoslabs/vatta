@@ -5,7 +5,7 @@ import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
 import {
   ASURA, ASURA_KEEPOUTS, asuraGate, GARDEN, GARDEN_KEEPOUTS, gardenGate,
-  MARKET, MARKET_KEEPOUTS, marketFar, marketGate, marketInside,
+  MARKET, MARKET_KEEPOUTS, marketAxis, marketFar, marketGate, marketInside,
   BLOOMS, BLOOMS_APPROACH, BLOOMS_KEEPOUTS, BOAR, BOAR_KEEPOUTS, DAMP, DAMP_APPROACH, DAMP_KEEPOUTS,
   FORD, FORD_APPROACH, FORD_KEEPOUTS, fordBridge,
   HOMES, HOMES_APPROACH, HOMES_KEEPOUTS,
@@ -292,6 +292,9 @@ export function blockedAt(features, x, y, abilities = {}) {
 
 function mayPlace(type, x, y, radius, route) {
   if (x < 80 || y < 80 || x > WORLD.w - 80 || y > WORLD.h - 80) return false;
+  // No solid dressing in the water: the river is a road for water-bound bodies in
+  // every plane, and one tower built in it would wall a fish's whole life.
+  if (distToPoly(RIVER, x, y) < radius + 70) return false;
   if (dist(x, y, TEMPLE.x, TEMPLE.y) < TEMPLE.r + 60) return false;
   if (dist(x, y, SALA.x, SALA.y) < SALA.r + 60) return false;
   // Never cover the road itself; dressing sits beside this plane's road.
@@ -918,15 +921,15 @@ export function assembleReleasedBlooms(seed = 1, biomeId = 'light-garden') {
       const nx = -(route[i + 1][1] - route[i - 1][1]);
       const ny = route[i + 1][0] - route[i - 1][0];
       const length = Math.hypot(nx, ny) || 1;
-      features.push({
-        i: 0,
-        site: 'garden',
-        type: 'bloombed',
-        x: route[i][0] + (nx / length) * offset * side,
-        y: route[i][1] + (ny / length) * offset * side,
-        r: 26 + rng() * 10,
-        travelled: true,
-      });
+      const x = route[i][0] + (nx / length) * offset * side;
+      const y = route[i][1] + (ny / length) * offset * side;
+      // Seeds travel *out*: a flower does not grow back inside the garden it left,
+      // nor inside any other fixed site's ground.
+      if (dist(x, y, GARDEN.center.x, GARDEN.center.y) < GARDEN.ring + 40) continue;
+      const crowded = [...GARDEN_KEEPOUTS, ...MARKET_KEEPOUTS, ...ASURA_KEEPOUTS, ...SEEDS_KEEPOUTS]
+        .some((area) => dist(x, y, area.x, area.y) < area.r * 0.5);
+      if (crowded) continue;
+      features.push({ i: 0, site: 'garden', type: 'bloombed', x, y, r: 26 + rng() * 10, travelled: true });
     }
   }
   return features;
@@ -945,7 +948,7 @@ export function assembleReleasedBlooms(seed = 1, biomeId = 'light-garden') {
 export function assembleMarketRooms(options = {}) {
   const { length, halfWidth, wallRadius, curtainAt, curtainNeeds, gifts, giftRadius } = MARKET;
   const gate = marketGate();
-  const axis = MARKET.axis;
+  const axis = marketAxis();
   // Perpendicular to the alley's axis, along the street.
   const side = { x: -axis.y, y: axis.x };
   const at = (distance, across = 0) => ({
@@ -1329,7 +1332,22 @@ export function assembleRooms(seed, biomeId = 'memory-forest', options = {}) {
   // The spine of this map: dressing sits beside *this* plane's road.
   const route = routeForPlane(biomeId);
 
-  for (let i = 1; i < route.length - 1; i++) {
+  // Dressing sits beside the road's *vertices*. A plane whose road is one straight
+  // line has no vertices to sit beside (design §7's formless line), so points are
+  // sampled along it instead: even the plane of nothing should have ground to cross.
+  const anchors = [];
+  if (route.length > 2) {
+    for (let i = 1; i < route.length - 1; i++) anchors.push(route[i]);
+  } else {
+    for (let i = 1; i <= 6; i++) {
+      const t = i / 7;
+      anchors.push([
+        route[0][0] + (route[1][0] - route[0][0]) * t,
+        route[0][1] + (route[1][1] - route[0][1]) * t,
+      ]);
+    }
+  }
+  for (const anchor of anchors) {
     for (let k = 0; k < 3; k++) {
       if (rng() < 0.3) continue;
       const type = pool[(rng() * pool.length) | 0] || 'clearing';
@@ -1338,8 +1356,8 @@ export function assembleRooms(seed, biomeId = 'memory-forest', options = {}) {
       const radius = featureRadius(type, rng);
       const angle = rng() * TAU;
       const reach = radius + MARGIN_FROM_PATH + 24 + rng() * 120;
-      const x = route[i][0] + Math.cos(angle) * reach;
-      const y = route[i][1] + Math.sin(angle) * reach;
+      const x = anchor[0] + Math.cos(angle) * reach;
+      const y = anchor[1] + Math.sin(angle) * reach;
       if (!mayPlace(type, x, y, radius, route)) continue;
       features.push({ i: features.length, type, x, y, r: radius });
     }
@@ -1494,12 +1512,13 @@ export function validateRoute(features, formId, abilities = {}, biomeId = 'memor
  *
  * `goalRadius` asks a different question: not "can the walker stand exactly
  * there", but "can it get *into that place*" — true when any free cell within the
- * radius is reached. The seed crowns need that, because their middle is solid to
+ * radius is reached. Exported because the site proofs, the route checker and the
+ * roster audit all ask the same question of the same grid. The seed crowns need that, because their middle is solid to
  * a walking body and there is no free cell in there to stand on at all
  * (`nearestFreeCell` would otherwise helpfully step just outside the crown and
  * call the place reached).
  */
-function reachableBetween(features, from, to, abilities, goalRadius = 0) {
+export function reachableBetween(features, from, to, abilities, goalRadius = 0) {
   const pad = 260;
   const minX = Math.min(from.x, to.x) - pad;
   const minY = Math.min(from.y, to.y) - pad;
