@@ -2,6 +2,7 @@ import { FORMS } from '../content/forms.js';
 import { drawFormBody, drawFormAura, drawActFlourish } from '../render/forms-sprites.js';
 import { ANIMALS, animalMotion } from './animal-catalog.js';
 import { drawAnimalVector } from '../render/animal-vectors.js';
+import { canvasFont } from '../systems/fonts.js';
 
 const names = { human: 'มนุษย์', deer: 'กวาง', dog: 'สุนัข', crane: 'นกกระเรียน', turtle: 'เต่า', monkey: 'ลิง', butterfly: 'ผีเสื้อ', asura: 'อสุร', deva: 'เทวดา', fish: 'ปลา' };
 const descriptions = {
@@ -120,7 +121,8 @@ function frame(now) {
   for (let x = 0; x <= 960; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 480); ctx.stroke(); }
   for (let y = 0; y <= 480; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(960, y); ctx.stroke(); }
   }
-  ctx.fillStyle = '#405346'; ctx.font = '18px system-ui';
+  // The lab draws with the same face as the game, per locale (systems/fonts.js).
+  ctx.fillStyle = '#405346'; ctx.font = canvasFont(18, 400);
   ctx.fillText(`${names[form.id]} · ×${scale.value}`, 24, 34);
   const jump = actor.jump > 0 ? Math.sin(Math.PI * (1 - actor.jump / .95)) * 22 : 0;
   const kind = form.id === 'fish' ? 'swim' : form.abilities?.flying || form.id === 'butterfly' ? 'fly' : 'walk';

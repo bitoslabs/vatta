@@ -1,6 +1,7 @@
 'use strict';
 
 import { GATE_OUT, TAU, TEMPLE, SALA } from '../core/constants.js';
+import { canvasFont } from '../systems/fonts.js';
 import { isMindful } from '../systems/input.js';
 import { ctx } from '../systems/viewport.js';
 import { STATUS } from '../entities/ghost-status.js';
@@ -120,12 +121,13 @@ export function drawPrompt(label) {
   ctx.strokeRect(-24, -10, 20, 20);
 
   ctx.fillStyle = '#e9d9a8';
-  ctx.font = "500 11px 'Bai Jamjuree'";
+  // Lao needs the Lao face *and* a nudge up in size (systems/fonts.js).
+  ctx.font = canvasFont(11, 500);
   ctx.textAlign = 'center';
   ctx.fillText('E', -14, 4);
 
   ctx.fillStyle = '#d8d0b8';
-  ctx.font = "300 13px 'Bai Jamjuree'";
+  ctx.font = canvasFont(13);
   ctx.textAlign = 'left';
   ctx.fillText(label, 4, 4);
 
@@ -366,7 +368,7 @@ export function drawPeta(x, y) {
 export function drawTeacherLabel(x, y, text, scale = 1) {
   const size = Math.round(13 * scale);
   ctx.save();
-  ctx.font = `300 ${size}px 'Bai Jamjuree'`;
+  ctx.font = canvasFont(size);
   ctx.textAlign = 'center';
   const width = ctx.measureText(text).width + Math.round(18 * scale);
   const height = Math.round(20 * scale);

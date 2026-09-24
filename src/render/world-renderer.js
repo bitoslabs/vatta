@@ -19,6 +19,7 @@ import { cam } from '../game/camera.js';
 import { ghosts } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { updateHud } from '../ui/hud.js';
+import { canvasFont } from '../systems/fonts.js';
 import { renderLighting, shakeOffset } from './lighting.js';
 import { drawEncounter, drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, drawTeacherLabel, drawTemple, drawTourMarker, drawTree } from './sprites.js';
 import { getLures } from '../game/lures.js';
@@ -1010,7 +1011,7 @@ function drawFloaters() {
     const sy = floater.y - cam.y + H / 2;
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.font = `300 ${floater.size}px 'Bai Jamjuree'`;
+    ctx.font = canvasFont(floater.size);
     ctx.fillStyle = floater.color;
     ctx.fillText(floater.text, sx, sy);
     ctx.restore();
@@ -1023,7 +1024,7 @@ function drawScreenNotes() {
   for (const note of screenNotes) {
     const alpha = clamp(Math.min(note.t * 3, (note.life - note.t) * 1.2), 0, 1);
     ctx.globalAlpha = alpha;
-    ctx.font = "300 15px 'Bai Jamjuree'";
+    ctx.font = canvasFont(15);
     ctx.fillStyle = '#d9c58c';
     ctx.fillText(note.text, W / 2, H * 0.3);
     ctx.globalAlpha = 1;

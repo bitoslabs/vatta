@@ -49,6 +49,7 @@ src/
 │   ├── worldgen.js        seed ต่อชาติ/บท, ประกอบโลก, ความสามารถรวมผลต่อโลก, ผลตรวจเส้นทาง, removeFeature (ธง `liftable` = สิ่งที่ยกได้)
 │   ├── world-effects.js   รหัสผลต่อโลกถาวร (root-watered … night-watched) แยกจากสิ่งกีดขวางสุ่ม
 │   ├── vision.js          รัศมีการมองเห็นที่เดียวของเกม — ชั้นความมืดและ gameplay ใช้ค่าเดียวกัน
+│   ├── fonts.js           สแตกฟอนต์แคนวาสต่อภาษา (lo → Kom + ขยาย ×1.12) ให้ตรงกับ CSS ผ่าน `canvasFont(size, weight)`
 │   ├── rest.js            "ที่ปลอดภัยที่โลกได้มา" ทุกแบบ (รังกระต่าย/รังนก/โพรง/ลานที่เปิดประตู) รวมเป็นกฎเดียว
 │   ├── goals.js           เป้าหมายชีวิตตาม `lifeGoal` ของร่าง (water/burrow/nest/spawn/link/storm/watch/grove/range จบชีวิต · land/seed/inlet/spring/warren/shelter/lost/roost/track/hollow ชี้ทาง) + LIFE_COMPLETE
 │   ├── biome.js           เลือกไบโอมจากร่าง/ภูมิ/อนุสัย (รวม under-root ของไส้เดือน) · `content/biomes.js` ประกาศ `sites` = จุดแผนที่ถาวรของภพ
@@ -198,10 +199,11 @@ npm start          # หรือ npm run serve:py
 # http://localhost:5173
 ```
 
-- `npm test` — canonical suites ใน `tests/` (life-transition + burrow + ant + frog + snake + rabbit + owl + elephant + tiger + gecko + title + settings + routes)
+- `npm test` — canonical suites ใน `tests/` (life-transition + burrow + ant + frog + snake + rabbit + owl + elephant + tiger + gecko + title + settings + routes + fonts)
 - roads per plane (§7): `ROUTES` ให้แต่ละภพมีถนนของตัวเอง (เริ่มประตูวัด จบศาลา) · ของประดับ/ตัวตรวจ/"อยู่บนทาง"/รอยเท้า/วัสดุถนน ล้วนอ้างถนนของภพนั้น · **`anchoredPoint(biomeId,x,y)`** พา "สิ่งที่อยู่ข้างถนนป่า" (เหยื่อล่อ · ธรรมบาล · ป้ายข้างทาง) ไปยืนบนถนนของภพนั้น (ในป่าเป็น identity) ส่วนจุดประจำภพคงที่ · **เรื่องเล่า/การสอนตามภพ**: `story-chapter2.js#angerSpawn()` · `story-chapter1.js#hasLightGateLesson()` (บทเรียนประตูแสง = ของป่า) · `systems/teacher.js#teacherLandmarks()` แยกสถานที่ที่ยืนทุกภพออกจากจุดที่ผูกกับถนน และตัดหมายเหตุประตูแสงนอกป่า (ทัวร์ 6 จุดในป่า / 5 จุดในภพอื่น) · `tests/routes.test.mjs`
 - help & settings (**H**): ปุ่มทั้งหมด + เสียง + ตัวอักษรใหญ่ + ข้อมูลรอบ + ลบเซฟ (ถามยืนยัน) · `ui/confirm.js` เป็นไดอะล็อกกลางที่กันการกดพลาด และปุ่ม "เริ่มภาวนา" ใช้มันก่อนทับเซฟเดิม · บรรทัด `#runReadout` บน HUD บอกช่อง/บท/ชื่อรอบ (`ui/settings.js`, `systems/settings.js`, `ui/confirm.js`)
 - `tests/helpers/dom.mjs`: DOM ขนาดเล็กที่ใช้ร่วมกันในชุดทดสอบหน้าจอ (class selector, คลิก/คีย์, `documentElement` สำหรับการตั้งค่าการแสดงผล)
+- canvas type per locale: `systems/fonts.js#canvasFont(size, weight)` เป็นแหล่งเดียวของสแตกฟอนต์แคนวาส (lo → `'Kom'` + ขยายขนาด) · ทุกจุดวาดข้อความบนแคนวาสใช้ฟังก์ชันนี้ (ห้ามฮาร์ดโค้ดฟอนต์) · `tests/fonts.test.mjs` เทียบฟอนต์แรกกับ CSS `html[lang='lo']`
 - title screen: **four views in one scrolling panel** (เล่น/บท/บันทึก/เครื่องมือ) แทนกำแพงปุ่ม · แท็บใช้คีย์บอร์ด ←→ ได้ และมี `role=tab|tabpanel` · `tests/title.test.mjs` ตรวจการสลับแท็บ เลขบท มาร์กบทของเซฟ แถวช่องบันทึก และการที่คำอธิบายเครื่องมือไม่หายเมื่อสลับป้าย (`ui/title-screen.js`, `ui/save-slots.js`, `styles/screens.css`)
 - id audit: ทุก `$('#…')` ใน `src/` ต้องมี element นั้นใน `index.html` (ตรวจด้วยสคริปต์สั้น ๆ ตอนรีวิว)
 - `node --check src/**/*.js` — syntax
