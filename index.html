@@ -47,40 +47,81 @@
 
   <!-- ============ Title screen ============ -->
   <div id="titleScreen">
-    <div class="panel">
-      <h1 data-i18n="title.name">วิมุตติ</h1>
-      <h2 data-i18n="title.subtitle">ป่าเสียงเรียก — บทปฐม</h2>
-      <div class="rule"></div>
-      <p data-i18n-html="title.tagline">คืนที่ฝนเพิ่งหยุด เสียงใดเรียกเราอยู่ปลายป่า<br>ผีที่ไล่เรา ไม่ได้อยู่ข้างหลัง… แต่อยู่ในใจ<br>หนีให้รอดไม่พอ — ต้องรู้ว่ากำลังหนีอะไร</p>
-      <div class="keys">
-        <span><b>WASD</b><span data-i18n="title.keys.move">เดิน</span></span>
-        <span><b>SHIFT</b><span data-i18n="title.keys.run">วิ่ง</span></span>
-        <span><b>SPACE</b><span data-i18n="title.keys.mind">ค้าง = ตั้งสติ</span></span>
-        <span><b>E</b><span data-i18n="title.keys.act">โต้ตอบ</span></span>
+    <div class="panel panel--title">
+      <header class="title-head">
+        <h1 data-i18n="title.name">วิมุตติ</h1>
+        <h2 data-i18n="title.subtitle">ป่าเสียงเรียก — บทปฐม</h2>
+      </header>
+
+      <nav class="tabs" id="titleTabs" role="tablist" data-i18n-attr="aria-label|title.tabs.label">
+        <button type="button" class="tab is-active" role="tab" aria-selected="true" data-tab="play" data-i18n="title.tab.play">เล่น</button>
+        <button type="button" class="tab" role="tab" aria-selected="false" data-tab="chapters" data-i18n="title.tab.chapters">บท</button>
+        <button type="button" class="tab" role="tab" aria-selected="false" data-tab="save" data-i18n="title.tab.save">บันทึก</button>
+        <button type="button" class="tab" role="tab" aria-selected="false" data-tab="tools" data-i18n="title.tab.tools">เครื่องมือ</button>
+      </nav>
+
+      <div class="tab-body">
+        <section class="tab-pane is-active" role="tabpanel" data-pane="play">
+          <p class="tagline" data-i18n-html="title.tagline">คืนที่ฝนเพิ่งหยุด เสียงใดเรียกเราอยู่ปลายป่า<br>ผีที่ไล่เรา ไม่ได้อยู่ข้างหลัง… แต่อยู่ในใจ<br>หนีให้รอดไม่พอ — ต้องรู้ว่ากำลังหนีอะไร</p>
+          <div class="title-actions">
+            <button class="btn btn--primary hidden" id="continueBtn" data-i18n="title.continue">เล่นต่อ</button>
+            <button class="btn" id="startBtn" data-i18n="title.start">เริ่มภาวนา</button>
+          </div>
+          <div class="keys">
+            <span><b>WASD</b><span data-i18n="title.keys.move">เดิน</span></span>
+            <span><b>SHIFT</b><span data-i18n="title.keys.run">วิ่ง</span></span>
+            <span><b>SPACE</b><span data-i18n="title.keys.mind">ค้าง = ตั้งสติ</span></span>
+            <span><b>E</b><span data-i18n="title.keys.act">โต้ตอบ</span></span>
+          </div>
+          <div class="small" data-i18n="title.note">หูฟังแนะนำ · กด M เพื่อเปิด/ปิดเสียง</div>
+        </section>
+
+        <section class="tab-pane" role="tabpanel" data-pane="chapters" hidden>
+          <div class="chapter-label" data-i18n="title.chapters">เลือกบท</div>
+          <div id="chapterSelect" class="chapter-list chapter-list--grid"></div>
+        </section>
+
+        <section class="tab-pane" role="tabpanel" data-pane="save" hidden>
+          <div class="chapter-label" data-i18n="save.slots.label">ช่องบันทึก</div>
+          <div id="saveSlots" class="slot-list"></div>
+          <div class="chapter-label chapter-label--gap" data-i18n="save.name.label">ชื่อรอบ</div>
+          <input id="runNameInput" class="run-name-input" maxlength="24"
+                 data-i18n-attr="placeholder|save.name.placeholder" placeholder="ตั้งชื่อรอบนี้">
+        </section>
+
+        <section class="tab-pane" role="tabpanel" data-pane="tools" hidden>
+          <div class="tool-list">
+            <button type="button" class="tool-btn" id="codexBtn">
+              <span class="tool-name" data-i18n="title.codex">ไตรภูมิ 31</span>
+              <span class="tool-sub" data-i18n="title.tool.codex">ดูภูมิทั้ง 31 และกรรมที่พาไป</span>
+            </button>
+            <button type="button" class="tool-btn" id="recapBtn">
+              <span class="tool-name" data-i18n="recap.title">สรุปการเดินทาง</span>
+              <span class="tool-sub" data-i18n="title.tool.recap">ชาติที่ผ่านมาและสิ่งที่ทำไว้</span>
+            </button>
+            <button type="button" class="tool-btn" id="worksheetBtn">
+              <span class="tool-name" data-i18n="ws.title">ใบงานห้องเรียน</span>
+              <span class="tool-sub" data-i18n="title.tool.worksheet">ใบงานสำหรับใช้ในชั้นเรียน</span>
+            </button>
+            <button type="button" class="tool-btn" id="lifeBtn">
+              <span class="tool-name" data-i18n="life.start">วงจรชีวิต (ต้นแบบ)</span>
+              <span class="tool-sub" data-i18n="title.tool.life">เกิดใหม่เรื่อย ๆ ในร่างและโลกใหม่</span>
+            </button>
+            <button type="button" class="tool-btn hidden" id="exploreBtn">
+              <span class="tool-name" data-i18n="life.explore">ย้อนชมความทรงจำ</span>
+              <span class="tool-sub" data-i18n="title.tool.explore">เดินป่าอีกครั้งโดยไม่มีการตัดสิน</span>
+            </button>
+            <button type="button" class="tool-btn" id="teacherBtn">
+              <span class="tool-name" data-i18n="teacher.toggle.off">โหมดครู: ปิด</span>
+              <span class="tool-sub" data-i18n="title.tool.teacher">โหมดสำหรับสอนในห้องเรียน</span>
+            </button>
+            <button type="button" class="tool-btn" id="projectorBtn">
+              <span class="tool-name" data-i18n="projector.toggle.off">โหมดฉายภาพ: ปิด</span>
+              <span class="tool-sub" data-i18n="title.tool.projector">ตัวอักษรและป้ายขนาดใหญ่</span>
+            </button>
+          </div>
+        </section>
       </div>
-      <button class="btn hidden" id="continueBtn" data-i18n="title.continue">เล่นต่อ</button>
-      <button class="btn" id="startBtn" data-i18n="title.start">เริ่มภาวนา</button>
-      <div class="small" data-i18n="title.note">หูฟังแนะนำ · กด M เพื่อเปิด/ปิดเสียง</div>
-      <div class="chapters">
-        <div class="chapter-label" data-i18n="title.chapters">เลือกบท</div>
-        <div id="chapterSelect" class="chapter-list"></div>
-      </div>
-      <div class="chapters">
-        <div class="chapter-label" data-i18n="save.slots.label">ช่องบันทึก</div>
-        <div id="saveSlots" class="chapter-list"></div>
-      </div>
-      <div class="chapters">
-        <div class="chapter-label" data-i18n="save.name.label">ชื่อรอบ</div>
-        <input id="runNameInput" class="run-name-input" maxlength="24"
-               data-i18n-attr="placeholder|save.name.placeholder" placeholder="ตั้งชื่อรอบนี้">
-      </div>
-      <button type="button" class="link-btn" id="codexBtn" data-i18n="title.codex">ไตรภูมิ 31</button>
-      <button type="button" class="link-btn" id="teacherBtn" data-i18n="teacher.toggle.off">โหมดครู: ปิด</button>
-      <button type="button" class="link-btn" id="recapBtn" data-i18n="recap.title">สรุปการเดินทาง</button>
-      <button type="button" class="link-btn" id="worksheetBtn" data-i18n="ws.title">ใบงานห้องเรียน</button>
-      <button type="button" class="link-btn" id="projectorBtn" data-i18n="projector.toggle.off">โหมดฉายภาพ: ปิด</button>
-      <button type="button" class="link-btn" id="lifeBtn" data-i18n="life.start">วงจรชีวิต (ต้นแบบ)</button>
-      <button type="button" class="link-btn hidden" id="exploreBtn" data-i18n="life.explore">ย้อนชมความทรงจำ</button>
     </div>
   </div>
 

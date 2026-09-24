@@ -11,6 +11,122 @@
 
 #titleScreen {
   background: var(--overlay);
+  /* room for the language switcher, and never a cut-off bottom edge */
+  padding: 56px 16px 20px;
+  overflow: hidden;
+}
+
+/* ---------- Title panel: header + tabs + one scrolling body ---------- */
+.panel--title {
+  display: flex;
+  flex-direction: column;
+  width: min(94vw, 600px);
+  max-height: min(88vh, 800px);
+  padding: 0;
+  text-align: center;
+}
+
+.title-head {
+  padding: 30px 26px 16px;
+}
+
+.title-head h1 {
+  font-size: 54px;
+}
+
+.title-head h2 {
+  font-size: 20px;
+  margin-top: 4px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  padding: 9px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ink-faint);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.tab:hover {
+  color: var(--gold-bright);
+}
+
+.tab.is-active {
+  color: var(--gold-bright);
+  border-bottom-color: #c9b684;
+}
+
+.tab-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 24px 26px;
+  scrollbar-width: thin;
+}
+
+.tab-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tab-body::-webkit-scrollbar-thumb {
+  background: rgba(201, 182, 132, 0.28);
+  border-radius: 4px;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.is-active {
+  display: block;
+}
+
+.panel--title .tagline {
+  margin-bottom: 20px;
+  font-size: 13.5px;
+  line-height: 1.85;
+}
+
+.title-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel--title .btn {
+  margin-top: 0;
+  width: min(280px, 100%);
+  padding: 12px 20px;
+  letter-spacing: 0.24em;
+}
+
+.btn--primary {
+  border-color: #e9dcae;
+  background: rgba(201, 182, 132, 0.16);
+  color: #f4e9c4;
+}
+
+.panel--title .keys {
+  margin-top: 18px;
+}
+
+.panel--title .small {
+  margin-top: 12px;
 }
 
 #endScreen {
@@ -191,6 +307,175 @@
   border-color: #c9b684;
   background: rgba(201, 182, 132, 0.12);
   color: var(--gold-bright);
+}
+
+/* A chapter grid reads faster than a wrapped row of fourteen chips. */
+.chapter-list--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(146px, 1fr));
+  gap: 8px;
+}
+
+.chapter-list--grid .chapter-btn {
+  text-align: left;
+  padding: 9px 12px;
+}
+
+.chapter-btn.is-current {
+  border-color: rgba(201, 182, 132, 0.6);
+  color: var(--gold-bright);
+}
+
+.chapter-btn.is-current::after {
+  content: ' ●';
+  color: #c9b684;
+  font-size: 9px;
+  vertical-align: 2px;
+}
+
+.chapter-label--gap {
+  margin-top: 22px;
+}
+
+/* ---------- Save slots: rows, not chips ---------- */
+.slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.save-slot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.save-slot:hover {
+  border-color: #c9b684;
+  background: rgba(201, 182, 132, 0.1);
+  color: var(--gold-bright);
+}
+
+.save-slot.is-active {
+  border-color: rgba(201, 182, 132, 0.65);
+}
+
+.save-slot.is-empty {
+  color: var(--ink-faint);
+}
+
+.slot-num {
+  flex: 0 0 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(201, 182, 132, 0.35);
+  border-radius: 50%;
+  font-size: 12px;
+  color: #d8d0b8;
+}
+
+.save-slot.is-active .slot-num {
+  border-color: #c9b684;
+  background: rgba(201, 182, 132, 0.18);
+  color: var(--gold-bright);
+}
+
+.slot-text {
+  flex: 1;
+}
+
+/* ---------- Tools: one row each, name + what it is ---------- */
+.tool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tool-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  background: transparent;
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.tool-btn:hover {
+  border-color: #c9b684;
+  background: rgba(201, 182, 132, 0.1);
+}
+
+.tool-name {
+  font-size: 13.5px;
+  letter-spacing: 0.08em;
+  color: #ded4b4;
+}
+
+.tool-btn:hover .tool-name {
+  color: var(--gold-bright);
+}
+
+.tool-sub {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 540px) {
+  #titleScreen {
+    padding: 48px 10px 12px;
+  }
+
+  .title-head {
+    padding: 20px 16px 12px;
+  }
+
+  .title-head h1 {
+    font-size: 40px;
+  }
+
+  .tab {
+    flex: 1 1 auto;
+    padding: 9px 8px;
+  }
+
+  .tab-body {
+    padding: 16px 14px 20px;
+  }
+
+  .chapter-list--grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .chapter-list--grid .chapter-btn {
+    font-size: 12px;
+    padding: 10px 9px;
+  }
+
+  .tab {
+    font-size: 12px;
+    padding: 12px 8px;
+  }
+
+  .save-slot {
+    font-size: 12px;
+  }
 }
 
 .link-btn {

@@ -45,28 +45,36 @@ export function renderSaveSlots() {
   for (const entry of listSaves()) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `chapter-btn save-slot${entry.slot === active ? ' is-active' : ''}`;
+    button.className = `save-slot${entry.slot === active ? ' is-active' : ''}${entry.filled ? '' : ' is-empty'}`;
     button.dataset.slot = String(entry.slot);
+    button.setAttribute('aria-pressed', String(entry.slot === active));
+
+    // A slot reads as a row: the number first, then what is in it.
+    const number = document.createElement('span');
+    number.className = 'slot-num';
+    number.textContent = String(entry.slot);
+    const text = document.createElement('span');
+    text.className = 'slot-text';
 
     if (entry.filled) {
       const def = chapterById(entry.chapter);
-      if (entry.name) {
-        button.textContent = t('save.slot.named', {
+      text.textContent = entry.name
+        ? t('save.slot.named', {
           slot: entry.slot,
           name: entry.name,
           chapter: def ? t(def.nameKey) : entry.chapter,
-        });
-      } else {
-        button.textContent = t('save.slot.filled', {
+        })
+        : t('save.slot.filled', {
           slot: entry.slot,
           chapter: def ? t(def.nameKey) : entry.chapter,
           merit: entry.merit,
         });
-      }
     } else {
-      button.textContent = t('save.slot.empty', { slot: entry.slot });
+      text.textContent = t('save.slot.empty', { slot: entry.slot });
     }
 
+    button.appendChild(number);
+    button.appendChild(text);
     button.addEventListener('click', (e) => {
       e.target.blur();
       openSlot(entry.slot);

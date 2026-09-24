@@ -194,7 +194,9 @@ npm start          # หรือ npm run serve:py
 # http://localhost:5173
 ```
 
-- `npm test` — canonical suites ใน `tests/` (life-transition + burrow + ant + frog + snake + rabbit + owl + elephant + tiger + gecko)
+- `npm test` — canonical suites ใน `tests/` (life-transition + burrow + ant + frog + snake + rabbit + owl + elephant + tiger + gecko + title)
+- title screen: **four views in one scrolling panel** (เล่น/บท/บันทึก/เครื่องมือ) แทนกำแพงปุ่ม · แท็บใช้คีย์บอร์ด ←→ ได้ และมี `role=tab|tabpanel` · `tests/title.test.mjs` ตรวจการสลับแท็บ เลขบท มาร์กบทของเซฟ แถวช่องบันทึก และการที่คำอธิบายเครื่องมือไม่หายเมื่อสลับป้าย (`ui/title-screen.js`, `ui/save-slots.js`, `styles/screens.css`)
+- id audit: ทุก `$('#…')` ใน `src/` ต้องมี element นั้นใน `index.html` (ตรวจด้วยสคริปต์สั้น ๆ ตอนรีวิว)
 - `node --check src/**/*.js` — syntax
 - smoke tests: โหลดทุกโมดูลด้วย DOM stub, เดินครบทุกฉาก (title/world/meditation/memory/release/chapter 2)
 - i18n audit: เทียบคีย์ครบทั้ง 3 ภาษา + ตรวจ `data-i18n` ใน HTML และ `t('…')` ใน JS

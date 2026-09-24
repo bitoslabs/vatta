@@ -30,7 +30,56 @@ function resumeRun() {
   if (data.lifeMode && !data.liberated && data.lifeLog?.some(entry => entry.lifeId === data.lifeId)) showLifeSummary();
 }
 
+/**
+ * The title screen is one panel with four small views instead of one long wall of
+ * buttons: เล่น (the actual actions), บท (the chapter grid), บันทึก (slots and run
+ * name) and เครื่องมือ (classroom and reference tools). Everything that was on the
+ * screen is still here — it is just grouped, and the panel scrolls instead of
+ * spilling past the window.
+ */
+function initTabs() {
+  const nav = $('#titleTabs');
+  if (!nav || typeof nav.querySelectorAll !== 'function') return;
+  const tabs = Array.from(nav.querySelectorAll('.tab') || []);
+  if (!tabs.length) return;
+  const body = document.querySelector('.tab-body');
+  if (!body || typeof body.querySelectorAll !== 'function') return;
+  const panes = Array.from(body.querySelectorAll('.tab-pane') || []);
+
+  const select = (name) => {
+    for (const tab of tabs) {
+      const on = tab.dataset.tab === name;
+      tab.classList.toggle('is-active', on);
+      tab.setAttribute('aria-selected', String(on));
+      tab.tabIndex = on ? 0 : -1;
+    }
+    for (const pane of panes) {
+      const on = pane.dataset.pane === name;
+      pane.classList.toggle('is-active', on);
+      pane.hidden = !on;
+    }
+  };
+
+  for (const tab of tabs) {
+    tab.addEventListener('click', (e) => {
+      e.target.blur();
+      select(tab.dataset.tab);
+    });
+    tab.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const index = tabs.indexOf(tab);
+      const step = e.key === 'ArrowRight' ? 1 : tabs.length - 1;
+      const next = tabs[(index + step) % tabs.length];
+      select(next.dataset.tab);
+      next.focus();
+    });
+  }
+  select('play');
+}
+
 export function initTitleScreen() {
+  initTabs();
   const startButton = $('#startBtn');
   startButton.addEventListener('click', () => startChapter(CHAPTERS[0].id));
   startButton.addEventListener('click', (e) => e.target.blur());
@@ -59,18 +108,30 @@ export function initTitleScreen() {
     button.type = 'button';
     button.className = 'chapter-btn';
     button.dataset.chapter = String(def.id);
-    button.textContent = t(def.nameKey);
+    // The chapter number matters: the journey is walked in order.
+    button.textContent = `${def.id} · ${t(def.nameKey)}`;
     button.title = t(def.subtitleKey);
     button.addEventListener('click', () => startChapter(def.id));
     select.appendChild(button);
   }
 
+  // Mark the chapter the saved run is standing in.
+  const markCurrentChapter = () => {
+    const data = readSave();
+    const current = data ? data.chapter : null;
+    select.querySelectorAll('.chapter-btn').forEach((button) => {
+      button.classList.toggle('is-current', Number(button.dataset.chapter) === current);
+    });
+  };
+  markCurrentChapter();
+
   on(EVENTS.LOCALE_CHANGED, () => {
     renderContinue();
+    markCurrentChapter();
     select.querySelectorAll('.chapter-btn').forEach((button) => {
       const def = chapterById(Number(button.dataset.chapter));
       if (!def) return;
-      button.textContent = t(def.nameKey);
+      button.textContent = `${def.id} · ${t(def.nameKey)}`;
       button.title = t(def.subtitleKey);
     });
   });

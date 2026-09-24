@@ -33,17 +33,25 @@ function renderTour() {
   });
 }
 
+/**
+ * Write a tool row's label without destroying its description line: the title
+ * screen renders each tool as a row (name + sub-line), so set the inner span when
+ * it is there and fall back to the button text when it is not.
+ */
+function setToolLabel(button, text) {
+  if (!button) return;
+  const name = button.querySelector('.tool-name');
+  if (name) name.textContent = text;
+  else button.textContent = text;
+}
+
 function renderChrome() {
   const on = isTeacher();
   panel.classList.toggle('hidden', !on);
   titleEl.textContent = t('teacher.title');
   hintEl.textContent = t('teacher.hint');
-  if (toggleButton) {
-    toggleButton.textContent = on ? t('teacher.toggle.on') : t('teacher.toggle.off');
-  }
-  if (projectorButton) {
-    projectorButton.textContent = isProjector() ? t('projector.toggle.on') : t('projector.toggle.off');
-  }
+  setToolLabel(toggleButton, on ? t('teacher.toggle.on') : t('teacher.toggle.off'));
+  setToolLabel(projectorButton, isProjector() ? t('projector.toggle.on') : t('projector.toggle.off'));
   lastNote = null;
   lastTour = -1; // force a refresh on the next frame
 }
