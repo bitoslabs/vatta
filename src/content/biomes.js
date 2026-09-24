@@ -1,0 +1,67 @@
+'use strict';
+
+/**
+ * Biomes (design §7, "shุดแผนที่เริ่มต้น") — the same forest, seen through a
+ * different realm or body.
+ *
+ * Rather than six hand-built maps, a biome re-skins and re-lights the world:
+ * ground tint, water colour, the veil over the scene, and how dark the night
+ * feels. It is chosen from the body you wear, the plane you were born into, and
+ * your strongest tendency — so the map answers "where am I?" as much as the HUD.
+ */
+export const BIOMES = Object.freeze({
+  'memory-forest': {
+    nameKey: 'biome.memory.name',
+    descKey: 'biome.memory.desc',
+    ground: 'rgba(10,18,12,.35)',
+    water: '#0a1a2c',
+    waterCore: '#123049',
+    veil: null,
+    ambient: 0.87,
+  },
+  woeful: {
+    nameKey: 'biome.woeful.name',
+    descKey: 'biome.woeful.desc',
+    ground: 'rgba(48,12,10,.42)',
+    water: '#2a0f12',
+    waterCore: '#3d1a18',
+    veil: 'rgba(120,20,20,.07)',
+    ambient: 0.93,
+  },
+  'asura-city': {
+    nameKey: 'biome.asura.name',
+    descKey: 'biome.asura.desc',
+    ground: 'rgba(38,44,58,.4)',
+    water: '#16202e',
+    waterCore: '#1f2f42',
+    veil: 'rgba(70,90,130,.06)',
+    ambient: 0.8,
+  },
+  'light-garden': {
+    nameKey: 'biome.garden.name',
+    descKey: 'biome.garden.desc',
+    ground: 'rgba(70,78,44,.32)',
+    water: '#1d3c58',
+    waterCore: '#2a5a7d',
+    veil: 'rgba(230,240,200,.05)',
+    ambient: 0.62,
+  },
+  'craving-market': {
+    nameKey: 'biome.market.name',
+    descKey: 'biome.market.desc',
+    ground: 'rgba(58,42,18,.4)',
+    water: '#1c1a2c',
+    waterCore: '#2a2438',
+    veil: 'rgba(200,150,60,.06)',
+    ambient: 0.84,
+  },
+  formless: {
+    nameKey: 'biome.formless.name',
+    descKey: 'biome.formless.desc',
+    ground: 'rgba(60,62,70,.3)',
+    water: '#2a2e38',
+    waterCore: '#3a3f4c',
+    veil: 'rgba(220,230,255,.05)',
+    ambient: 0.55,
+  },
+});

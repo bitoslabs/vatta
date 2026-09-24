@@ -8,6 +8,7 @@ import { ctx, lightCanvas, lightCtx, viewport } from '../systems/viewport.js';
 import { getPathModifiers } from '../systems/path.js';
 import { getRealmModifier } from '../systems/samsara.js';
 import { formVision } from '../systems/forms.js';
+import { currentBiome } from '../systems/biome.js';
 import { GATES } from '../world/world-data.js';
 import { player } from '../entities/player.js';
 import { cam } from '../game/camera.js';
@@ -21,7 +22,8 @@ export function renderLighting(mind) {
   const dawn = state.story.released;
 
   lightCtx.clearRect(0, 0, W, H);
-  const ambient = dawn ? 0.34 : 0.87;
+  // A bright plane like a deva garden is far less dark than the woeful ones.
+  const ambient = dawn ? 0.34 : currentBiome().ambient;
   lightCtx.fillStyle = dawn ? `rgba(10,20,12,${ambient})` : `rgba(1,4,6,${ambient})`;
   lightCtx.fillRect(0, 0, W, H);
   lightCtx.globalCompositeOperation = 'destination-out';

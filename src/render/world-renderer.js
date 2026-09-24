@@ -21,6 +21,7 @@ import { drawEncounter, drawGhost, drawGuardian, drawLure, drawPlayer, drawPromp
 import { getLures } from '../game/lures.js';
 import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
+import { currentBiome } from '../systems/biome.js';
 import { getForm, isWaterBound } from '../systems/forms.js';
 import { goalFor } from '../systems/goals.js';
 import { GUARDIAN } from '../game/npc.js';
@@ -104,6 +105,13 @@ export function renderWorld() {
     ctx.fillStyle = 'rgba(70,70,55,.07)';
     ctx.fillRect(0, 0, W, H);
   }
+
+  // The realm's own veil sits over the chapter's.
+  const biomeVeil = currentBiome().veil;
+  if (biomeVeil) {
+    ctx.fillStyle = biomeVeil;
+    ctx.fillRect(0, 0, W, H);
+  }
   drawFog();
   drawFloaters();
   drawScreenNotes();
@@ -115,6 +123,9 @@ export function renderWorld() {
 
 function drawGround(dawn) {
   ctx.fillStyle = dawn ? textures.groundDawn : textures.groundNight;
+  ctx.fillRect(-60, -60, WORLD.w + 120, WORLD.h + 120);
+  // The plane you were born into re-tints the same ground.
+  ctx.fillStyle = currentBiome().ground;
   ctx.fillRect(-60, -60, WORLD.w + 120, WORLD.h + 120);
 }
 
@@ -193,8 +204,9 @@ function drawWorldMemory(dawn) {
 
 /** The river: a dark band with a lighter core, crossed by the true path. */
 function drawRiver(dawn) {
-  drawPath(RIVER, RIVER_WIDTH * 2, dawn ? '#1b3550' : '#0a1a2c');
-  drawPath(RIVER, RIVER_WIDTH * 1.1, dawn ? '#264f70' : '#123049');
+  const biome = currentBiome();
+  drawPath(RIVER, RIVER_WIDTH * 2, dawn ? '#1b3550' : biome.water);
+  drawPath(RIVER, RIVER_WIDTH * 1.1, dawn ? '#264f70' : biome.waterCore);
 }
 
 function drawPaths(dawn) {

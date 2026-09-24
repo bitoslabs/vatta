@@ -8,6 +8,7 @@ import { getRealm } from '../systems/samsara.js';
 import { unlockedCount } from '../systems/path.js';
 import { keptPreceptCount } from '../systems/precepts.js';
 import { formNameKey } from '../content/forms.js';
+import { currentBiome } from '../systems/biome.js';
 import { $ } from './dom.js';
 
 const hudEl = $('#hud');
@@ -41,7 +42,10 @@ export function updateHud(mind) {
       kusala: karma.kusala,
       akusala: karma.akusala,
     });
-    realmReadout.textContent = t('hud.realm', { realm: t(getRealm().nameKey) });
+    realmReadout.textContent = t('hud.realm', {
+      realm: t(getRealm().nameKey),
+      biome: t(currentBiome().nameKey),
+    });
     pathReadout.textContent = t('hud.path.count', { count: unlockedCount() });
     preceptReadout.textContent = t('hud.precept.count', { kept: keptPreceptCount() });
     formReadout.textContent = t('hud.form', { form: t(formNameKey(state.formId)) });
