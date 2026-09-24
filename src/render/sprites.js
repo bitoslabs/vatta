@@ -258,6 +258,49 @@ export function drawTourMarker(x, y) {
   ctx.stroke();
 }
 
+/** เปรตแห่งภาชนะรั่ว: a tall grey-violet figure holding a cracked bowl. */
+export function drawPeta(x, y) {
+  const now = performance.now() * 0.001;
+  const leak = 0.5 + Math.sin(now * 2) * 0.25;
+
+  ctx.fillStyle = 'rgba(0,0,0,.4)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + 14, 16, 5, 0, 0, TAU);
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(150,120,160,.16)';
+  ctx.beginPath();
+  ctx.arc(x, y - 10, 26, 0, TAU);
+  ctx.fill();
+
+  ctx.fillStyle = '#4a4256';
+  ctx.beginPath();
+  ctx.moveTo(x - 12, y + 12);
+  ctx.quadraticCurveTo(x - 14, y - 26, x, y - 32);
+  ctx.quadraticCurveTo(x + 14, y - 26, x + 12, y + 12);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#7a7086';
+  ctx.beginPath();
+  ctx.arc(x, y - 40, 8, 0, TAU);
+  ctx.fill();
+
+  // The cracked bowl, always dripping.
+  ctx.fillStyle = '#6b6274';
+  ctx.beginPath();
+  ctx.ellipse(x - 16, y - 6, 13, 6, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(160,190,210,.55)';
+  ctx.beginPath();
+  ctx.arc(x - 16, y + Math.sin(now * 5) * 2 + 4, 2, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = `rgba(160,190,210,${leak * 0.4})`;
+  ctx.beginPath();
+  ctx.arc(x - 16, y + 12, 1.4, 0, TAU);
+  ctx.fill();
+}
+
 export function drawTemple(dawn) {
   const T = TEMPLE;
   const now = performance.now();

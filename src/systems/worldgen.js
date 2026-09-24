@@ -18,8 +18,19 @@ export function seedFor(chapterId, lifeId = state.lifeId) {
 export function initDynamicWorld(chapterId) {
   const seed = seedFor(chapterId);
   const built = buildDynamicWorld(seed, state.formId, getForm().abilities || {});
+  // Anything lifted away in an earlier life stays away.
+  const removed = new Set(state.world.removed || []);
+  built.features = built.features.filter((feature) => !removed.has(feature.i));
   state.dynamic = { ...built, seed };
   return state.dynamic;
+}
+
+/** Lift one feature out of the world for good (the asura's strength). */
+export function removeFeature(index) {
+  if (!Number.isInteger(index)) return false;
+  if (!state.world.removed.includes(index)) state.world.removed.push(index);
+  state.dynamic.features = dynamicFeatures().filter((feature) => feature.i !== index);
+  return true;
 }
 
 export function dynamicWorld() {

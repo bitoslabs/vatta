@@ -15,6 +15,8 @@
  * fearGain   × how fast fear builds (fragile forms fear sooner)
  * fearGuard  × how firmly the mind holds (turtle)
  * scent      reveals the glowing footprints strongly
+ * strong     lifts boulders out of the way, opening the road for later lives
+ * (for the beings of §6: อสุร uses strong, เทวดา walks over thickets)
  * canSpeak   flavour only for now: animals would use gestures for dialogue
  * abilities  fed to the route checker and to collision:
  *              flying  ignores ground solids (trees, thickets, boulders)
@@ -88,6 +90,29 @@ export const FORMS = Object.freeze([
     canSpeak: false,
     fearGain: 1.3,
     abilities: { flying: false, climbing: false, small: true },
+  },
+  {
+    id: 'asura',
+    speed: 0.85,
+    waterSpeed: 0.7,
+    vision: -20,
+    waterBound: false,
+    canSpeak: true,
+    strong: true,
+    fearGain: 0.85,
+    fearGuard: 1.3,
+    abilities: { flying: false, climbing: false, small: false },
+  },
+  {
+    id: 'deva',
+    speed: 1.22,
+    waterSpeed: 1.1,
+    vision: 80,
+    waterBound: false,
+    canSpeak: true,
+    fearGain: 0.7,
+    fearGuard: 1.15,
+    abilities: { flying: false, climbing: true, small: false },
   },
   {
     id: 'fish',

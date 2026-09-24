@@ -3,17 +3,20 @@
 import { FEAR, MODE } from '../core/constants.js';
 import { clamp, dist, lerp } from '../core/math.js';
 import { state } from '../core/state.js';
-import { playHeart } from '../systems/audio.js';
-import { updateEffects } from '../systems/effects.js';
+import { playHeart, playThud } from '../systems/audio.js';
+import { addFloater, updateEffects } from '../systems/effects.js';
 import { isMindful } from '../systems/input.js';
+import { t } from '../systems/i18n.js';
 import { getPathModifiers } from '../systems/path.js';
 import { getForm } from '../systems/forms.js';
+import { dynamicFeatures, removeFeature } from '../systems/worldgen.js';
 import { getRealmModifier } from '../systems/samsara.js';
 import { ghost, updateGhosts } from '../entities/ghost.js';
 import { inSafeZone, player, updatePlayer } from '../entities/player.js';
 import { cam } from './camera.js';
 import { updateEchoes } from './echoes.js';
 import { updateGuardian } from './npc.js';
+import { updatePeta } from './npc-peta.js';
 import { updateWorldMemory } from './world-memory.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
@@ -45,8 +48,10 @@ export function updateWorld(dt) {
   if (!state.story.released) updateGhosts(dt, mind, frozen);
 
   updateStory(dt);
+  clearBouldersForStrongForms();
   updateLifeGoal();
   updateGuardian();
+  updatePeta();
   updateWorldMemory();
   updateEchoes();
   updateCamera(dt);
@@ -85,6 +90,19 @@ function updateHeartbeat(dt) {
   if (heartCd <= 0) {
     playHeart();
     heartCd = lerp(FEAR.heartSlowPeriod, FEAR.heartFastPeriod, state.fear);
+  }
+}
+
+/** อสุร lifts boulders out of the road — a change later lives inherit. */
+function clearBouldersForStrongForms() {
+  if (!getForm().strong) return;
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'boulders') continue;
+    if (dist(player.x, player.y, feature.x, feature.y) < feature.r + 14) {
+      removeFeature(feature.i);
+      playThud();
+      addFloater(player.x, player.y - 120, t('form.asura.lift'), '#c9bcd6', 15);
+    }
   }
 }
 

@@ -17,13 +17,14 @@ import { ghosts } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { updateHud } from '../ui/hud.js';
 import { renderLighting, shakeOffset } from './lighting.js';
-import { drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, drawTeacherLabel, drawTemple, drawTourMarker, drawTree } from './sprites.js';
+import { drawGhost, drawGuardian, drawLure, drawPeta, drawPlayer, drawPrompt, drawSala, drawTeacherLabel, drawTemple, drawTourMarker, drawTree } from './sprites.js';
 import { getLures } from '../game/lures.js';
 import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { getForm, isWaterBound } from '../systems/forms.js';
 import { goalFor } from '../systems/goals.js';
 import { GUARDIAN } from '../game/npc.js';
+import { PETA } from '../game/npc-peta.js';
 
 function drawPath(points, width, color) {
   ctx.strokeStyle = color;
@@ -61,6 +62,7 @@ export function renderWorld() {
   drawLures();
   drawLifeGoal();
   drawGuardian(GUARDIAN.x, GUARDIAN.y);
+  drawPeta(PETA.x, PETA.y);
   drawEntities(dawn);
   drawTeacherOverlay();
   drawInteractionPrompt();

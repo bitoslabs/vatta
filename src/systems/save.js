@@ -166,6 +166,12 @@ export function applySaveRuntime(data) {
   if (typeof data.formId === 'string') state.formId = data.formId;
   state.formHistory = Array.isArray(data.formHistory) ? [...data.formHistory] : [];
   state.lifeLog = Array.isArray(data.lifeLog) ? data.lifeLog.map((entry) => ({ ...entry })) : [];
-  state.world = { bridge: false, cleared: false, ...(data.world || {}) };
+  state.world = {
+    bridge: false,
+    cleared: false,
+    removed: [],
+    ...(data.world || {}),
+  };
+  state.world.removed = Array.isArray(state.world.removed) ? state.world.removed.filter((i) => Number.isInteger(i)) : [];
   state.liberated = Boolean(data.liberated);
 }

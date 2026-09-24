@@ -70,14 +70,14 @@ export function assembleRooms(seed) {
           : type === 'pond' ? 70 + rng() * 30
             : 62;
       if (!mayPlace(type, x, y, radius)) continue;
-      features.push({ type, x, y, r: radius });
+      features.push({ i: features.length, type, x, y, r: radius });
     }
   }
 
   // Occasionally silt builds up in the river — which the route check must catch.
   if (rng() < 0.35) {
     const point = RIVER[1 + ((rng() * (RIVER.length - 2)) | 0)];
-    features.push({ type: 'boulders', x: point[0], y: point[1], r: 60 + rng() * 40 });
+    features.push({ i: features.length, type: 'boulders', x: point[0], y: point[1], r: 60 + rng() * 40 });
   }
 
   return features;
