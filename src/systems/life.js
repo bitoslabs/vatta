@@ -140,6 +140,7 @@ export function advanceLife() {
     nest: { key: 'life.goal.nest', color: '#d7bd8c' },
     crevice: { key: 'life.goal.crevice', color: '#8fd0c4' },
     storm: { key: 'life.goal.storm', color: '#d9c48f' },
+    watch: { key: 'life.goal.watch', color: '#cbd6ea' },
   }[lifeGoal];
   if (hint) {
     const goal = goalFor();

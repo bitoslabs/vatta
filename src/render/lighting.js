@@ -5,10 +5,8 @@ import { clamp } from '../core/math.js';
 import { rng } from '../core/rng.js';
 import { state } from '../core/state.js';
 import { ctx, lightCanvas, lightCtx, viewport } from '../systems/viewport.js';
-import { getPathModifiers } from '../systems/path.js';
-import { getRealmModifier } from '../systems/samsara.js';
-import { formVision } from '../systems/forms.js';
 import { currentBiome } from '../systems/biome.js';
+import { visionRadius } from '../systems/vision.js';
 import { GATES } from '../world/world-data.js';
 import { player } from '../entities/player.js';
 import { cam } from '../game/camera.js';
@@ -16,6 +14,10 @@ import { cam } from '../game/camera.js';
 /**
  * Composite the darkness layer: an ambient fill with radial "punches" removed
  * around the player, safe zones and illusory light gates.
+ *
+ * The player's hole is exactly `visionRadius()` — the same number the game uses
+ * to decide what a body can perceive in the dark (systems/vision.js), so the
+ * light a form casts and the light it can actually use are never two opinions.
  */
 export function renderLighting(mind) {
   const { W, H } = viewport;
@@ -41,8 +43,7 @@ export function renderLighting(mind) {
     lightCtx.fill();
   };
 
-  const vision = 380 - state.fear * 160 + (mind ? 90 : 0)
-    + getRealmModifier().vision + getPathModifiers().vision + formVision();
+  const vision = visionRadius(mind);
   punch(player.x, player.y, dawn ? 520 : vision, 0.98);
   punch(TEMPLE.x, TEMPLE.y, TEMPLE.r + 120, 0.96);
   punch(SALA.x, SALA.y, 340, 0.9);

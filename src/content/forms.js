@@ -30,6 +30,8 @@
  *                      decided what to do about the slot in the stone
  *              'storm' the open field a rabbit finishes in, once the warrens
  *                      are joined and it has decided about the storm shelter
+ *              'watch' the roost an owl settles in, once the lost are home and
+ *                      it has decided whether to keep the night watch
  * maps       the maps that can carry this body (see systems/life-route.js):
  *              'land' the forest road · 'water' the river · 'burrow' the soil
  *              under the great root · 'air' anywhere above the ground
@@ -170,10 +172,11 @@ export const FORMS = Object.freeze([
    * the same ids as src/prototypes/animal-catalog.js, so the main game and the
    * lab draw one body from one source. The earthworm (its burrow, game/burrow.js),
    * the ant (its nest, game/ant.js), the frog (the marsh, game/frog.js), the
-   * snake (the crevice, game/snake.js) and the rabbit (the field,
-   * game/rabbit.js) are born into the life cycle so far; the others stay
-   * `rebirth: false` until a chapter carries their body — the design's rule that
-   * no one is reborn somewhere their map cannot take them.
+   * snake (the crevice, game/snake.js), the rabbit (the field, game/rabbit.js)
+   * and the owl (the roost, game/owl.js) are born into the life cycle so far;
+   * the elephant and the tiger still stay `rebirth: false` until a chapter
+   * carries their body — the design's rule that no one is reborn somewhere their
+   * map cannot take them.
    */
   {
     id: 'worm',
@@ -269,7 +272,8 @@ export const FORMS = Object.freeze([
     vision: 120,
     waterBound: false,
     canSpeak: false,
-    rebirth: false,
+    rebirth: true,
+    lifeGoal: 'watch',
     maps: ['land', 'air'],
     abilities: { flying: true, climbing: false, small: false, nightVision: true },
   },

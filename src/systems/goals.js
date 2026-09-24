@@ -12,11 +12,12 @@ import { antGoal, deliverSeed } from '../game/ant.js';
 import { frogGoal, spawnAtBank } from '../game/frog.js';
 import { linkWater, snakeGoal } from '../game/snake.js';
 import { rabbitGoal, tendField } from '../game/rabbit.js';
+import { owlGoal, settleRoost } from '../game/owl.js';
 
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm']);
+const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch']);
 
 function nearestRiverPoint(target) {
   let best = RIVER[0];
@@ -51,6 +52,9 @@ function nearestRiverPoint(target) {
  *   storm  the rabbit's field: join the warrens, leap the washed rim, answer for
  *          the shelter, then finish in the open field — a relay with no clock
  *          (world/rooms.js#validateRabbitRoute proves only the leap)
+ *   watch  the owl's night: find the lost inside what the body can perceive,
+ *          then answer for the watch at the roost — no wall at all, only the
+ *          dark (systems/vision.js is the whole gate)
  */
 export function goalFor() {
   if (isWaterBound() || getForm().lifeGoal === 'water') {
@@ -65,14 +69,15 @@ export function goalFor() {
   if (lifeGoal === 'spawn') return frogGoal();
   if (lifeGoal === 'crevice') return snakeGoal();
   if (lifeGoal === 'storm') return rabbitGoal();
+  if (lifeGoal === 'watch') return owlGoal();
   return { x: TEMPLE.x, y: TEMPLE.y, r: LAND_GOAL_RADIUS, kind: 'land' };
 }
 
 /**
  * In life mode a water, burrow, nest or spawn life completes at its own goal. A
- * 'land' life is ended by its chapter, and a 'seed', 'inlet', 'spring', 'warren'
- * or 'shelter' marker only shows the body where its errand goes next — standing
- * there is not an ending.
+ * 'land' life is ended by its chapter, and a 'seed', 'inlet', 'spring', 'warren',
+ * 'shelter', 'lost' or 'roost' marker only shows the body where its errand goes
+ * next — standing there is not an ending.
  */
 export function updateLifeGoal() {
   if (state.mode !== MODE.WORLD) return;
@@ -87,6 +92,7 @@ export function updateLifeGoal() {
     if (goal.kind === 'spawn') spawnAtBank();
     if (goal.kind === 'link') linkWater();
     if (goal.kind === 'storm') tendField();
+    if (goal.kind === 'watch') settleRoost();
     emit(EVENTS.LIFE_COMPLETE, goal.kind);
   }
 }

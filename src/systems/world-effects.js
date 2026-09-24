@@ -19,6 +19,7 @@ export const WORLD_EFFECTS = Object.freeze({
   'nest-sheltered': { key: 'effect.nestSheltered', color: '#c9b7dd' },
   'water-opened': { key: 'effect.waterOpened', color: '#9fc6dd' },
   'water-linked': { key: 'effect.waterLinked', color: '#8fd0c4' },
+  'night-watched': { key: 'effect.nightWatched', color: '#cbd6ea' },
 });
 
 /** The effect store, created on demand so old saves need no migration. */

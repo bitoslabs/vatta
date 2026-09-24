@@ -14,10 +14,10 @@ export const CHAPTER_ANIMALS = [
   ['deer', 'dog', 'crane', 'snake'], ['turtle', 'dog', 'worm', 'ant'],
   ['monkey', 'butterfly', 'deer', 'rabbit'], ['dog', 'turtle', 'crane', 'frog'],
   ['butterfly', 'monkey', 'worm', 'snake'], ['crane', 'dog', 'turtle'],
-  ['turtle', 'deer', 'butterfly', 'frog'], ['dog', 'monkey', 'worm', 'ant'],
-  ['deer', 'butterfly', 'turtle', 'rabbit'], ['monkey', 'crane', 'dog', 'frog'],
+  ['turtle', 'deer', 'butterfly', 'frog'], ['dog', 'monkey', 'worm', 'ant', 'owl'],
+  ['deer', 'butterfly', 'turtle', 'rabbit'], ['monkey', 'crane', 'dog', 'frog', 'owl'],
   ['crane', 'turtle', 'butterfly', 'ant', 'snake'], ['butterfly', 'dog', 'deer'],
-  ['turtle', 'monkey', 'crane', 'snake'], ['deer', 'dog', 'butterfly', 'rabbit'],
+  ['turtle', 'monkey', 'crane', 'snake'], ['deer', 'dog', 'butterfly', 'rabbit', 'owl'],
 ];
 
 /** A body may only be offered for a chapter whose map carries it. */

@@ -25,6 +25,8 @@ import { isCarrying, nestSite, seedCarried } from '../game/ant.js';
 import { marshSite, waterOpened } from '../game/frog.js';
 import { creviceSite, isLinked } from '../game/snake.js';
 import { fieldSite, isSheltered, warrenIsConnected } from '../game/rabbit.js';
+import { nightWatched, owlFound, owlSite, perceivesLost } from '../game/owl.js';
+import { visionRadius } from '../systems/vision.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome } from '../systems/biome.js';
 import { getForm, isWaterBound } from '../systems/forms.js';
@@ -65,6 +67,7 @@ export function renderWorld() {
   drawMarsh(dawn);
   drawCrevice(dawn);
   drawField(dawn);
+  drawOwlNight(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -512,6 +515,62 @@ function drawField(dawn) {
   ctx.beginPath();
   ctx.ellipse(meadow.x, meadow.y, 96, 62, 0, 0, TAU);
   ctx.fill();
+}
+
+/**
+ * The night and the lost ones (docs/animal-lives-story.md ch.13): the roost, and
+ * the animals waiting in the dark — drawn only when the body wearing them can
+ * actually perceive them (systems/vision.js). This is the one place in the game
+ * where a form's eyes change what exists on screen.
+ */
+function drawOwlNight(dawn) {
+  if (getForm().lifeGoal !== 'watch') return;
+  const { roost, lost } = owlSite();
+  const radius = visionRadius(false);
+
+  // The roost tree stands whatever the light.
+  ctx.fillStyle = dawn ? '#4a3620' : '#241a10';
+  ctx.fillRect(roost.x - 9, roost.y - 120, 18, 120);
+  ctx.beginPath();
+  ctx.arc(roost.x, roost.y - 140, 62, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = dawn ? 'rgba(70,92,58,.9)' : 'rgba(30,44,28,.9)';
+  ctx.beginPath();
+  ctx.arc(roost.x - 24, roost.y - 152, 40, 0, TAU);
+  ctx.arc(roost.x + 26, roost.y - 148, 38, 0, TAU);
+  ctx.fill();
+  if (nightWatched()) {
+    ctx.strokeStyle = 'rgba(203,214,234,.25)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(roost.x, roost.y - 140, 78 + Math.sin(performance.now() * 0.002) * 3, 0, TAU);
+    ctx.stroke();
+  }
+
+  for (const animal of lost) {
+    const seen = perceivesLost(animal);
+    const found = owlFound(animal.id);
+    if (!seen && !found) continue;
+    const fade = found ? 0.45 : 1;
+    ctx.globalAlpha = fade;
+    // A small hunched body, and the eyes that give it away in the dark.
+    ctx.fillStyle = dawn ? '#7a6a52' : '#3a3324';
+    ctx.beginPath();
+    ctx.ellipse(animal.x, animal.y, 22, 15, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = dawn ? '#6b5c46' : '#2e2919';
+    ctx.beginPath();
+    ctx.arc(animal.x + 18, animal.y - 10, 10, 0, TAU);
+    ctx.fill();
+    if (!found) {
+      ctx.fillStyle = 'rgba(226,238,214,.85)';
+      ctx.beginPath();
+      ctx.arc(animal.x + 20, animal.y - 12, 2.6, 0, TAU);
+      ctx.arc(animal.x + 25, animal.y - 12, 2.6, 0, TAU);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
 }
 
 /** A bridge built in an earlier life, and the debris its upkeep left behind. */

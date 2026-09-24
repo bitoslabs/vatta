@@ -197,9 +197,9 @@ for (let i = 0; i < 140; i++) {
 }
 assert(sawWorm, 'the earthworm really is born during a long journey');
 
-// the lab-only bodies wait for their maps (the ant, frog, snake and rabbit left
-// this list as their nest, marsh, crevice and field arrived)
-for (const id of ['elephant', 'tiger', 'owl']) {
+// the lab-only bodies wait for their maps (the ant, frog, snake, rabbit and owl
+// left this list as their nest, marsh, crevice, field and night arrived)
+for (const id of ['elephant', 'tiger']) {
   assert.equal(isRebirthForm(FORMS.find((form) => form.id === id)), false, `${id} waits for its chapter`);
 }
 // and a motionless walker is still the fallback for every chapter

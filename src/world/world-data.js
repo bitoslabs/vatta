@@ -41,6 +41,35 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The roost and the lost ones (docs/animal-lives-story.md ch.13, "สิ่งที่กลางวัน
+ * ไม่เห็น").
+ *
+ * Nothing here is a wall: the owl flies. What the night hides is the *finding*.
+ * Each lost animal is only perceived inside the body's own vision radius
+ * (systems/vision.js), which is why the owl's night eyes are a rule and not a
+ * tint — and why `night-watched`, the effect of a life that kept watch, leaves
+ * every later body a little more light.
+ */
+export const OWL = Object.freeze({
+  roost: Object.freeze({ x: 2450, y: 2450 }),
+  lost: Object.freeze([
+    Object.freeze({ x: 800, y: 700, id: 'fawn' }),
+    Object.freeze({ x: 2500, y: 2760, id: 'lamb' }),
+    Object.freeze({ x: 3480, y: 620, id: 'hare' }),
+  ]),
+  roostRadius: 96,
+  lostRadius: 84,
+});
+
+/** Seeded dressing keeps off the roost tree and the places the lost ones wait. */
+export const OWL_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: 2450, y: 2450, r: 190 }),
+  Object.freeze({ x: 800, y: 700, r: 90 }),
+  Object.freeze({ x: 2500, y: 2760, r: 90 }),
+  Object.freeze({ x: 3480, y: 620, r: 90 }),
+]);
+
+/**
  * The field and its warrens (docs/animal-lives-story.md ch.10, "ที่หลบก่อนพายุ").
  *
  * A washed-out gully rings the far warren, so the only way in is a leap. The
@@ -286,6 +315,7 @@ export const TREES = (() => {
     if (distToPoly(CREVICE_APPROACH, x, y) < 84) continue;
     if (FIELD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (distToPoly(FIELD_APPROACH, x, y) < 84) continue;
+    if (OWL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }
