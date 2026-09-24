@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
 
 /*
- * The title screen's shell (UX pass): one panel, four small views.
+ * The title screen's shell (UX pass): one panel, five small views.
  *
  * The screen used to be a single column holding a tagline, four key hints, two
  * calls to action, fourteen chapter chips, three save chips, a name field and
  * seven link buttons — which overflowed the window on ordinary laptop heights and
  * gave every action the same visual weight. It is now เล่น / บท / บันทึก /
- * เครื่องมือ behind one scrolling body. This suite holds that structure to its
- * promises: tabs switch, the keyboard drives them, chapters read as numbered
- * choices, slots read as rows, and a tool row keeps its description when its
- * label changes.
+ * เครื่องมือ / เกี่ยวกับ behind one scrolling body. This suite holds that structure
+ * to its promises: tabs switch, the keyboard drives them, chapters read as numbered
+ * choices, slots read as rows, a tool row keeps its description when its label
+ * changes, and the About view is filled from one release source.
  */
 
 // ---- a small DOM: enough for $, class selectors, events and clicks ----
@@ -22,12 +22,15 @@ const tabs = new El('nav', { class: 'tabs', attributes: { id: 'titleTabs' } }, [
   new El('button', { class: 'tab', dataset: { tab: 'chapters' } }),
   new El('button', { class: 'tab', dataset: { tab: 'save' } }),
   new El('button', { class: 'tab', dataset: { tab: 'tools' } }),
+  new El('button', { class: 'tab', dataset: { tab: 'about' } }),
 ]);
+const PANES = ['play', 'chapters', 'save', 'tools', 'about'];
 const body = new El('div', { class: 'tab-body' }, [
   new El('section', { class: 'tab-pane is-active', dataset: { pane: 'play' } }),
   new El('section', { class: 'tab-pane', dataset: { pane: 'chapters' }, hidden: true }),
   new El('section', { class: 'tab-pane', dataset: { pane: 'save' }, hidden: true }),
   new El('section', { class: 'tab-pane', dataset: { pane: 'tools' }, hidden: true }),
+  new El('section', { class: 'tab-pane', dataset: { pane: 'about' }, hidden: true }),
 ]);
 const panel = new El('div', { class: 'panel panel--title' }, [tabs, body]);
 
@@ -56,6 +59,9 @@ const byId = {
   runNameInput,
   startBtn: new El('button', { attributes: { id: 'startBtn' } }),
   continueBtn: new El('button', { class: 'btn hidden', attributes: { id: 'continueBtn' } }),
+  aboutVersion: new El('span', { attributes: { id: 'aboutVersion' } }),
+  aboutRepo: new El('a', { attributes: { id: 'aboutRepo' } }),
+  aboutMaker: new El('a', { attributes: { id: 'aboutMaker' } }),
   codexBtn: toolRow('codexBtn', 'ไตรภูมิ 31', 'ดูภูมิทั้ง 31 และกรรมที่พาไป'),
   teacherBtn: toolRow('teacherBtn', 'โหมดครู: ปิด', 'โหมดสำหรับสอนในห้องเรียน'),
   projectorBtn: toolRow('projectorBtn', 'โหมดฉายภาพ: ปิด', 'ตัวอักษรและป้ายขนาดใหญ่'),
@@ -80,18 +86,21 @@ installDom({ byId, root: wrapper })
 const log = (message) => console.error(`[title] ${message}`);
 
 const title = await import('../src/ui/title-screen.js');
+const about = await import('../src/ui/about.js');
 const teacherPanel = await import('../src/ui/teacher-panel.js');
 const { isTeacher, toggleTeacher } = await import('../src/systems/teacher.js');
 const save = await import('../src/systems/save.js');
 const { CHAPTERS } = await import('../src/game/chapters.js');
+const { APP } = await import('../src/core/app-meta.js');
 
 title.initTitleScreen();
+about.initAbout();
 
-// ---- 1. the screen is four views, and Play is the one you land on ----
-assert.equal(tabs.children.length, 4, 'four tabs');
+// ---- 1. the screen is five views, and Play is the one you land on ----
+assert.equal(tabs.children.length, 5, 'five tabs');
 const paneOf = (name) => body.children.find((pane) => pane.dataset.pane === name);
 assert.equal(paneOf('play').hidden, false, 'Play is open first');
-for (const name of ['chapters', 'save', 'tools', 'play']) {
+for (const name of PANES) {
   if (name !== 'play') assert.equal(paneOf(name).hidden, true, `${name} starts closed`);
 }
 assert.equal(paneOf('play').classes.has('is-active'), true, 'and is marked active');
@@ -103,7 +112,7 @@ for (const [tab, name] of tabs.children.map((tab) => [tab, tab.dataset.tab])) {
   assert.equal(tab.classes.has('is-active'), true, `${name} becomes active`);
   assert.equal(tab.getAttribute('aria-selected'), 'true', `${name} says so to a screen reader`);
   assert.equal(paneOf(name).hidden, false, `${name}'s view shows`);
-  for (const other of ['play', 'chapters', 'save', 'tools']) {
+  for (const other of PANES) {
     if (other === name) continue;
     assert.equal(paneOf(other).hidden, true, `${other} hides while ${name} is open`);
   }
@@ -118,9 +127,17 @@ assert.equal(globalThis.__focused, tabs.children[1], 'and takes the focus with i
 tabs.children[1].dispatch('keydown', { key: 'ArrowLeft' });
 assert.equal(paneOf('play').hidden, false, 'ArrowLeft comes back');
 tabs.children[0].dispatch('keydown', { key: 'ArrowLeft' });
-assert.equal(paneOf('tools').hidden, false, 'and from the first it wraps to the last');
+assert.equal(paneOf('about').hidden, false, 'and from the first it wraps to the last');
 tabs.children[0].click();
 log('keyboard ok');
+
+// ---- 3b. the About view is filled from one release source ----
+assert.equal(byId.aboutVersion.textContent, APP.version, 'the version comes from app-meta');
+assert.equal(byId.aboutRepo.href, APP.repo, 'the source link comes from app-meta');
+assert.equal(byId.aboutMaker.href, APP.maker, 'the maker link comes from app-meta');
+assert(APP.repo.includes('github.com/bitoslabs/vatta'), 'the repo points at the Vatta project');
+assert(APP.maker.includes('bitos.space'), 'the maker points at bits.space');
+log('about ok');
 
 // ---- 4. chapters read as numbered choices, and the saved one is marked ----
 assert.equal(chapterSelect.children.length, CHAPTERS.length, 'every chapter has a button');
@@ -185,12 +202,26 @@ log('tool rows ok');
 // ---- 6. every id the screen reaches for exists in index.html ----
 const fs = await import('node:fs');
 const html = fs.readFileSync('index.html', 'utf8');
-for (const id of ['titleScreen', 'titleTabs', 'chapterSelect', 'saveSlots', 'runNameInput', 'continueBtn', 'startBtn', 'codexBtn', 'teacherBtn', 'projectorBtn', 'recapBtn', 'worksheetBtn', 'lifeBtn', 'exploreBtn']) {
+for (const id of ['titleScreen', 'titleTabs', 'chapterSelect', 'saveSlots', 'runNameInput', 'continueBtn', 'startBtn', 'codexBtn', 'teacherBtn', 'projectorBtn', 'recapBtn', 'worksheetBtn', 'lifeBtn', 'exploreBtn', 'aboutVersion', 'aboutRepo', 'aboutMaker']) {
   assert(html.includes(`id="${id}"`), `index.html still has #${id}`);
 }
-for (const needle of ['data-pane="play"', 'data-pane="chapters"', 'data-pane="save"', 'data-pane="tools"', 'class="tab-body"', 'chapter-list--grid', 'slot-list', 'tool-list']) {
+for (const needle of ['data-pane="play"', 'data-pane="chapters"', 'data-pane="save"', 'data-pane="tools"', 'data-pane="about"', 'class="tab-body"', 'chapter-list--grid', 'slot-list', 'tool-list']) {
   assert(html.includes(needle), `index.html has ${needle}`);
 }
-log('markup ok');
 
-console.error('TITLE TEST OK — four views in one scrolling panel, keyboard tabs, numbered chapters, slot rows and intact tool descriptions');
+// ---- 7. the Lao locale and the Vatta name are wired in ----
+for (const css of ['https://fonts.mts.la/fonts/lao-buhan/lao-buhan.css', 'https://fonts.mts.la/fonts/kom/kom.css']) {
+  assert(html.includes(css), `index.html links ${css}`);
+}
+const baseCss = fs.readFileSync('src/styles/base.css', 'utf8');
+assert(baseCss.includes("html[lang='lo']"), 'the Lao font stack is scoped to html[lang=\'lo\']');
+assert(baseCss.includes("'Lao_Buhan'"), 'Lao headings use Lao_Buhan');
+assert(baseCss.includes("'Kom'"), 'Lao body text uses Kom');
+
+const { locales } = await import('../src/locales/index.js');
+assert.equal(locales.th.strings['title.name'], 'วัฏฏะ', 'Thai name is วัฏฏะ');
+assert.equal(locales.lo.strings['title.name'], 'ວັດຕະ', 'Lao name is ວັດຕະ');
+assert.equal(locales.en.strings['title.name'], 'Vatta', 'English name is Vatta');
+log('markup + name + fonts ok');
+
+console.error('TITLE TEST OK — five views in one scrolling panel, keyboard tabs, numbered chapters, slot rows, an About page and the Vatta name/fonts');

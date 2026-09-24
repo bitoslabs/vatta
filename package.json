@@ -1,9 +1,14 @@
 {
-  "name": "vimutti-forest-call",
+  "name": "vatta",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "วิมุตติ — ป่าเสียงเรียก · a 2D contemplative game prototype (Thai / Lao / English)",
+  "description": "วัฏฏะ (Vatta) — ป่าเสียงเรียก · a 2D contemplative game prototype (Thai / Lao / English) · built by https://bitos.space/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bitoslabs/vatta.git"
+  },
+  "homepage": "https://bitos.space/",
   "scripts": {
     "start": "npx --yes serve . -l 5173",
     "serve:py": "python3 -m http.server 5173",

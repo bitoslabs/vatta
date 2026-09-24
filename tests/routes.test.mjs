@@ -136,4 +136,66 @@ for (const foot of woefulFoot) {
 }
 log('footprints ok');
 
+// ---- 7. what belongs to the road is carried onto this life's road ----
+const { anchoredPoint, nearestOnRoute } = await import('../src/world/world-data.js');
+const { state } = await import('../src/core/state.js');
+
+// in the forest, nothing moves
+assert.deepEqual(anchoredPoint('memory-forest', 2000, 1290), { x: 2000, y: 1290 }, 'the forest keeps its own points exactly');
+assert.deepEqual(anchoredPoint(undefined, 10, 20), { x: 10, y: 20 }, 'and so does a life with no plane of its own');
+
+// elsewhere the point lands on that plane's road — and a place that is *on* the
+// forest road is somewhere else entirely in the other worlds
+const forestOnRoad = PATH[3];
+for (const plane of planes) {
+  if (plane === 'memory-forest') continue;
+  const spot = anchoredPoint(plane, forestOnRoad[0], forestOnRoad[1]);
+  assert(distToPoly(ROUTES[plane], spot.x, spot.y) < 1, `${plane}: the anchored point is on the road`);
+  // (Some worlds' roads happen to pass near the forest's; what matters is that
+  // the point is carried onto *this* world's road, not that it is far away.)
+  assert(
+    dist(spot.x, spot.y, forestOnRoad[0], forestOnRoad[1]) > 30,
+    `${plane}: a place on the forest road is elsewhere in this world`,
+  );
+}
+// projecting past an end stops at the end
+const start = ROUTES['asura-city'][0];
+const before = nearestOnRoute('asura-city', start[0] - 900, start[1] - 900);
+assert(dist(before.x, before.y, start[0], start[1]) < 1, 'a point beyond the start clamps to the start');
+
+// the lures of a greedy life walk the plane's own road
+state.formId = 'asura';
+state.realmId = 'manussa';
+const { getLures, resetLures, takeLure } = await import('../src/game/lures.js');
+resetLures();
+const asuraLures = getLures();
+assert.equal(asuraLures.length, 5, 'five lures');
+for (const lure of asuraLures) {
+  assert(distToPoly(ROUTES['asura-city'], lure.x, lure.y) < 1, 'every lure is on the city road');
+}
+// and taking one still works: the plane sync keeps the lure identity
+takeLure(asuraLures[0]);
+assert.equal(getLures()[0].taken, true, 'taking a lure sticks across a plane sync');
+resetLures();
+
+// the guardian and the roadside beings stand on the plane's road too
+const { guardianSpot, GUARDIAN } = await import('../src/game/npc.js');
+const { encountersHere } = await import('../src/game/npc-encounters.js');
+const asuraGuardian = guardianSpot();
+assert(distToPoly(ROUTES['asura-city'], asuraGuardian.x, asuraGuardian.y) < 1, 'the guardian stands on the city road');
+state.formId = 'human';
+const forestGuardian = guardianSpot();
+assert.deepEqual(
+  { x: forestGuardian.x, y: forestGuardian.y },
+  { x: GUARDIAN.x, y: GUARDIAN.y },
+  'and on exactly its old spot in the forest',
+);
+state.formId = 'asura';
+const siteIds = new Set(['asura-bridge', 'garden-bloom', 'market-stall', 'river-weir']);
+for (const being of encountersHere()) {
+  const onRoad = distToPoly(ROUTES['asura-city'], being.x, being.y) < 1;
+  assert(onRoad || siteIds.has(being.id), `${being.id} stands on the road (or at a place of its own)`);
+}
+log('anchored points ok');
+
 console.error('ROUTES TEST OK — every plane lays its own road, same gate and same sala, and no trunk or dressing covers it');

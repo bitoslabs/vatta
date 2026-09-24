@@ -24,6 +24,16 @@
   --overlay-deep: rgba(4, 9, 6, 0.82);
 }
 
+/* ---------- Lao faces (lo) ----------
+ * The Lao locale swaps both stacks: Lao_Buhan for display (headings) and Kom
+ * for body text. The stylesheets live at fonts.mts.la and are linked from
+ * index.html; `html[lang]` is set by systems/i18n.js on every locale change.
+ */
+html[lang='lo'] {
+  --font-display: 'Lao_Buhan', 'Charm', 'Noto Serif Lao', 'Souvenir', serif;
+  --font-body: 'Kom', 'Bai Jamjuree', 'Noto Sans Lao', 'Thonburi', sans-serif;
+}
+
 /* ---------- Reset ---------- */
 * {
   margin: 0;

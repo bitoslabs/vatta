@@ -8,13 +8,27 @@ import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
 import { currentBiomeId } from '../systems/biome.js';
+import { anchoredPoint } from '../world/world-data.js';
+
+/**
+ * Beings that stand at a place of their own plane (design §7's signature sites)
+ * keep their coordinates; the rest belong to the road and are carried onto
+ * whichever road this life walks (world-data.js#anchoredPoint).
+ */
+const SITE_BEINGS = new Set(['asura-bridge', 'garden-bloom', 'market-stall', 'river-weir']);
 import { animatePlayer, player } from '../entities/player.js';
 import { choose } from '../ui/choices.js';
 
-/** Only the beings whose plane this is (design §7). */
+/** Only the beings whose plane this is, standing beside this plane's road. */
 export function encountersHere() {
   const biome = currentBiomeId();
-  return ENCOUNTERS.filter((encounter) => !encounter.biome || encounter.biome === biome);
+  return ENCOUNTERS
+    .filter((encounter) => !encounter.biome || encounter.biome === biome)
+    .map((encounter) => {
+      if (SITE_BEINGS.has(encounter.id)) return encounter;
+      const spot = anchoredPoint(biome, encounter.x, encounter.y);
+      return { ...encounter, x: spot.x, y: spot.y };
+    });
 }
 
 /** The encounter the walker is standing beside, or null. */

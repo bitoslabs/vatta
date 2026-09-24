@@ -3,12 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="description" content="วิมุตติ — ป่าเสียงเรียก · a contemplative 2D prototype">
-  <title>วิมุตติ — ป่าเสียงเรียก</title>
+  <meta name="description" content="วัฏฏะ — ป่าเสียงเรียก · a contemplative 2D prototype">
+  <title>วัฏฏะ — ป่าเสียงเรียก</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=Bai+Jamjuree:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Lao (lo) faces: Lao_Buhan for headings, Kom for body text -->
+  <link rel="preconnect" href="https://fonts.mts.la" crossorigin>
+  <link rel="stylesheet" href="https://fonts.mts.la/fonts/lao-buhan/lao-buhan.css">
+  <link rel="stylesheet" href="https://fonts.mts.la/fonts/kom/kom.css">
   <link rel="stylesheet" href="./src/styles/main.css">
 </head>
 <body>
@@ -50,7 +54,7 @@
   <div id="titleScreen">
     <div class="panel panel--title">
       <header class="title-head">
-        <h1 data-i18n="title.name">วิมุตติ</h1>
+        <h1 data-i18n="title.name">วัฏฏะ</h1>
         <h2 data-i18n="title.subtitle">ป่าเสียงเรียก — บทปฐม</h2>
       </header>
 
@@ -59,6 +63,7 @@
         <button type="button" class="tab" role="tab" aria-selected="false" data-tab="chapters" data-i18n="title.tab.chapters">บท</button>
         <button type="button" class="tab" role="tab" aria-selected="false" data-tab="save" data-i18n="title.tab.save">บันทึก</button>
         <button type="button" class="tab" role="tab" aria-selected="false" data-tab="tools" data-i18n="title.tab.tools">เครื่องมือ</button>
+        <button type="button" class="tab" role="tab" aria-selected="false" data-tab="about" data-i18n="title.tab.about">เกี่ยวกับ</button>
       </nav>
 
       <div class="tab-body">
@@ -124,6 +129,25 @@
               <span class="tool-name" data-i18n="projector.toggle.off">โหมดฉายภาพ: ปิด</span>
               <span class="tool-sub" data-i18n="title.tool.projector">ตัวอักษรและป้ายขนาดใหญ่</span>
             </button>
+          </div>
+        </section>
+
+        <section class="tab-pane" role="tabpanel" data-pane="about" hidden>
+          <div class="about">
+            <div class="about-name" data-i18n="about.name">วัฏฏะ · Vatta</div>
+            <div class="about-row">
+              <span class="about-label" data-i18n="about.version">เวอร์ชัน</span>
+              <span class="about-value" id="aboutVersion">1.0.0</span>
+            </div>
+            <div class="about-row">
+              <span class="about-label" data-i18n="about.source">ซอร์สโค้ด</span>
+              <a class="about-value about-link" id="aboutRepo" href="https://github.com/bitoslabs/vatta" target="_blank" rel="noopener noreferrer">github.com/bitoslabs/vatta</a>
+            </div>
+            <div class="about-row">
+              <span class="about-label" data-i18n="about.maker">สร้างโดย</span>
+              <a class="about-value about-link" id="aboutMaker" href="https://bitos.space/" target="_blank" rel="noopener noreferrer">bitos.space</a>
+            </div>
+            <p class="about-note" data-i18n="about.note">วัฏฏะคือวงล้อแห่งการเวียนว่าย — เกมนี้เป็นสื่อเรียนรู้ ไม่ใช่คำตัดสิน</p>
           </div>
         </section>
       </div>

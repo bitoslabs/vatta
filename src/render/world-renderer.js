@@ -37,7 +37,7 @@ import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome, currentBiomeId } from '../systems/biome.js';
 import { getForm, isWaterBound } from '../systems/forms.js';
 import { goalFor } from '../systems/goals.js';
-import { GUARDIAN } from '../game/npc.js';
+import { guardianSpot } from '../game/npc.js';
 import { ENCOUNTERS } from '../content/encounters.js';
 
 /**
@@ -105,7 +105,8 @@ export function renderWorld() {
   drawSparks();
   drawLures();
   drawLifeGoal();
-  drawGuardian(GUARDIAN.x, GUARDIAN.y);
+  const guardian = guardianSpot();
+  drawGuardian(guardian.x, guardian.y);
   for (const encounter of ENCOUNTERS) drawEncounter(encounter.x, encounter.y, encounter.kind);
   drawEntities(dawn);
   drawTeacherOverlay();

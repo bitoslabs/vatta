@@ -73,6 +73,44 @@ export function routeForPlane(biomeId) {
   return ROUTES[biomeId] || PATH;
 }
 
+/** The point on this plane's road closest to (x, y). */
+export function nearestOnRoute(biomeId, x, y) {
+  const route = routeForPlane(biomeId);
+  let best = { x: route[0][0], y: route[0][1] };
+  let bestDist = Infinity;
+  for (let i = 0; i < route.length - 1; i++) {
+    const [ax, ay] = route[i];
+    const [bx, by] = route[i + 1];
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len2 = (dx * dx) + (dy * dy) || 1;
+    const t = Math.max(0, Math.min(1, (((x - ax) * dx) + ((y - ay) * dy)) / len2));
+    const px = ax + dx * t;
+    const py = ay + dy * t;
+    const d = Math.hypot(x - px, y - py);
+    if (d < bestDist) {
+      bestDist = d;
+      best = { x: px, y: py };
+    }
+  }
+  return best;
+}
+
+/**
+ * Carry a point that belongs beside the *forest* road onto this plane's road.
+ *
+ * The temple, the gate and the sala stand in every plane, so a chapter can start
+ * anywhere it likes; but a lure, a roadside being or the guardian belongs to the
+ * road itself (design §7). In the forest this is the identity; elsewhere the
+ * point is carried to the nearest place on that plane's road, so a life born in
+ * the asura city still meets them along *its* streets instead of on a forest
+ * path that does not exist there.
+ */
+export function anchoredPoint(biomeId, x, y) {
+  if (!biomeId || biomeId === 'memory-forest') return { x, y };
+  return nearestOnRoute(biomeId, x, y);
+}
+
 /** A winding river, crossed by the true path; fish lives are bound to it. */
 export const RIVER = [
   [1520, 3000], [1420, 2430], [1620, 1930], [1310, 1420],

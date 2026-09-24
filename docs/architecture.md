@@ -1,6 +1,8 @@
 # สถาปัตยกรรม / Architecture
 
-> วิมุตติ — ป่าเสียงเรียก · 2D contemplative game (ES modules, ไม่มี build step)
+> วัฏฏะ (Vatta) — ป่าเสียงเรียก · 2D contemplative game (ES modules, ไม่มี build step)
+>
+> ชื่อเกมเดิม "วิมุตติ" เปลี่ยนเป็น "วัฏฏะ / ວັດຕະ / Vatta" · รุ่น แหล่งโค้ด และผู้สร้าง ดู [about.md](./about.md)
 
 ## 1. หลักการ
 
@@ -20,6 +22,7 @@ src/
 ├── main.js                composition root: import → bootstrap → loop
 ├── core/                  รากฐานที่ไม่ผูกกับฉาก
 │   ├── constants.js       MODE, WORLD, TEMPLE, SALA, PLAYER, GHOST, FEAR, INTERACT
+│   ├── app-meta.js        ชื่อเกม · รุ่น · GitHub · ผู้สร้าง (แหล่งเดียวของแท็บ About)
 │   ├── math.js            clamp, lerp, dist, distSeg, distToPoly
 │   ├── rng.js             mulberry32 (world generation คงที่ทุก reload)
 │   ├── events.js          pub/sub + EVENTS (สัญญาระหว่างโมดูล)
@@ -78,6 +81,7 @@ src/
 │   ├── choices.js         choose/pick/reset
 │   ├── hud.js             fear/anger meter + สติ + บุญ–บาป
 │   ├── title-screen.js    เริ่มบท + เลือกบท
+│   ├── about.js           เติมแท็บ About จาก core/app-meta.js
 │   ├── end-screen.js      สรุปบท + คติภูมิ (rebirth)
 │   ├── codex.js           ธรรมะโคเด็กซ์: กรรม + ภูมิ 31
 │   ├── rebirth-interlude.js  การ์ดจุติ–ปฏิสนธิเมื่อตาย
@@ -195,7 +199,7 @@ npm start          # หรือ npm run serve:py
 ```
 
 - `npm test` — canonical suites ใน `tests/` (life-transition + burrow + ant + frog + snake + rabbit + owl + elephant + tiger + gecko + title + settings + routes)
-- roads per plane (§7): `ROUTES` ให้แต่ละภพมีถนนของตัวเอง (เริ่มประตูวัด จบศาลา) · ของประดับ/ตัวตรวจ/"อยู่บนทาง"/รอยเท้า/วัสดุถนน ล้วนอ้างถนนของภพนั้น · `tests/routes.test.mjs`
+- roads per plane (§7): `ROUTES` ให้แต่ละภพมีถนนของตัวเอง (เริ่มประตูวัด จบศาลา) · ของประดับ/ตัวตรวจ/"อยู่บนทาง"/รอยเท้า/วัสดุถนน ล้วนอ้างถนนของภพนั้น · **`anchoredPoint(biomeId,x,y)`** พา "สิ่งที่อยู่ข้างถนนป่า" (เหยื่อล่อ · ธรรมบาล · ป้ายข้างทาง) ไปยืนบนถนนของภพนั้น (ในป่าเป็น identity) ส่วนจุดประจำภพคงที่ · `tests/routes.test.mjs`
 - help & settings (**H**): ปุ่มทั้งหมด + เสียง + ตัวอักษรใหญ่ + ข้อมูลรอบ + ลบเซฟ (ถามยืนยัน) · `ui/confirm.js` เป็นไดอะล็อกกลางที่กันการกดพลาด และปุ่ม "เริ่มภาวนา" ใช้มันก่อนทับเซฟเดิม · บรรทัด `#runReadout` บน HUD บอกช่อง/บท/ชื่อรอบ (`ui/settings.js`, `systems/settings.js`, `ui/confirm.js`)
 - `tests/helpers/dom.mjs`: DOM ขนาดเล็กที่ใช้ร่วมกันในชุดทดสอบหน้าจอ (class selector, คลิก/คีย์, `documentElement` สำหรับการตั้งค่าการแสดงผล)
 - title screen: **four views in one scrolling panel** (เล่น/บท/บันทึก/เครื่องมือ) แทนกำแพงปุ่ม · แท็บใช้คีย์บอร์ด ←→ ได้ และมี `role=tab|tabpanel` · `tests/title.test.mjs` ตรวจการสลับแท็บ เลขบท มาร์กบทของเซฟ แถวช่องบันทึก และการที่คำอธิบายเครื่องมือไม่หายเมื่อสลับป้าย (`ui/title-screen.js`, `ui/save-slots.js`, `styles/screens.css`)

@@ -8,6 +8,7 @@ import { initSettings } from './systems/settings.js';
 import { initProjector } from './systems/projector.js';
 import { initInput } from './systems/input.js';
 import { initViewport } from './systems/viewport.js';
+import { initAbout } from './ui/about.js';
 import { initChoices } from './ui/choices.js';
 import { initCodex } from './ui/codex.js';
 import { initDialogue } from './ui/dialogue.js';
@@ -44,6 +45,7 @@ function bootstrap() {
   initMeditation();
   initStory();
   initTitleScreen();
+  initAbout();
   initSettingsScreen();
   initEndScreen();
   initLanguageSwitcher();
