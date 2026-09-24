@@ -258,6 +258,113 @@ export function drawTourMarker(x, y) {
   ctx.stroke();
 }
 
+/** Roadside beings of design §6, drawn from a small shared kit. */
+export function drawEncounter(x, y, kind) {
+  const now = performance.now() * 0.001;
+  if (kind === 'peta') return drawPeta(x, y);
+
+  const palettes = {
+    nymph: { robe: '#5d6a86', head: '#e3d3b4', glow: 'rgba(210,220,255,.18)' },
+    mara: { robe: '#3a2f3f', head: '#b9a89c', glow: 'rgba(180,140,150,.16)' },
+    naga: { robe: '#245040', head: '#9fd0b4', glow: 'rgba(120,220,180,.16)' },
+    garuda: { robe: '#6b4426', head: '#e0b070', glow: 'rgba(255,190,120,.16)' },
+    keeper: { robe: '#4a4f4c', head: '#eef2ee', glow: 'rgba(230,240,235,.2)' },
+  };
+  const palette = palettes[kind] || palettes.keeper;
+
+  ctx.fillStyle = 'rgba(0,0,0,.4)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + 14, 16, 5, 0, 0, TAU);
+  ctx.fill();
+
+  ctx.fillStyle = palette.glow;
+  ctx.beginPath();
+  ctx.arc(x, y - 12, 28 + Math.sin(now * 1.6) * 2, 0, TAU);
+  ctx.fill();
+
+  if (kind === 'naga') {
+    // A serpent coil.
+    ctx.strokeStyle = palette.robe;
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 4, 22, 9, 0, 0, TAU);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - 14, y + 4);
+    ctx.quadraticCurveTo(x - 10, y - 34, x + 2, y - 40);
+    ctx.stroke();
+    ctx.fillStyle = palette.head;
+    ctx.beginPath();
+    ctx.arc(x + 4, y - 44, 8, 0, TAU);
+    ctx.fill();
+  } else if (kind === 'garuda') {
+    ctx.fillStyle = palette.robe;
+    ctx.beginPath();
+    ctx.moveTo(x - 10, y + 12);
+    ctx.quadraticCurveTo(x - 12, y - 26, x, y - 30);
+    ctx.quadraticCurveTo(x + 12, y - 26, x + 10, y + 12);
+    ctx.closePath();
+    ctx.fill();
+    const flap = Math.sin(now * 3) * 6;
+    ctx.beginPath();
+    ctx.moveTo(x - 8, y - 22);
+    ctx.quadraticCurveTo(x - 40, y - 30 - flap, x - 46, y + 4);
+    ctx.quadraticCurveTo(x - 26, y - 2, x - 8, y - 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y - 22);
+    ctx.quadraticCurveTo(x + 40, y - 30 + flap, x + 46, y + 4);
+    ctx.quadraticCurveTo(x + 26, y - 2, x + 8, y - 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.head;
+    ctx.beginPath();
+    ctx.arc(x, y - 38, 8, 0, TAU);
+    ctx.fill();
+  } else {
+    // Robed figures: nymph, māra, keeper.
+    ctx.fillStyle = palette.robe;
+    ctx.beginPath();
+    ctx.moveTo(x - 13, y + 12);
+    ctx.quadraticCurveTo(x - 15, y - 24, x, y - 30);
+    ctx.quadraticCurveTo(x + 15, y - 24, x + 13, y + 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.head;
+    ctx.beginPath();
+    ctx.arc(x, y - 38, 8, 0, TAU);
+    ctx.fill();
+    if (kind === 'nymph') {
+      // Rings of sound.
+      ctx.strokeStyle = 'rgba(220,225,255,.35)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.arc(x, y - 20, 18 + i * 9 + Math.sin(now * 2 + i) * 2, 0, TAU);
+        ctx.stroke();
+      }
+    } else if (kind === 'mara') {
+      // A hanging set of scales.
+      ctx.strokeStyle = 'rgba(220,200,190,.5)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(x + 16, y - 30);
+      ctx.lineTo(x + 16, y - 8);
+      ctx.moveTo(x + 6, y - 26);
+      ctx.lineTo(x + 26, y - 26);
+      ctx.stroke();
+    } else {
+      // A still halo.
+      ctx.strokeStyle = 'rgba(235,245,240,.4)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(x, y - 44, 14, 0, TAU);
+      ctx.stroke();
+    }
+  }
+}
+
 /** เปรตแห่งภาชนะรั่ว: a tall grey-violet figure holding a cracked bowl. */
 export function drawPeta(x, y) {
   const now = performance.now() * 0.001;

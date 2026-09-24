@@ -16,7 +16,7 @@ import { inSafeZone, player, updatePlayer } from '../entities/player.js';
 import { cam } from './camera.js';
 import { updateEchoes } from './echoes.js';
 import { updateGuardian } from './npc.js';
-import { updatePeta } from './npc-peta.js';
+import { updateEncounters } from './npc-encounters.js';
 import { updateWorldMemory } from './world-memory.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
@@ -51,7 +51,7 @@ export function updateWorld(dt) {
   clearBouldersForStrongForms();
   updateLifeGoal();
   updateGuardian();
-  updatePeta();
+  updateEncounters();
   updateWorldMemory();
   updateEchoes();
   updateCamera(dt);
