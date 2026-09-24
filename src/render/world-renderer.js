@@ -83,6 +83,10 @@ export function renderWorld() {
     // Cold steel for the dividing spirit.
     ctx.fillStyle = 'rgba(45,55,75,.07)';
     ctx.fillRect(0, 0, W, H);
+  } else if (state.chapter === 13) {
+    // Ash-grey closing veil for the Part Two finale.
+    ctx.fillStyle = 'rgba(60,55,70,.08)';
+    ctx.fillRect(0, 0, W, H);
   }
   drawFog();
   drawFloaters();

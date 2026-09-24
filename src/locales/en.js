@@ -380,6 +380,26 @@ export default {
     'teacher.note.sala': 'The sala is a place of rest and practice — look first: is the mind truly calm, or merely pausing?',
     'teacher.note.gate': 'False light gates appear when fear is high — the more afraid, the clearer the false road.',
     'teacher.note.guardian': 'The guardian does not judge — it only reflects what the walker has done.',
+
+    'chapter13.name': 'All the Shadows',
+    'chapter13.subtitle': 'Chapter Thirteen — Part Two · Finale',
+    'hud.allshadows': 'A L L  S H A D O W S',
+    'ch13.toast.start.title': 'All the Shadows',
+    'ch13.toast.start.sub': 'Chapter Thirteen — Part Two finale',
+    'ch13.toast.release.title': 'The whole swarm thins',
+    'ch13.toast.release.sub': 'Not by fighting, but by seeing from a distance',
+    'ch13.pair': 'All the shadows you have left: {a} · {b}',
+    'ch13.floater.split': 'Pressed up close… it divides into {n}',
+    'ch13.floater.grown': 'Repetition {reps} — the whole swarm grows',
+    'ch13.floater.seen': 'Seen in time… the swarm shrinks',
+    'ch13.floater.blocked': 'The swarm has not thinned — step far away, then hold SPACE',
+    'ch13.choice.hold': '"I have seen it, but I must still hold it down"',
+    'ch13.choice.see': '"I see the whole swarm from afar — no pressing, no fighting"',
+    'ch13.choice.unsure': '"I am not sure…"',
+    'ch13.end.title': 'Part Two Complete',
+    'ch13.end.name': 'All the Shadows',
+    'ch13.end.lesson': '<span style="color:#d9c58c">Every mechanic learned</span> — the shadow is tendency, the pair is one root, pressing multiplies, repetition feeds it.<br><br><span style="color:#d9c58c">Seeing from a distance</span> — when the whole swarm is seen clearly, nothing is left to press, fight or flee.',
+    'ch13.end.stats': 'Repeated {reps} times · Swallowed {caught} times<br>Total practice time {time}',
   },
 
   lists: {
@@ -478,6 +498,17 @@ export default {
       'Pressing multiplies it… step back first',
       'Seeing it from a distance…',
       'The whole swarm thins together',
+    ],
+
+    'hud.mind.allshadows': [
+      'Seeing the whole swarm… step back first',
+      'Seeing it from a distance… the swarm thins',
+      'No pressing, no fighting — seeing is enough',
+    ],
+    'ch13.question': [
+      '"This swarm is me"',
+      '"This swarm is what I have gathered, and it can cease"',
+      '"I do not know"',
     ],
   },
 
@@ -823,6 +854,34 @@ export default {
     ],
     'ch12.answerCool': [
       { who: 'The swarm', text: 'Being unsure is all right… but remember: every time you press, one more of us appears.' },
+    ],
+
+    'ch13.intro': [
+      { who: '', text: 'The last night of Part Two. Every shadow you have met returns together — the pair, the swarm, and the one that grew with repetition.' },
+      { who: '', text: 'Press it close and it divides; repeat and it grows; fight and its number increases.' },
+      { who: '', text: 'Only one way remains, the one you have already learned: step far away, hold SPACE, and see the whole swarm from a distance.' },
+    ],
+    'ch13.release': [
+      { who: '', text: 'The whole swarm faded at once — not because it was pressed, but because there was nothing left to press.' },
+    ],
+    'ch13.arrive.clear': [
+      { who: 'Elder Monk', text: 'You return light… the kamma you gathered did not drive you; it taught you.' },
+      { who: 'Elder Monk', text: 'Part Two ends here — you have seen that all the shadows arise from one mind.' },
+    ],
+    'ch13.arrive.heavy': [
+      { who: 'Elder Monk', text: 'You have returned… yet what you carry is still heavy. You heard the teachings, but have not set them down.' },
+      { who: 'Elder Monk', text: 'It is all right — the wheel turns on, but you know the way now. Keep walking.' },
+    ],
+    'ch13.answerCold': [
+      { who: '', text: 'We answered, "it must be held down" — and the swarm gathered again in the dark.' },
+      { who: 'The swarm', text: 'We never left, because you always have a hand clenched.' },
+    ],
+    'ch13.answerWarm': [
+      { who: '', text: 'We saw the whole swarm from a distance — no pressing, no fighting — and it thinned, all of it.' },
+      { who: '', text: 'What we once took for many enemies was truly one mind, not yet seen.' },
+    ],
+    'ch13.answerCool': [
+      { who: 'The swarm', text: 'Being unsure is all right… we will wait here until you truly see.' },
     ],
   },
 };
