@@ -47,9 +47,19 @@ export function initAudio() {
   source.start();
 }
 
-export function toggleMute() {
-  muted = !muted;
+export function isMuted() {
+  return muted;
+}
+
+/** Set the mute state directly (the settings screen shows it as a switch). */
+export function setMuted(on) {
+  muted = Boolean(on);
   if (master) master.gain.value = muted ? 0 : 0.9;
+  return muted;
+}
+
+export function toggleMute() {
+  return setMuted(!muted);
 }
 
 /** Percussive attack / exponential release envelope. */

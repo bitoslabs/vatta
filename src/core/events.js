@@ -47,6 +47,10 @@ export const EVENTS = Object.freeze({
   PROJECTOR_KEY: 'projector:key',
   /** Payload: whether projector mode is now on. */
   PROJECTOR_TOGGLE: 'projector:toggle',
+  /** Payload: the H key was pressed (request to open help & settings). */
+  HELP_KEY: 'help:key',
+  /** Payload: { largeType } after a display setting changed. */
+  SETTINGS_CHANGED: 'settings:changed',
   /** Payload: the new form id (see content/forms.js). */
   FORM_CHANGED: 'form:changed',
   /** Payload: the goal kind ('water' | 'land' | 'burrow') when a life's goal is reached. */

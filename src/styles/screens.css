@@ -694,3 +694,185 @@ html.projector .run-name-input {
   color: var(--ink-faint);
   letter-spacing: 0.04em;
 }
+
+/* ---------- Help & settings ---------- */
+#settingsOverlay,
+#confirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px 20px;
+  background: var(--overlay-deep);
+}
+
+#confirmOverlay {
+  z-index: 90;
+}
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(94vw, 620px);
+  max-height: min(88vh, 760px);
+  border: 1px solid var(--line);
+  background: var(--panel-bg);
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--gold-bright);
+  letter-spacing: 0.06em;
+}
+
+.settings-body {
+  overflow-y: auto;
+  padding: 18px 20px 24px;
+}
+
+.settings-section + .settings-section {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.settings-label {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--ink-faint);
+  margin-bottom: 12px;
+}
+
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 10px;
+}
+
+.settings-btn {
+  min-width: 168px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.settings-btn:hover {
+  border-color: #c9b684;
+  color: var(--gold-bright);
+}
+
+.settings-btn.is-on {
+  border-color: rgba(201, 182, 132, 0.7);
+  color: var(--gold-bright);
+  background: rgba(201, 182, 132, 0.12);
+}
+
+.settings-btn.is-off {
+  color: var(--ink-faint);
+}
+
+.settings-btn--danger:hover {
+  border-color: #b0685a;
+  color: #e3b0a4;
+}
+
+.settings-hint,
+.settings-run {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-faint);
+}
+
+.settings-run {
+  color: #cbbf9c;
+}
+
+.settings-keys {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px 14px;
+}
+
+.key-row {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+/* ---------- Confirm dialog ---------- */
+.confirm-panel {
+  width: min(92vw, 420px);
+  padding: 24px 22px 20px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel-bg);
+  text-align: center;
+}
+
+.confirm-title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--gold-bright);
+  margin-bottom: 10px;
+}
+
+.confirm-body {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn--small {
+  margin-top: 0;
+  padding: 9px 20px;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+
+.btn--danger {
+  border-color: #a8685c;
+  color: #e3b0a4;
+}
+
+.btn--danger:hover {
+  background: #a8685c;
+  color: #161208;
+}
+
+/* ---------- Large type (classroom / tired eyes) ---------- */
+html.type-large #hud,
+html.type-large #dlgBox,
+html.type-large #choiceBox,
+html.type-large .panel,
+html.type-large .settings-panel,
+html.type-large .codex-panel,
+html.type-large #teacherPanel,
+html.type-large #recapOverlay .recap-panel {
+  zoom: 1.14;
+}

@@ -8,6 +8,8 @@ import { getRealm } from '../systems/samsara.js';
 import { unlockedCount } from '../systems/path.js';
 import { keptPreceptCount } from '../systems/precepts.js';
 import { formNameKey } from '../content/forms.js';
+import { getActiveSlot, getRunName } from '../systems/save.js';
+import { chapterById } from '../game/chapters.js';
 import { currentBiome } from '../systems/biome.js';
 import { $ } from './dom.js';
 
@@ -20,6 +22,7 @@ const realmReadout = $('#realmReadout');
 const pathReadout = $('#pathReadout');
 const preceptReadout = $('#preceptReadout');
 const formReadout = $('#formReadout');
+const runReadout = $('#runReadout');
 
 const FEAR_LOW = 0.3;
 const FEAR_HIGH = 0.6;
@@ -49,6 +52,16 @@ export function updateHud(mind) {
     pathReadout.textContent = t('hud.path.count', { count: unlockedCount() });
     preceptReadout.textContent = t('hud.precept.count', { kept: keptPreceptCount() });
     formReadout.textContent = t('hud.form', { form: t(formNameKey(state.formId)) });
+
+    // Which run this is: the slot, the chapter, and the name it was given.
+    if (runReadout) {
+      const def = chapterById(state.chapter);
+      runReadout.textContent = t('hud.run', {
+        slot: getActiveSlot(),
+        chapter: def ? `${state.chapter}. ${t(def.nameKey)}` : state.chapter,
+        name: getRunName() || t('hud.run.unnamed'),
+      });
+    }
 
     if (mind) {
       const quotes = tList(state.mindHintKey || 'hud.mind');

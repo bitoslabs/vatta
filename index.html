@@ -24,6 +24,7 @@
     <div id="pathReadout"></div>
     <div id="preceptReadout"></div>
     <div id="formReadout"></div>
+    <div id="runReadout"></div>
   </div>
   <div id="ctrlHint" class="hidden" data-i18n="hud.controls">WASD เดิน · SHIFT วิ่ง · SPACE ค้าง ตั้งสติ · E โต้ตอบ · M เสียง</div>
 
@@ -111,6 +112,10 @@
               <span class="tool-name" data-i18n="life.explore">ย้อนชมความทรงจำ</span>
               <span class="tool-sub" data-i18n="title.tool.explore">เดินป่าอีกครั้งโดยไม่มีการตัดสิน</span>
             </button>
+            <button type="button" class="tool-btn" id="settingsBtn">
+              <span class="tool-name" data-i18n="help.title">ช่วยเหลือ &amp; ตั้งค่า</span>
+              <span class="tool-sub" data-i18n="title.tool.settings">ปุ่มทั้งหมด · เสียง · ตัวอักษรใหญ่ · ลบเซฟ</span>
+            </button>
             <button type="button" class="tool-btn" id="teacherBtn">
               <span class="tool-name" data-i18n="teacher.toggle.off">โหมดครู: ปิด</span>
               <span class="tool-sub" data-i18n="title.tool.teacher">โหมดสำหรับสอนในห้องเรียน</span>
@@ -180,6 +185,55 @@
         <button type="button" class="link-btn" id="codexClose" data-i18n="codex.close">ปิด</button>
       </div>
       <div id="codexBody" class="codex-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ Help & settings (H) ============ -->
+  <div id="settingsOverlay" class="hidden">
+    <div class="settings-panel">
+      <div class="settings-head">
+        <div class="settings-title" data-i18n="help.title">ช่วยเหลือ &amp; ตั้งค่า</div>
+        <button type="button" class="link-btn" id="settingsClose" data-i18n="help.close">ปิด (H)</button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-section">
+          <div class="settings-label" data-i18n="help.section.display">การแสดงผล</div>
+          <div class="settings-row">
+            <button type="button" class="settings-btn" id="settingsLarge" data-i18n="help.type.normal">ตัวอักษรปกติ</button>
+            <span class="settings-hint" data-i18n="help.type.hint">ตัวอักษรใหญ่ช่วยเมื่อฉายขึ้นจอ</span>
+          </div>
+          <div class="settings-row">
+            <button type="button" class="settings-btn" id="settingsMute" data-i18n="help.sound.on">เสียง: เปิด</button>
+            <span class="settings-hint" data-i18n="help.sound.hint">กด M สลับได้ทุกเมื่อ</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-label" data-i18n="help.section.run">รอบที่กำลังเล่น</div>
+          <div id="settingsRun" class="settings-run"></div>
+          <div class="settings-row">
+            <button type="button" class="settings-btn settings-btn--danger" id="settingsReset" data-i18n="help.reset">ลบข้อมูลช่องนี้</button>
+            <span class="settings-hint" data-i18n="help.reset.hint">ลบแล้วเริ่มรอบใหม่ได้ · ถามยืนยันก่อนเสมอ</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-label" data-i18n="help.section.keys">ปุ่มทั้งหมด</div>
+          <div id="settingsKeys" class="settings-keys"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Confirm (the only click that costs something) ============ -->
+  <div id="confirmOverlay" class="hidden">
+    <div class="confirm-panel" role="alertdialog" aria-modal="true">
+      <div id="confirmTitle" class="confirm-title"></div>
+      <div id="confirmBody" class="confirm-body"></div>
+      <div class="confirm-actions">
+        <button type="button" class="btn btn--small" id="confirmNo" data-i18n="confirm.cancel">ยกเลิก</button>
+        <button type="button" class="btn btn--small btn--danger" id="confirmYes" data-i18n="confirm.yes">ยืนยัน</button>
+      </div>
     </div>
   </div>
 

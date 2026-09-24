@@ -14,76 +14,9 @@ import assert from 'node:assert/strict';
  */
 
 // ---- a small DOM: enough for $, class selectors, events and clicks ----
-class El {
-  constructor(tag = 'div', attrs = {}, children = []) {
-    this.tagName = tag.toUpperCase();
-    this.children = [];
-    this.parentElement = null;
-    this.dataset = { ...(attrs.dataset || {}) };
-    this.attributes = {};
-    this.classes = new Set(attrs.class ? attrs.class.split(/\s+/).filter(Boolean) : []);
-    this.listeners = {};
-    this.textContent = attrs.text || '';
-    this.hidden = attrs.hidden === true;
-    this.value = attrs.value || '';
-    this.classList = {
-      add: (...c) => c.forEach((x) => this.classes.add(x)),
-      remove: (...c) => c.forEach((x) => this.classes.delete(x)),
-      contains: (c) => this.classes.has(c),
-      toggle: (c, on) => {
-        const want = on === undefined ? !this.classes.has(c) : on;
-        if (want) this.classes.add(c); else this.classes.delete(c);
-        return want;
-      },
-    };
-    for (const child of children) this.appendChild(child);
-    for (const [k, v] of Object.entries(attrs.attributes || {})) this.setAttribute(k, v);
-  }
+import { El, installDom } from './helpers/dom.mjs';
 
-  appendChild(child) {
-    child.parentElement = this;
-    this.children.push(child);
-    return child;
-  }
-
-  get className() { return [...this.classes].join(' '); }
-  set className(value) { this.classes = new Set(String(value).split(/\s+/).filter(Boolean)); }
-  setAttribute(name, value) { this.attributes[name] = String(value); }
-  getAttribute(name) { return this.attributes[name] ?? null; }
-  addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); }
-  dispatch(type, event = {}) { for (const fn of this.listeners[type] || []) fn({ target: this, preventDefault() {}, ...event }); }
-  click() { this.dispatch('click'); }
-  focus() { focused = this; }
-  blur() {}
-  querySelectorAll(selector) { return all(this, selector); }
-  querySelector(selector) { return all(this, selector)[0] || null; }
-  get innerHTML() { return ''; }
-  set innerHTML(_v) { this.children = []; }
-}
-
-function matches(el, selector) {
-  if (selector.startsWith('.')) return el.classes.has(selector.slice(1));
-  if (selector.startsWith('#')) return el.attributes.id === selector.slice(1);
-  return el.tagName === selector.toUpperCase();
-}
-
-/** Depth-first search under `root`, including nested elements. */
-function all(root, selector) {
-  const out = [];
-  const visit = (node) => {
-    for (const child of node.children) {
-      if (selector.split(',').map((s) => s.trim()).some((s) => matches(child, s))) out.push(child);
-      visit(child);
-    }
-  };
-  visit(root);
-  return out;
-}
-
-let focused = null;
-const root = new El('body');
-
-// the title panel: tabs, panes, and the elements the screen's own code fills
+// the title screen's shell: tabs, panes, and the elements its own code fills
 const tabs = new El('nav', { class: 'tabs', attributes: { id: 'titleTabs' } }, [
   new El('button', { class: 'tab is-active', dataset: { tab: 'play' } }),
   new El('button', { class: 'tab', dataset: { tab: 'chapters' } }),
@@ -97,7 +30,6 @@ const body = new El('div', { class: 'tab-body' }, [
   new El('section', { class: 'tab-pane', dataset: { pane: 'tools' }, hidden: true }),
 ]);
 const panel = new El('div', { class: 'panel panel--title' }, [tabs, body]);
-root.appendChild(panel);
 
 const chapterSelect = new El('div', { class: 'chapter-list chapter-list--grid', attributes: { id: 'chapterSelect' } });
 body.children[1].appendChild(chapterSelect);
@@ -106,6 +38,11 @@ body.children[2].appendChild(saveSlots);
 const runNameInput = new El('input', { attributes: { id: 'runNameInput' } });
 body.children[2].appendChild(runNameInput);
 
+const toolRow = (id, name, sub) => new El('button', { class: 'tool-btn', attributes: { id } }, [
+  new El('span', { class: 'tool-name', text: name }),
+  new El('span', { class: 'tool-sub', text: sub }),
+]);
+
 const byId = {
   titleTabs: tabs,
   teacherPanel: new El('div', { class: 'hidden', attributes: { id: 'teacherPanel' } }),
@@ -113,47 +50,33 @@ const byId = {
   teacherText: new El('div', { attributes: { id: 'teacherText' } }),
   teacherTour: new El('div', { attributes: { id: 'teacherTour' } }),
   teacherSeed: new El('div', { attributes: { id: 'teacherSeed' } }),
-  teacherHint: new El('div', { attributes: { id: 'teacherHint' } }), chapterSelect, saveSlots, runNameInput,
+  teacherHint: new El('div', { attributes: { id: 'teacherHint' } }),
+  chapterSelect,
+  saveSlots,
+  runNameInput,
   startBtn: new El('button', { attributes: { id: 'startBtn' } }),
   continueBtn: new El('button', { class: 'btn hidden', attributes: { id: 'continueBtn' } }),
-  codexBtn: new El('button', { class: 'tool-btn', attributes: { id: 'codexBtn' } }, [
-    new El('span', { class: 'tool-name', text: 'ไตรภูมิ 31' }),
-    new El('span', { class: 'tool-sub', text: 'ดูภูมิทั้ง 31 และกรรมที่พาไป' }),
-  ]),
-  teacherBtn: new El('button', { class: 'tool-btn', attributes: { id: 'teacherBtn' } }, [
-    new El('span', { class: 'tool-name', text: 'โหมดครู: ปิด' }),
-    new El('span', { class: 'tool-sub', text: 'โหมดสำหรับสอนในห้องเรียน' }),
-  ]),
-  projectorBtn: new El('button', { class: 'tool-btn', attributes: { id: 'projectorBtn' } }, [
-    new El('span', { class: 'tool-name', text: 'โหมดฉายภาพ: ปิด' }),
-    new El('span', { class: 'tool-sub', text: 'ตัวอักษรและป้ายขนาดใหญ่' }),
-  ]),
+  codexBtn: toolRow('codexBtn', 'ไตรภูมิ 31', 'ดูภูมิทั้ง 31 และกรรมที่พาไป'),
+  teacherBtn: toolRow('teacherBtn', 'โหมดครู: ปิด', 'โหมดสำหรับสอนในห้องเรียน'),
+  projectorBtn: toolRow('projectorBtn', 'โหมดฉายภาพ: ปิด', 'ตัวอักษรและป้ายขนาดใหญ่'),
   recapBtn: new El('button', { attributes: { id: 'recapBtn' } }),
   worksheetBtn: new El('button', { attributes: { id: 'worksheetBtn' } }),
   lifeBtn: new El('button', { attributes: { id: 'lifeBtn' } }),
   exploreBtn: new El('button', { class: 'hidden', attributes: { id: 'exploreBtn' } }),
+  settingsBtn: new El('button', { attributes: { id: 'settingsBtn' } }),
+  settingsOverlay: new El('div', { class: 'hidden', attributes: { id: 'settingsOverlay' } }),
+  confirmOverlay: new El('div', { class: 'hidden', attributes: { id: 'confirmOverlay' } }),
+  confirmTitle: new El('div', { attributes: { id: 'confirmTitle' } }),
+  confirmBody: new El('div', { attributes: { id: 'confirmBody' } }),
+  confirmYes: new El('button', { attributes: { id: 'confirmYes' } }),
+  confirmNo: new El('button', { attributes: { id: 'confirmNo' } }),
 };
 for (const el of Object.values(byId)) {
   if (!el.parentElement) body.children[3].appendChild(el);
 }
 
-globalThis.document = {
-  hidden: false,
-  querySelector: (selector) => (selector.startsWith('#') ? byId[selector.slice(1)] || all(root, selector)[0] || null : all(root, selector)[0] || null),
-  querySelectorAll: (selector) => all(root, selector),
-  createElement: (tag) => new El(tag),
-};
-globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = (() => {
-  const store = new Map();
-  return {
-    getItem: (k) => (store.has(k) ? store.get(k) : null),
-    setItem: (k, v) => store.set(k, String(v)),
-    removeItem: (k) => store.delete(k),
-  };
-})();
-globalThis.performance = { now: () => 0 };
-
+const wrapper = new El('div', {}, [panel]);
+installDom({ byId, root: wrapper })
 const log = (message) => console.error(`[title] ${message}`);
 
 const title = await import('../src/ui/title-screen.js');
@@ -191,7 +114,7 @@ log('tabs ok');
 tabs.children[0].click();
 tabs.children[0].dispatch('keydown', { key: 'ArrowRight' });
 assert.equal(paneOf('chapters').hidden, false, 'ArrowRight moves to the next tab');
-assert.equal(focused, tabs.children[1], 'and takes the focus with it');
+assert.equal(globalThis.__focused, tabs.children[1], 'and takes the focus with it');
 tabs.children[1].dispatch('keydown', { key: 'ArrowLeft' });
 assert.equal(paneOf('play').hidden, false, 'ArrowLeft comes back');
 tabs.children[0].dispatch('keydown', { key: 'ArrowLeft' });

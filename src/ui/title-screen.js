@@ -5,6 +5,7 @@ import { initAudio, playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { applySaveMeta, applySaveRuntime, readSave } from '../systems/save.js';
 import { CHAPTERS, chapterById, loadChapter } from '../game/chapters.js';
+import { askConfirm } from './confirm.js';
 import { $ } from './dom.js';
 import { showLifeSummary } from './life-summary.js';
 
@@ -81,8 +82,20 @@ function initTabs() {
 export function initTitleScreen() {
   initTabs();
   const startButton = $('#startBtn');
-  startButton.addEventListener('click', () => startChapter(CHAPTERS[0].id));
-  startButton.addEventListener('click', (e) => e.target.blur());
+  startButton.addEventListener('click', async (e) => {
+    e.target.blur();
+    // Starting fresh on a filled slot would write over that run, so it asks.
+    if (readSave()) {
+      const confirmed = await askConfirm({
+        titleKey: 'confirm.newRun.title',
+        bodyKey: 'confirm.newRun.body',
+        confirmKey: 'confirm.newRun.yes',
+        cancelKey: 'confirm.cancel',
+      });
+      if (!confirmed) return;
+    }
+    startChapter(CHAPTERS[0].id);
+  });
 
   const continueButton = $('#continueBtn');
   continueButton.addEventListener('click', (e) => {
