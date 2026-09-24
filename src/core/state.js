@@ -32,7 +32,7 @@ export const state = {
   /** Set when the main journey is finished; unlocks the exploration mode. */
   journeyComplete: false,
   /** Things the world remembers across lives (design §3, §12 step 4). */
-  world: { bridge: false, cleared: false, removed: [], effects: {} },
+  world: { bridge: false, cleared: false, removed: [], crushed: [], effects: {} },
   /** The assembled world for this life/chapter (see systems/worldgen.js). */
   dynamic: { seed: 0, features: [], validation: null, attempts: 0 },
   /** Locale key for the HUD meter label and the mindfulness hints. */

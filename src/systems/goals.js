@@ -6,18 +6,19 @@ import { state } from '../core/state.js';
 import { emit, EVENTS } from '../core/events.js';
 import { getForm, isWaterBound } from './forms.js';
 import { player } from '../entities/player.js';
-import { BURROW, RIVER } from '../world/world-data.js';
+import { BURROW, GROVE, RIVER } from '../world/world-data.js';
 import { waterRoot } from '../game/burrow.js';
 import { antGoal, deliverSeed } from '../game/ant.js';
 import { frogGoal, spawnAtBank } from '../game/frog.js';
 import { linkWater, snakeGoal } from '../game/snake.js';
 import { rabbitGoal, tendField } from '../game/rabbit.js';
 import { owlGoal, settleRoost } from '../game/owl.js';
+import { gatherInGrove } from '../game/elephant.js';
 
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch']);
+const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove']);
 
 function nearestRiverPoint(target) {
   let best = RIVER[0];
@@ -55,6 +56,9 @@ function nearestRiverPoint(target) {
  *   watch  the owl's night: find the lost inside what the body can perceive,
  *          then answer for the watch at the roost — no wall at all, only the
  *          dark (systems/vision.js is the whole gate)
+ *   grove  the elephant's strength: the gathering place behind the fallen log,
+ *          which only strength opens (world/rooms.js#validateElephantRoute proves
+ *          it is shut before the lift and open after it)
  */
 export function goalFor() {
   if (isWaterBound() || getForm().lifeGoal === 'water') {
@@ -70,6 +74,9 @@ export function goalFor() {
   if (lifeGoal === 'crevice') return snakeGoal();
   if (lifeGoal === 'storm') return rabbitGoal();
   if (lifeGoal === 'watch') return owlGoal();
+  if (lifeGoal === 'grove') {
+    return { x: GROVE.grove.x, y: GROVE.grove.y, r: GROVE.groveRadius, kind: 'grove' };
+  }
   return { x: TEMPLE.x, y: TEMPLE.y, r: LAND_GOAL_RADIUS, kind: 'land' };
 }
 
@@ -93,6 +100,7 @@ export function updateLifeGoal() {
     if (goal.kind === 'link') linkWater();
     if (goal.kind === 'storm') tendField();
     if (goal.kind === 'watch') settleRoost();
+    if (goal.kind === 'grove') gatherInGrove();
     emit(EVENTS.LIFE_COMPLETE, goal.kind);
   }
 }

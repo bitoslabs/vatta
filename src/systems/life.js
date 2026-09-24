@@ -141,6 +141,7 @@ export function advanceLife() {
     crevice: { key: 'life.goal.crevice', color: '#8fd0c4' },
     storm: { key: 'life.goal.storm', color: '#d9c48f' },
     watch: { key: 'life.goal.watch', color: '#cbd6ea' },
+    grove: { key: 'life.goal.grove', color: '#c9b78f' },
   }[lifeGoal];
   if (hint) {
     const goal = goalFor();

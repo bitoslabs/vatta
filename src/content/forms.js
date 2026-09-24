@@ -32,6 +32,8 @@
  *                      are joined and it has decided about the storm shelter
  *              'watch' the roost an owl settles in, once the lost are home and
  *                      it has decided whether to keep the night watch
+ *              'grove' the gathering place an elephant opens by lifting the log
+ *                      — one way for the large, one for the small
  * maps       the maps that can carry this body (see systems/life-route.js):
  *              'land' the forest road · 'water' the river · 'burrow' the soil
  *              under the great root · 'air' anywhere above the ground
@@ -173,10 +175,10 @@ export const FORMS = Object.freeze([
    * lab draw one body from one source. The earthworm (its burrow, game/burrow.js),
    * the ant (its nest, game/ant.js), the frog (the marsh, game/frog.js), the
    * snake (the crevice, game/snake.js), the rabbit (the field, game/rabbit.js)
-   * and the owl (the roost, game/owl.js) are born into the life cycle so far;
-   * the elephant and the tiger still stay `rebirth: false` until a chapter
-   * carries their body — the design's rule that no one is reborn somewhere their
-   * map cannot take them.
+   * the owl (the roost, game/owl.js) and the elephant (the grove,
+   * game/elephant.js) are born into the life cycle so far; the tiger still stays
+   * `rebirth: false` until a chapter carries its body — the design's rule that no
+   * one is reborn somewhere their map cannot take them.
    */
   {
     id: 'worm',
@@ -249,7 +251,8 @@ export const FORMS = Object.freeze([
     canSpeak: false,
     strong: true,
     fearGuard: 1.2,
-    rebirth: false,
+    rebirth: true,
+    lifeGoal: 'grove',
     maps: ['land'],
     abilities: { flying: false, climbing: false, small: false },
   },

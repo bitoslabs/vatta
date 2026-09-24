@@ -68,6 +68,7 @@ export function snapshot() {
     world: {
       ...state.world,
       removed: Array.isArray(state.world.removed) ? [...state.world.removed] : [],
+      crushed: Array.isArray(state.world.crushed) ? [...state.world.crushed] : [],
       effects: sanitiseEffects(state.world.effects),
     },
     liberated: state.liberated,
@@ -176,9 +177,11 @@ export function applySaveRuntime(data) {
     bridge: false,
     cleared: false,
     removed: [],
+    crushed: [],
     ...(data.world || {}),
   };
   state.world.removed = Array.isArray(state.world.removed) ? state.world.removed.filter((i) => Number.isInteger(i)) : [];
+  state.world.crushed = Array.isArray(state.world.crushed) ? state.world.crushed.filter((id) => typeof id === 'string') : [];
   state.world.effects = sanitiseEffects(data.world && data.world.effects);
   state.liberated = Boolean(data.liberated);
   state.journeyComplete = Boolean(data.journeyComplete);

@@ -25,6 +25,7 @@ import { updateFrog } from './frog.js';
 import { updateSnake } from './snake.js';
 import { inShelter, updateRabbit } from './rabbit.js';
 import { updateOwl } from './owl.js';
+import { inNestCover, updateElephant } from './elephant.js';
 import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
 import { updateTour } from '../systems/teacher.js';
@@ -69,6 +70,7 @@ export function updateWorld(dt) {
   updateSnake();
   updateRabbit();
   updateOwl();
+  updateElephant();
   updateEchoes();
   updateCamera(dt);
   updateEffects(dt);
@@ -99,6 +101,8 @@ function updateFear(dt, { frozen, mind, running }) {
   // A sheltered field is felt, not just recorded: warrens opened by an earlier
   // life settle the mind of any body that stands in them (game/rabbit.js).
   if (inShelter(player.x, player.y)) state.fear -= SHELTER_RELIEF * relief * dt;
+  // A nest kept whole under the log is cover too (game/elephant.js).
+  if (inNestCover(player.x, player.y)) state.fear -= SHELTER_RELIEF * relief * dt;
 
   state.fear = clamp(state.fear, 0, 1);
 }

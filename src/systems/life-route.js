@@ -12,12 +12,12 @@ import { FORMS, mapsFor } from '../content/forms.js';
  */
 export const CHAPTER_ANIMALS = [
   ['deer', 'dog', 'crane', 'snake'], ['turtle', 'dog', 'worm', 'ant'],
-  ['monkey', 'butterfly', 'deer', 'rabbit'], ['dog', 'turtle', 'crane', 'frog'],
+  ['monkey', 'butterfly', 'deer', 'rabbit'], ['dog', 'turtle', 'crane', 'frog', 'elephant'],
   ['butterfly', 'monkey', 'worm', 'snake'], ['crane', 'dog', 'turtle'],
-  ['turtle', 'deer', 'butterfly', 'frog'], ['dog', 'monkey', 'worm', 'ant', 'owl'],
+  ['turtle', 'deer', 'butterfly', 'frog'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
   ['deer', 'butterfly', 'turtle', 'rabbit'], ['monkey', 'crane', 'dog', 'frog', 'owl'],
   ['crane', 'turtle', 'butterfly', 'ant', 'snake'], ['butterfly', 'dog', 'deer'],
-  ['turtle', 'monkey', 'crane', 'snake'], ['deer', 'dog', 'butterfly', 'rabbit', 'owl'],
+  ['turtle', 'monkey', 'crane', 'snake'], ['deer', 'dog', 'butterfly', 'rabbit', 'owl', 'elephant'],
 ];
 
 /** A body may only be offered for a chapter whose map carries it. */

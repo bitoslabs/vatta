@@ -42,13 +42,15 @@ export function initDynamicWorld(chapterId) {
 }
 
 /**
- * Lift one feature out of the world for good (the asura's strength). Root and
- * soil are marked `fixed`: what holds the world's shape cannot be lifted away.
+ * Lift one feature out of the world for good (the asura's strength, the
+ * elephant's care). Root and soil are marked `fixed`: what holds the world's
+ * shape cannot be lifted away — only what carries `liftable` can (the fallen
+ * log, see world/rooms.js#assembleGrove).
  */
 export function removeFeature(index) {
   if (!Number.isInteger(index)) return false;
   const target = dynamicFeatures().find((feature) => feature.i === index);
-  if (!target || target.fixed === true) return false;
+  if (!target || (target.fixed === true && target.liftable !== true)) return false;
   if (!state.world.removed.includes(index)) state.world.removed.push(index);
   state.dynamic.features = dynamicFeatures().filter((feature) => feature.i !== index);
   return true;

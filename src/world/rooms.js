@@ -5,7 +5,7 @@ import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
 import {
   BURROW, BURROW_KEEPOUT, CREVICE, CREVICE_APPROACH, CREVICE_KEEPOUT,
-  FIELD, FIELD_APPROACH, FIELD_KEEPOUTS,
+  FIELD, FIELD_APPROACH, FIELD_KEEPOUTS, GROVE, GROVE_APPROACH, GROVE_KEEPOUTS,
   MARSH, MARSH_APPROACH, MARSH_KEEPOUT, MARSH_PONDS,
   NEST, NEST_KEEPOUT, PATH, RIVER, RIVER_WIDTH,
 } from './world-data.js';
@@ -58,7 +58,14 @@ export const CREVICE_FEATURE_TYPES = Object.freeze(['crevice']);
  */
 export const FIELD_FEATURE_TYPES = Object.freeze(['gully']);
 
-const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone']);
+/**
+ * The grove's own kinds (docs/animal-lives-story.md ch.11): `log` is a fallen
+ * trunk nobody passes until a strong body lifts it, and `crawlway` is the gap
+ * beneath it that only a small body slips through — the same wall, two ways.
+ */
+export const GROVE_FEATURE_TYPES = Object.freeze(['log', 'crawlway']);
+
+const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone', 'log']);
 
 function featureRadius(type, rng) {
   if (type === 'boulders') return 36 + rng() * 14;
@@ -76,6 +83,8 @@ function featureRadius(type, rng) {
   if (type === 'crevice') return CREVICE.gapRadius;
   if (type === 'stone') return CREVICE.wallRadius;
   if (type === 'gully') return FIELD.gully.radius;
+  if (type === 'log') return GROVE.logRadius;
+  if (type === 'crawlway') return GROVE.crawlRadius;
   if (type === 'pebble') return 18 + rng() * 10;
   return 62;
 }
@@ -106,6 +115,7 @@ export function blockedAt(features, x, y, abilities = {}) {
     if (feature.type === 'mire') return abilities.leap !== true && featureAt(feature, x, y);
     if (feature.type === 'crevice') return abilities.slither !== true && featureAt(feature, x, y);
     if (feature.type === 'gully') return abilities.leap !== true && featureAt(feature, x, y);
+    if (feature.type === 'crawlway') return abilities.small !== true && featureAt(feature, x, y);
     if (!SOLID_TYPES.has(feature.type)) return false;
     if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
     if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
@@ -129,6 +139,8 @@ function mayPlace(type, x, y, radius) {
   if (dist(x, y, CREVICE_KEEPOUT.x, CREVICE_KEEPOUT.y) < CREVICE_KEEPOUT.r + radius) return false;
   // Nor the field, or a trunk could break the relay or dam the gully.
   if (FIELD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
+  // Nor the walled grove, or a trunk could fall across the log.
+  if (GROVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   void type;
   return true;
 }
@@ -352,6 +364,67 @@ export function assembleField() {
   return features;
 }
 
+/**
+ * The walled grove and the fallen log (docs/animal-lives-story.md ch.11).
+ *
+ * A stone ring around the grove with exactly two openings: the mouth, plugged by
+ * the log (lifted only by a strong body through game/elephant.js), and a small
+ * crawlway beside it. Both openings lead to the same place, which is the point:
+ * the large road and the small road meet at this wall.
+ */
+export function assembleGrove() {
+  const { grove, ring, segments, stoneRadius, log, logRadius, crawlAngle, crawlRadius } = GROVE;
+  const features = [];
+  const mouthAngle = Math.PI / 2; // the way in faces the road, south of the ring
+  const step = TAU / (segments + 2);
+
+  for (let k = 0; k < segments; k++) {
+    const angle = mouthAngle + (k + 1.5) * step;
+    // the crawlway replaces the stone nearest to it
+    const crawlDistance = Math.abs(((angle - crawlAngle + Math.PI) % TAU + TAU) % TAU - Math.PI);
+    if (crawlDistance < step) continue;
+    features.push({
+      i: 0,
+      site: 'grove',
+      type: 'stone',
+      fixed: true,
+      x: grove.x + Math.cos(angle) * ring,
+      y: grove.y + Math.sin(angle) * ring,
+      r: stoneRadius,
+    });
+  }
+
+  features.push({
+    i: 0,
+    site: 'grove',
+    type: 'crawlway',
+    fixed: true,
+    x: grove.x + Math.cos(crawlAngle) * ring,
+    y: grove.y + Math.sin(crawlAngle) * ring,
+    r: crawlRadius,
+  });
+
+  features.push({
+    i: 0,
+    site: 'grove',
+    type: 'log',
+    fixed: true,
+    // The log holds the world's shape until a strong body chooses to move it,
+    // so it is fixed like the stone — but it is the one fixed thing that can go.
+    liftable: true,
+    x: log.x,
+    y: log.y,
+    r: logRadius,
+  });
+
+  return features;
+}
+
+/** The grove without its log: what the world looks like once strength is used. */
+export function groveWithoutLog(features = assembleGrove()) {
+  return features.filter((feature) => feature.type !== 'log');
+}
+
 /** Assemble the seed's dressing: the plane's own kinds beside the true path. */
 export function assembleRooms(seed, biomeId = 'memory-forest') {
   const rng = mulberry32(seed);
@@ -380,6 +453,7 @@ export function assembleRooms(seed, biomeId = 'memory-forest') {
   if (sites.includes('marsh')) for (const f of assembleMarsh()) features.push({ ...f, i: features.length });
   if (sites.includes('crevice')) for (const f of assembleCrevice()) features.push({ ...f, i: features.length });
   if (sites.includes('field')) for (const f of assembleField()) features.push({ ...f, i: features.length });
+  if (sites.includes('grove')) for (const f of assembleGrove()) features.push({ ...f, i: features.length });
 
   // Occasionally silt builds up in the river — which the route check must catch.
   if (rng() < 0.35) {
@@ -565,6 +639,28 @@ export function validateFrogRoute(features, abilities = {}) {
   const smallReaches = reachableBetween(features, from, MARSH.inlet, { ...base, leap: false, small: true });
   const ok = leapReaches && !walkerReaches && !tunnelReaches && !smallReaches;
   return { ok, leapReaches, walkerReaches, tunnelReaches, smallReaches };
+}
+
+/**
+ * Prove the grove's mouth is *shut until strength opens it* (docs/animal-lives-story.md
+ * ch.11): a strong body cannot reach the grove while the log lies across the
+ * mouth, can once it is lifted, while a small body reaches it either way through
+ * the crawlway — the same wall, one way for the large and one for the small.
+ * Nothing here judges the body: the other direction of the same act (how the log
+ * was lifted, and whether the nests survived) is decided in game/elephant.js.
+ */
+export function validateElephantRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false };
+  const start = GROVE_APPROACH[0];
+  const from = { x: start[0], y: start[1] };
+  const goal = GROVE.grove;
+  const strong = { ...base, strong: true, small: false };
+  const beforeLifting = reachableBetween(features, from, goal, strong);
+  const afterLifting = reachableBetween(groveWithoutLog(features), from, goal, strong);
+  const smallWithoutLifting = reachableBetween(features, from, goal, { ...base, strong: false, small: true });
+  const walkerReaches = reachableBetween(features, from, goal, { ...base, strong: false, small: false });
+  const ok = beforeLifting === false && afterLifting === true && smallWithoutLifting === true && walkerReaches === false;
+  return { ok, beforeLifting, afterLifting, smallWithoutLifting, walkerReaches };
 }
 
 /**

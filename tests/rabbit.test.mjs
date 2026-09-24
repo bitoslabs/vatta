@@ -269,7 +269,7 @@ for (let i = 0; i < 300; i++) {
   route = { ...next, history: [...route.history, next.formId], chapterIds };
 }
 assert.equal(sawRabbit, true, 'the rabbit is born during a long journey');
-for (const id of ['elephant', 'tiger']) {
+for (const id of ['tiger']) {
   assert.equal(isRebirthForm(FORMS.find((f) => f.id === id)), false, `${id} waits for its chapter`);
 }
 log('rebirth ok');

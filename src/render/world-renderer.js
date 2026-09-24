@@ -26,6 +26,7 @@ import { marshSite, waterOpened } from '../game/frog.js';
 import { creviceSite, isLinked } from '../game/snake.js';
 import { fieldSite, isSheltered, warrenIsConnected } from '../game/rabbit.js';
 import { nightWatched, owlFound, owlSite, perceivesLost } from '../game/owl.js';
+import { groveSite, nestCrashed, waysJoined } from '../game/elephant.js';
 import { visionRadius } from '../systems/vision.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { currentBiome } from '../systems/biome.js';
@@ -68,6 +69,7 @@ export function renderWorld() {
   drawCrevice(dawn);
   drawField(dawn);
   drawOwlNight(dawn);
+  drawGrove(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -570,6 +572,86 @@ function drawOwlNight(dawn) {
       ctx.fill();
     }
     ctx.globalAlpha = 1;
+  }
+}
+
+/**
+ * The walled grove, the fallen log and the nests beneath it
+ * (docs/animal-lives-story.md ch.11): the same wall with one way for the large
+ * and one for the small, and the two little homes whose wholeness is the whole
+ * question. Nests crushed in any life stay crushed in every later one.
+ */
+function drawGrove(dawn) {
+  const features = dynamicFeatures();
+  const hasGrove = features.some((feature) => feature.site === 'grove');
+  if (!hasGrove) return;
+  const { grove, nests } = groveSite();
+
+  for (const feature of features) {
+    if (feature.type === 'stone') {
+      ctx.fillStyle = dawn ? '#6a6a62' : '#33352f';
+      ctx.beginPath();
+      ctx.arc(feature.x, feature.y, feature.r, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = dawn ? 'rgba(168,168,158,.4)' : 'rgba(120,124,116,.3)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(feature.x, feature.y, feature.r * 0.66, 0.4, 2.8);
+      ctx.stroke();
+    } else if (feature.type === 'crawlway') {
+      ctx.fillStyle = dawn ? 'rgba(30,30,26,.5)' : 'rgba(10,10,8,.6)';
+      ctx.beginPath();
+      ctx.ellipse(feature.x, feature.y, feature.r * 0.8, feature.r * 1.2, 0, 0, TAU);
+      ctx.fill();
+    } else if (feature.type === 'log') {
+      // The fallen trunk across the mouth, bark and rings.
+      ctx.save();
+      ctx.translate(feature.x, feature.y);
+      ctx.rotate(-0.12);
+      ctx.fillStyle = dawn ? '#5a4227' : '#2b2012';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, feature.r * 1.35, feature.r * 0.62, 0, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = dawn ? 'rgba(150,116,68,.5)' : 'rgba(120,92,52,.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(-feature.r * 1.1, 0, feature.r * 0.2, feature.r * 0.5, 0, 0, TAU);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(feature.r * 1.1, 0, feature.r * 0.2, feature.r * 0.5, 0, 0, TAU);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // The gathering place inside: trampled ground, and the little homes outside.
+  ctx.fillStyle = dawn ? 'rgba(86,74,48,.45)' : 'rgba(44,38,22,.5)';
+  ctx.beginPath();
+  ctx.ellipse(grove.x, grove.y, 96, 66, 0, 0, TAU);
+  ctx.fill();
+
+  for (const nest of nests) {
+    const broken = nestCrashed(nest.id);
+    ctx.strokeStyle = broken ? 'rgba(150,110,90,.75)' : 'rgba(190,166,112,.8)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+      const angle = (i / 5) * TAU + (broken ? 0.4 : 0);
+      const radius = broken ? 8 + i * 3 : 26 * (broken ? 0.4 : 1);
+      ctx.beginPath();
+      ctx.moveTo(nest.x, nest.y);
+      ctx.lineTo(nest.x + Math.cos(angle) * radius, nest.y + Math.sin(angle) * radius * 0.8);
+      ctx.stroke();
+    }
+    ctx.fillStyle = broken ? 'rgba(70,52,40,.8)' : 'rgba(122,98,62,.85)';
+    ctx.beginPath();
+    ctx.ellipse(nest.x, nest.y, 20, 13, 0, 0, TAU);
+    ctx.fill();
+    if (waysJoined() && !broken) {
+      ctx.fillStyle = 'rgba(233,217,160,.14)';
+      ctx.beginPath();
+      ctx.arc(nest.x, nest.y, 48, 0, TAU);
+      ctx.fill();
+    }
   }
 }
 

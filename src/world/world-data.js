@@ -41,6 +41,51 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The grove and the fallen log (docs/animal-lives-story.md ch.11, "กำลังที่คุ้มครอง").
+ *
+ * The gathering grove is walled by stone with two openings: a mouth plugged by a
+ * fallen log — which only the elephant's strength can lift — and a crawlway a
+ * small body slips through. So the large road and the small road already meet at
+ * the same wall, and the elephant's care decides whether the two fragile nests
+ * under the log survive the lifting. `world/rooms.js#validateElephantRoute`
+ * proves the mouth is shut before the lift and open after it, and that the
+ * crawlway works without any lift at all.
+ */
+export const GROVE = Object.freeze({
+  grove: Object.freeze({ x: 3600, y: 560 }),
+  ring: 190,
+  segments: 22,
+  stoneRadius: 46,
+  log: Object.freeze({ x: 3600, y: 750 }),
+  logRadius: 74,
+  crawlAngle: Math.PI * 0.75,
+  crawlRadius: 34,
+  nests: Object.freeze([
+    Object.freeze({ x: 3524, y: 784, id: 'nest-a' }),
+    Object.freeze({ x: 3678, y: 786, id: 'nest-b' }),
+  ]),
+  nestRadius: 38,
+  groveRadius: 96,
+  /** How far a log shoved the wrong way reaches. */
+  fallReach: 200,
+});
+
+/** Seeded dressing keeps off the walled grove and the nests beneath the log. */
+export const GROVE_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: 3600, y: 560, r: 330 }),
+  Object.freeze({ x: 3524, y: 784, r: 90 }),
+  Object.freeze({ x: 3678, y: 786, r: 90 }),
+]);
+
+/** The elephant's way in: the road → the log → the grove. Kept clear of trunks. */
+export const GROVE_APPROACH = Object.freeze([
+  Object.freeze([3680, 1150]),
+  Object.freeze([3640, 940]),
+  Object.freeze([3600, 750]),
+  Object.freeze([3600, 560]),
+]);
+
+/**
  * The roost and the lost ones (docs/animal-lives-story.md ch.13, "สิ่งที่กลางวัน
  * ไม่เห็น").
  *
@@ -316,6 +361,8 @@ export const TREES = (() => {
     if (FIELD_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (distToPoly(FIELD_APPROACH, x, y) < 84) continue;
     if (OWL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (GROVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(GROVE_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }
