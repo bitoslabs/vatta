@@ -7,8 +7,10 @@ import { input, isMindful } from '../systems/input.js';
 import { getForm, inWater, isWaterBound, speedMultiplier } from '../systems/forms.js';
 import { debrisBlocked } from '../game/world-memory.js';
 import { dynamicBlocked } from '../systems/worldgen.js';
+import { isOnRoute } from '../world/rooms.js';
+import { currentBiomeId } from '../systems/biome.js';
 import { getRealmModifier } from '../systems/samsara.js';
-import { FALSE_A, FALSE_B, PATH as TRUE_PATH, TREES } from '../world/world-data.js';
+import { TREES } from '../world/world-data.js';
 
 export const player = {
   x: PLAYER.x,
@@ -65,9 +67,9 @@ export function updatePlayer(dt) {
     ay /= magnitude;
   }
 
-  const onPath = distToPoly(TRUE_PATH, player.x, player.y) < PATH_WIDTH.trueWidth
-    || distToPoly(FALSE_A, player.x, player.y) < PATH_WIDTH.falseWidth
-    || distToPoly(FALSE_B, player.x, player.y) < PATH_WIDTH.falseWidth;
+  // The road belongs to the plane (world/rooms.js#isOnRoute), so a body moves at
+  // full speed along the street of its own world.
+  const onPath = isOnRoute(player.x, player.y, currentBiomeId());
 
   let speed = PLAYER.walkSpeed;
   if (running) speed = PLAYER.runSpeed;

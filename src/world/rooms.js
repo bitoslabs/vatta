@@ -8,8 +8,9 @@ import {
   ENCLOSURE, ENCLOSURE_APPROACH, ENCLOSURE_KEEPOUTS,
   FIELD, FIELD_APPROACH, FIELD_KEEPOUTS, GROVE, GROVE_APPROACH, GROVE_KEEPOUTS,
   MARSH, MARSH_APPROACH, MARSH_KEEPOUT, MARSH_PONDS,
-  NEST, NEST_KEEPOUT, PATH, RIVER, RIVER_WIDTH,
+  NEST, NEST_KEEPOUT, RIVER, RIVER_WIDTH, routeForPlane,
 } from './world-data.js';
+import { PATH_WIDTH } from '../core/constants.js';
 import { BIOMES } from '../content/biomes.js';
 
 /**
@@ -103,8 +104,19 @@ const GRID_CELL = 40;
 const GRID_MARGIN = 220;
 const MAX_SEED_TRIES = 12;
 
-export function routeFor(formId) {
-  return formId === 'fish' ? RIVER : PATH;
+/** The line a life must be able to walk: the river for a fish, the plane's road otherwise. */
+export function routeFor(formId, biomeId = 'memory-forest') {
+  return formId === 'fish' ? RIVER : routeForPlane(biomeId);
+}
+
+/**
+ * Is this point on the road being walked? The plane decides which road that is,
+ * so a corner of the asura city counts as the way and the same point in the
+ * forest does not (design §7). Being on it is what keeps a body at full speed.
+ */
+export function isOnRoute(x, y, biomeId = 'memory-forest') {
+  if (distToPoly(routeForPlane(biomeId), x, y) < PATH_WIDTH.trueWidth) return true;
+  return false;
 }
 
 function featureAt(feature, x, y) {
@@ -133,12 +145,12 @@ export function blockedAt(features, x, y, abilities = {}) {
   });
 }
 
-function mayPlace(type, x, y, radius) {
+function mayPlace(type, x, y, radius, route) {
   if (x < 80 || y < 80 || x > WORLD.w - 80 || y > WORLD.h - 80) return false;
   if (dist(x, y, TEMPLE.x, TEMPLE.y) < TEMPLE.r + 60) return false;
   if (dist(x, y, SALA.x, SALA.y) < SALA.r + 60) return false;
-  // Never cover the road itself; dressing sits beside it.
-  if (distToPoly(PATH, x, y) < radius + MARGIN_FROM_PATH) return false;
+  // Never cover the road itself; dressing sits beside this plane's road.
+  if (distToPoly(route, x, y) < radius + MARGIN_FROM_PATH) return false;
   // Never crowd the root chamber, or a seed could seal its own tunnel.
   if (dist(x, y, BURROW_KEEPOUT.x, BURROW_KEEPOUT.y) < BURROW_KEEPOUT.r + radius) return false;
   // Nor the ant's nest, or a trunk could close the crack.
@@ -476,17 +488,21 @@ export function assembleRooms(seed, biomeId = 'memory-forest') {
   const rng = mulberry32(seed);
   const features = [];
   const pool = (BIOMES[biomeId] && BIOMES[biomeId].features) || FEATURE_TYPES;
+  // The spine of this map: dressing sits beside *this* plane's road.
+  const route = routeForPlane(biomeId);
 
-  for (let i = 1; i < PATH.length - 1; i++) {
-    for (let k = 0; k < 2; k++) {
+  for (let i = 1; i < route.length - 1; i++) {
+    for (let k = 0; k < 3; k++) {
       if (rng() < 0.3) continue;
       const type = pool[(rng() * pool.length) | 0] || 'clearing';
-      const angle = rng() * TAU;
-      const reach = 130 + rng() * 110;
-      const x = PATH[i][0] + Math.cos(angle) * reach;
-      const y = PATH[i][1] + Math.sin(angle) * reach;
+      // The radius comes first so even a big tower can stand beside the road
+      // without ever covering it: reach is always outside its own clearance.
       const radius = featureRadius(type, rng);
-      if (!mayPlace(type, x, y, radius)) continue;
+      const angle = rng() * TAU;
+      const reach = radius + MARGIN_FROM_PATH + 24 + rng() * 120;
+      const x = route[i][0] + Math.cos(angle) * reach;
+      const y = route[i][1] + Math.sin(angle) * reach;
+      if (!mayPlace(type, x, y, radius, route)) continue;
       features.push({ i: features.length, type, x, y, r: radius });
     }
   }
@@ -537,9 +553,9 @@ function nearestFreeCell(blocked, cols, rows, cell) {
  * grid, using the *same* rules the player moves by: solids block everyone, and
  * a water-bound form may only cross water.
  */
-export function validateRoute(features, formId, abilities = {}) {
+export function validateRoute(features, formId, abilities = {}, biomeId = 'memory-forest') {
   const waterBound = formId === 'fish';
-  const route = routeFor(formId);
+  const route = routeFor(formId, biomeId);
   const start = route[0];
   const goal = route[route.length - 1];
 
@@ -770,11 +786,13 @@ export function validateSnakeRoute(features, abilities = {}) {
   return { ok, slitherReaches, walkerReaches, smallReaches, tunnelReaches };
 }
 
-/** Try seeds until one validates for this form; fall back to an empty world. */export function buildDynamicWorld(seed, formId, abilities = {}, biomeId = 'memory-forest') {
+/** Try seeds until one validates for this form; fall back to an empty world. */
+export function buildDynamicWorld(seed, formId, abilities = {}, biomeId = 'memory-forest') {
   for (let attempt = 0; attempt < MAX_SEED_TRIES; attempt++) {
     const trySeed = (seed + attempt) >>> 0;
     const features = assembleRooms(trySeed, biomeId);
-    const validation = validateRoute(features, formId, abilities);
+    // Validation walks the road of the plane this life is born into.
+    const validation = validateRoute(features, formId, abilities, biomeId);
     if (validation.ok) return { seed: trySeed, features, validation, attempts: attempt + 1 };
   }
   return {

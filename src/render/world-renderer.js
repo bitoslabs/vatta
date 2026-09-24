@@ -11,7 +11,10 @@ import { teacherLandmarks, tourTarget } from '../systems/teacher.js';
 import { floaters, screenNotes, sparks } from '../systems/effects.js';
 import { ctx, viewport } from '../systems/viewport.js';
 import { textures } from '../world/textures.js';
-import { ENCLOSURE, FALSE_A, FALSE_B, FOOT, GATES, PATH, RIVER, RIVER_WIDTH, TREES } from '../world/world-data.js';
+import {
+  ENCLOSURE, FALSE_A, FALSE_B, FOOT, GATES, RIVER, RIVER_WIDTH, TREES,
+  footprintsAlong, routeForPlane,
+} from '../world/world-data.js';
 import { cam } from '../game/camera.js';
 import { ghosts } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
@@ -31,11 +34,32 @@ import { canTrack, inHollowRest, isHunted, tracksRead, trailSite } from '../game
 import { enclosureSite, gateOpened as geckoGateOpened } from '../game/gecko.js';
 import { visionRadius } from '../systems/vision.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
-import { currentBiome } from '../systems/biome.js';
+import { currentBiome, currentBiomeId } from '../systems/biome.js';
 import { getForm, isWaterBound } from '../systems/forms.js';
 import { goalFor } from '../systems/goals.js';
 import { GUARDIAN } from '../game/npc.js';
 import { ENCOUNTERS } from '../content/encounters.js';
+
+/**
+ * How each plane's road is *made* (design §7) — the same line the whole game
+ * walks, laid in the material of that world: packed forest earth, a dug tunnel,
+ * cramped black ground, paved city stone, pale garden sand, dusty market dirt,
+ * and in the formless plane almost nothing at all.
+ */
+const ROUTE_LOOK = {
+  'memory-forest': { width: 84, dawn: '#2a2115', night: '#10170d' },
+  'under-root': { width: 74, dawn: '#241a10', night: '#0b0805' },
+  woeful: { width: 62, dawn: '#141209', night: '#07060a' },
+  'asura-city': { width: 92, dawn: '#3c382f', night: '#1b1a16' },
+  'light-garden': { width: 88, dawn: '#6d6449', night: '#2b2c21' },
+  'craving-market': { width: 80, dawn: '#4a3a28', night: '#1d1710' },
+  formless: { width: 44, dawn: 'rgba(120,116,96,.16)', night: 'rgba(70,70,60,.14)' },
+};
+
+function routeLook(plane, dawn) {
+  const look = ROUTE_LOOK[plane] || ROUTE_LOOK['memory-forest'];
+  return { width: look.width, color: dawn ? look.dawn : look.night };
+}
 
 function drawPath(points, width, color) {
   ctx.strokeStyle = color;
@@ -827,9 +851,15 @@ function drawRiver(dawn) {
 }
 
 function drawPaths(dawn) {
-  drawPath(PATH, 84, dawn ? '#2a2115' : '#10170d');
-  drawPath(FALSE_A, 60, dawn ? '#222015' : '#0d120c');
-  drawPath(FALSE_B, 60, dawn ? '#222015' : '#0d120c');
+  const plane = currentBiomeId();
+  // The plane lays its own road, in its own material (design §7): the forest's
+  // false branches and their light gates belong to the forest lesson alone.
+  const look = routeLook(plane, dawn);
+  drawPath(routeForPlane(plane), look.width, look.color);
+  if (plane === 'memory-forest') {
+    drawPath(FALSE_A, 60, dawn ? '#222015' : '#0d120c');
+    drawPath(FALSE_B, 60, dawn ? '#222015' : '#0d120c');
+  }
 }
 
 function drawFootprints(mind) {
@@ -840,7 +870,9 @@ function drawFootprints(mind) {
     : clamp(0.5 - state.fear * 0.55 + (mind ? 0.55 : 0), 0, 0.95)) * scent, 0, 1);
   if (alpha <= 0.04) return;
 
-  for (const foot of FOOT) {
+  // Footprints follow whichever road this body is walking.
+  const footmarks = currentBiomeId() === 'memory-forest' ? FOOT : footprintsAlong(routeForPlane(currentBiomeId()));
+  for (const foot of footmarks) {
     if (Math.abs(foot.x - cam.x) > W * 0.6 || Math.abs(foot.y - cam.y) > H * 0.6) continue;
     ctx.save();
     ctx.translate(foot.x, foot.y);

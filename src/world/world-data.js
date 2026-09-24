@@ -10,6 +10,69 @@ export const PATH = [
   [2820, 1520], [3120, 1650], [3420, 1500], [3680, 1150], [3880, 1000], [3960, 940],
 ];
 
+/**
+ * Every plane walks its own road (design §7).
+ *
+ * The road is the spine of a map: the dressing is placed beside it, the route
+ * checker walks it, and being on it is what keeps a body moving at full speed
+ * (world/rooms.js#isOnRoute). So the plane a life is born into does not merely
+ * re-tint one road — it lays a different one:
+ *
+ *   memory-forest  the winding forest road (the original, unchanged)
+ *   under-root     straighter and lower: a tunnelled line under the roots
+ *   woeful         cramped switchbacks, doubling back on itself
+ *   asura-city     streets with square corners and long straight runs
+ *   light-garden   one wide, gentle arc of terraces
+ *   craving-market a serpentine alley that keeps turning you around
+ *   formless       the shortest possible line: there is nothing to hold on to
+ *
+ * All of them start at the temple gate and end at the sala's door, so the same
+ * life still has the same destination; only the way there changes.
+ */
+export const ROUTE_SOIL = [
+  [1130, 1560], [1500, 1500], [1850, 1440], [2180, 1420], [2500, 1380],
+  [2830, 1300], [3150, 1240], [3450, 1150], [3700, 1060], [3960, 940],
+];
+export const ROUTE_WOEFUL = [
+  [1130, 1560], [1420, 1560], [1400, 1320], [1700, 1300], [1680, 1080],
+  [1980, 1080], [1960, 860], [2260, 880], [2240, 1120], [2540, 1120],
+  [2520, 1340], [2820, 1340], [2820, 1580], [3140, 1580], [3140, 1320],
+  [3440, 1320], [3440, 1080], [3720, 1080], [3960, 940],
+];
+export const ROUTE_CITY = [
+  [1130, 1560], [1560, 1560], [1560, 1180], [1980, 1180], [1980, 1520],
+  [2400, 1520], [2400, 1120], [2820, 1120], [2820, 1460], [3240, 1460],
+  [3240, 1060], [3660, 1060], [3660, 940], [3960, 940],
+];
+export const ROUTE_GARDEN = [
+  [1130, 1560], [1500, 1700], [1900, 1760], [2300, 1700], [2650, 1560],
+  [3000, 1420], [3300, 1240], [3560, 1080], [3780, 980], [3960, 940],
+];
+export const ROUTE_MARKET = [
+  [1130, 1560], [1400, 1620], [1660, 1500], [1920, 1620], [2180, 1480],
+  [2440, 1600], [2700, 1460], [2960, 1580], [3220, 1440], [3480, 1300],
+  [3700, 1140], [3860, 1020], [3960, 940],
+];
+export const ROUTE_FORMLESS = [
+  [1130, 1560], [3960, 940],
+];
+
+/** The road each plane lays. Unknown planes fall back to the forest road. */
+export const ROUTES = Object.freeze({
+  'memory-forest': PATH,
+  'under-root': ROUTE_SOIL,
+  woeful: ROUTE_WOEFUL,
+  'asura-city': ROUTE_CITY,
+  'light-garden': ROUTE_GARDEN,
+  'craving-market': ROUTE_MARKET,
+  formless: ROUTE_FORMLESS,
+});
+
+/** The road this plane walks (a plane with no road of its own walks the forest's). */
+export function routeForPlane(biomeId) {
+  return ROUTES[biomeId] || PATH;
+}
+
 /** A winding river, crossed by the true path; fish lives are bound to it. */
 export const RIVER = [
   [1520, 3000], [1420, 2430], [1620, 1930], [1310, 1420],
@@ -383,12 +446,12 @@ export const GATES = [
   { x: 3450, y: 2330, from: { x: 3120, y: 1650 }, parts: makeGateParts() },
 ];
 
-/** Alternating left/right footprints along the real path. */
-export const FOOT = (() => {
+/** Alternating left/right footprints along any road. */
+export function footprintsAlong(route) {
   const foot = [];
-  for (let i = 0; i < PATH.length - 1; i++) {
-    const a = PATH[i];
-    const b = PATH[i + 1];
+  for (let i = 0; i < route.length - 1; i++) {
+    const a = route[i];
+    const b = route[i + 1];
     const dx = b[0] - a[0];
     const dy = b[1] - a[1];
     const len = Math.hypot(dx, dy);
@@ -408,7 +471,10 @@ export const FOOT = (() => {
     }
   }
   return foot;
-})();
+}
+
+/** The forest road's footprints, precomputed (other planes compute on demand). */
+export const FOOT = footprintsAlong(PATH);
 
 /** Seeded tree scatter that avoids paths, the temple and the sala. */
 export const TREES = (() => {
@@ -420,7 +486,8 @@ export const TREES = (() => {
     const y = 60 + rng() * (WORLD.h - 120);
     if (dist(x, y, TEMPLE.x, TEMPLE.y) < TEMPLE.r + 50) continue;
     if (dist(x, y, SALA.x, SALA.y) < 240) continue;
-    if (distToPoly(PATH, x, y) < 135) continue;
+    // No road may be walled by a trunk: every plane's road is kept clear.
+    if (Object.values(ROUTES).some((route) => distToPoly(route, x, y) < 135)) continue;
     if (distToPoly(FALSE_A, x, y) < 92) continue;
     if (distToPoly(FALSE_B, x, y) < 92) continue;
     // Leave the roads to the seed and the nest clear: roots, not trunks, own this ground.
