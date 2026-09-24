@@ -1,7 +1,7 @@
 'use strict';
 
 /** Deterministic PRNG so world generation is stable across reloads. */
-function mulberry32(seed) {
+export function mulberry32(seed) {
   let a = seed;
   return function next() {
     a |= 0;

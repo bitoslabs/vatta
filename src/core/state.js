@@ -31,6 +31,8 @@ export const state = {
   lifeLog: [],
   /** Things the world remembers across lives (design §3, §12 step 4). */
   world: { bridge: false, cleared: false },
+  /** The assembled world for this life/chapter (see systems/worldgen.js). */
+  dynamic: { seed: 0, features: [], validation: null, attempts: 0 },
   /** Locale key for the HUD meter label and the mindfulness hints. */
   meterKey: 'hud.fear',
   mindHintKey: 'hud.mind',

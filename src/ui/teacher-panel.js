@@ -4,6 +4,7 @@ import { on, EVENTS } from '../core/events.js';
 import { t } from '../systems/i18n.js';
 import { currentNote, isTeacher, tourProgress, tourTarget, toggleTeacher } from '../systems/teacher.js';
 import { isProjector, toggleProjector } from '../systems/projector.js';
+import { dynamicWorld } from '../systems/worldgen.js';
 import { $ } from './dom.js';
 
 const panel = $('#teacherPanel');
@@ -11,6 +12,7 @@ const titleEl = $('#teacherTitle');
 const textEl = $('#teacherText');
 const tourEl = $('#teacherTour');
 const hintEl = $('#teacherHint');
+const seedEl = $('#teacherSeed');
 const toggleButton = $('#teacherBtn');
 const projectorButton = $('#projectorBtn');
 
@@ -60,6 +62,15 @@ export function updateTeacherPanel() {
   if (progress.index !== lastTour) {
     lastTour = progress.index;
     renderTour();
+  }
+
+  if (seedEl) {
+    const world = dynamicWorld();
+    const text = t('teacher.seed', {
+      seed: world.seed,
+      route: t(world.validation && world.validation.ok ? 'teacher.route.ok' : 'teacher.route.fallback'),
+    });
+    if (text !== seedEl.textContent) seedEl.textContent = text;
   }
 }
 

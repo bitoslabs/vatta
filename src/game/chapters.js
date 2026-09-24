@@ -15,6 +15,7 @@ import { resolveRebirth } from '../systems/rebirth.js';
 import { enterRealm } from '../systems/samsara.js';
 import { evaluatePath } from '../systems/path.js';
 import { evaluatePrecepts } from '../systems/precepts.js';
+import { initDynamicWorld } from '../systems/worldgen.js';
 import { saveRun } from '../systems/save.js';
 
 /**
@@ -454,6 +455,8 @@ export function loadChapter(id, { autosave = true } = {}) {
   // Conduct so far may have opened further factors of the path.
   evaluatePath();
   evaluatePrecepts();
+  // Assemble this life's world from its seed, validated for the form in play.
+  initDynamicWorld(id);
 
   player.x = def.start.x;
   player.y = def.start.y;

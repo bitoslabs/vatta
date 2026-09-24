@@ -5,6 +5,7 @@ import { emit, EVENTS } from '../core/events.js';
 import { distToPoly } from '../core/math.js';
 import { state } from '../core/state.js';
 import { RIVER, RIVER_WIDTH } from '../world/world-data.js';
+import { dynamicWaterAt } from './worldgen.js';
 
 /** The form the player currently wears. */
 export function getForm() {
@@ -19,9 +20,9 @@ export function setForm(id) {
   return true;
 }
 
-/** Is this point inside the river band? */
+/** Is this point water — the river band, or a pond placed by the world seed? */
 export function inWater(x, y) {
-  return distToPoly(RIVER, x, y) < RIVER_WIDTH;
+  return distToPoly(RIVER, x, y) < RIVER_WIDTH || dynamicWaterAt(x, y);
 }
 
 /** Movement multiplier for the current form at this point. */

@@ -6,6 +6,7 @@ import { state } from '../core/state.js';
 import { input, isMindful } from '../systems/input.js';
 import { inWater, isWaterBound, speedMultiplier } from '../systems/forms.js';
 import { debrisBlocked } from '../game/world-memory.js';
+import { dynamicBlocked } from '../systems/worldgen.js';
 import { getRealmModifier } from '../systems/samsara.js';
 import { FALSE_A, FALSE_B, PATH as TRUE_PATH, TREES } from '../world/world-data.js';
 
@@ -72,7 +73,9 @@ export function updatePlayer(dt) {
 
   const nextX = clamp(player.x + ax * speed * dt, PLAYER.margin, WORLD.w - PLAYER.margin);
   const nextY = clamp(player.y + ay * speed * dt, PLAYER.margin, WORLD.h - PLAYER.margin);
-  const blocked = (isWaterBound() && !inWater(nextX, nextY)) || debrisBlocked(nextX, nextY);
+  const blocked = (isWaterBound() && !inWater(nextX, nextY))
+    || debrisBlocked(nextX, nextY)
+    || dynamicBlocked(nextX, nextY);
   if (!blocked) {
     player.x = nextX;
     player.y = nextY;

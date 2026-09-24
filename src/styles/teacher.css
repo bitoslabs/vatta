@@ -33,6 +33,13 @@
   letter-spacing: 0.04em;
 }
 
+.teacher-seed {
+  margin-top: 4px;
+  font-size: 10.5px;
+  color: #6f7f86;
+  font-variant-numeric: tabular-nums;
+}
+
 .teacher-hint {
   margin-top: 9px;
   padding-top: 7px;

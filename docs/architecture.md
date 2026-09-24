@@ -41,6 +41,7 @@ src/
 │   ├── karma-memory.js    กรรมในอดีต → "ความจำ" ที่โลกตอบสนอง
 │   ├── path.js            มรรค 8 — เปิดตามการปฏิบัติ + รวมผลต่อการรับรู้
 │   ├── forms.js           ร่างปัจจุบัน, ความเร็ว/การมองเห็น, แม่น้ำที่ปลาออกไม่ได้
+│   ├── worldgen.js        seed ต่อชาติ/บท, ประกอบโลก, ผลตรวจเส้นทาง
 │   ├── life.js            วงจรชีวิต — เริ่ม/สรุปชาติ/เกิดใหม่ด้วยร่างใหม่
 │   ├── precepts.js        ศีล 5 — สถานะตามการกระทำ (ไม่ตัดสิน)
 │   ├── greetings.js       เลือกบททักทายของธรรมบาลจากความจำ
@@ -50,6 +51,7 @@ src/
 │   └── rebirth.js         resolveRebirth(karma) → ภูมิปลายทาง
 ├── world/                 ข้อมูลโลก + พื้นผิว
 │   ├── world-data.js      PATH, FALSE_A/B, GATES, FOOT, TREES, RIVER
+│   ├── rooms.js           ประกอบสิ่งกีดขวางตาม seed + ตัวตรวจเส้นทาง (BFS)
 │   └── textures.js        ground/grain patterns
 ├── entities/              สิ่งมีชีวิต
 │   ├── player.js          movement, collision, safe zone

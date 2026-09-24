@@ -20,6 +20,7 @@ import { renderLighting, shakeOffset } from './lighting.js';
 import { drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, drawTeacherLabel, drawTemple, drawTourMarker, drawTree } from './sprites.js';
 import { getLures } from '../game/lures.js';
 import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
+import { dynamicFeatures } from '../systems/worldgen.js';
 import { GUARDIAN } from '../game/npc.js';
 
 function drawPath(points, width, color) {
@@ -49,6 +50,7 @@ export function renderWorld() {
   drawRiver(dawn);
   drawWorldMemory(dawn);
   drawPaths(dawn);
+  drawDynamicRooms(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -109,6 +111,46 @@ export function renderWorld() {
 function drawGround(dawn) {
   ctx.fillStyle = dawn ? textures.groundDawn : textures.groundNight;
   ctx.fillRect(-60, -60, WORLD.w + 120, WORLD.h + 120);
+}
+
+/** Seed-assembled dressing: thickets, boulders, ponds and clearings. */
+function drawDynamicRooms(dawn) {
+  for (const feature of dynamicFeatures()) {
+    if (feature.type === 'pond') {
+      ctx.fillStyle = dawn ? '#1d3c58' : '#0b2035';
+      ctx.beginPath();
+      ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.66, 0, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(140,190,220,.22)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    } else if (feature.type === 'boulders') {
+      for (let i = 0; i < 3; i++) {
+        const a = i * 2.1;
+        ctx.fillStyle = dawn ? '#5b564d' : '#2b2a26';
+        ctx.beginPath();
+        ctx.ellipse(
+          feature.x + Math.cos(a) * feature.r * 0.45,
+          feature.y + Math.sin(a) * feature.r * 0.35,
+          feature.r * 0.6, feature.r * 0.44, 0, 0, TAU,
+        );
+        ctx.fill();
+      }
+    } else if (feature.type === 'thicket') {
+      for (let i = 0; i < 4; i++) {
+        const a = i * 1.7;
+        ctx.fillStyle = dawn ? '#2c4425' : '#0e2013';
+        ctx.beginPath();
+        ctx.arc(feature.x + Math.cos(a) * feature.r * 0.5, feature.y + Math.sin(a) * feature.r * 0.5, feature.r * 0.55, 0, TAU);
+        ctx.fill();
+      }
+    } else {
+      ctx.fillStyle = dawn ? 'rgba(60,70,40,.18)' : 'rgba(40,55,35,.18)';
+      ctx.beginPath();
+      ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.7, 0, 0, TAU);
+      ctx.fill();
+    }
+  }
 }
 
 /** A bridge built in an earlier life, and the debris its upkeep left behind. */
