@@ -13,7 +13,7 @@ import { ctx, viewport } from '../systems/viewport.js';
 import { textures } from '../world/textures.js';
 import {
   ENCLOSURE, FALSE_A, FALSE_B, FOOT, GATES, RIVER, RIVER_WIDTH, TREES,
-  footprintsAlong, routeForPlane,
+  footprintsAlong, routeForPlane, saplingsAlong,
 } from '../world/world-data.js';
 import { cam } from '../game/camera.js';
 import { ghosts } from '../entities/ghost.js';
@@ -32,6 +32,7 @@ import { fieldSite, isSheltered, warrenIsConnected } from '../game/rabbit.js';
 import { nightWatched, owlFound, owlSite, perceivesLost } from '../game/owl.js';
 import { groveSite, nestCrashed, waysJoined } from '../game/elephant.js';
 import { caveSite, perceivesPup } from '../game/bat.js';
+import { crownPicked, seedsScattered, seedsSite } from '../game/squirrel.js';
 import { canTrack, inHollowRest, isHunted, tracksRead, trailSite } from '../game/tiger.js';
 import { enclosureSite, gateOpened as geckoGateOpened } from '../game/gecko.js';
 import { visionRadius } from '../systems/vision.js';
@@ -101,6 +102,7 @@ export function renderWorld() {
   drawTigerTrail(dawn);
   drawEnclosure(dawn);
   drawCave(dawn);
+  drawSquirrelSeeds(dawn);
   drawFootprints(mind);
   drawTemple(dawn);
   drawSala(dawn);
@@ -810,6 +812,73 @@ function drawEnclosure(dawn) {
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(center.x, center.y, ENCLOSURE.ring, Math.PI / 2 - 0.12, Math.PI / 2 + 0.12);
+    ctx.stroke();
+  }
+}
+
+/**
+ * The seed crowns and the cache (reserve table, กระรอก), plus the saplings of a
+ * scattered seed — the one effect in the game you can see from the road: the
+ * route the later lives walk grows trees because a squirrel let them go.
+ */
+function drawSquirrelSeeds(dawn) {
+  const { canopies, cache } = seedsSite();
+
+  // Saplings stand on every plane's road once the seeds were scattered.
+  if (seedsScattered()) {
+    for (const sapling of saplingsAlong(currentBiomeId())) {
+      ctx.strokeStyle = dawn ? 'rgba(120,148,92,.85)' : 'rgba(96,128,80,.8)';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(sapling.x, sapling.y);
+      ctx.quadraticCurveTo(sapling.x - 4, sapling.y - 16, sapling.x - 2, sapling.y - 34);
+      ctx.stroke();
+      ctx.fillStyle = dawn ? 'rgba(126,156,96,.75)' : 'rgba(92,124,78,.75)';
+      ctx.beginPath();
+      ctx.ellipse(sapling.x - 8, sapling.y - 30, 10, 7, -0.4, 0, TAU);
+      ctx.ellipse(sapling.x + 7, sapling.y - 36, 9, 6, 0.3, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  if (getForm().lifeGoal !== 'seeds') return;
+
+  for (const [index, crown] of canopies.entries()) {
+    const picked = crownPicked(index);
+    ctx.fillStyle = dawn ? 'rgba(74,92,58,.9)' : 'rgba(34,46,30,.9)';
+    ctx.beginPath();
+    ctx.arc(crown.x, crown.y, 58, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = dawn ? 'rgba(96,116,72,.75)' : 'rgba(48,62,40,.8)';
+    ctx.beginPath();
+    ctx.arc(crown.x - 26, crown.y - 14, 34, 0, TAU);
+    ctx.arc(crown.x + 28, crown.y - 10, 30, 0, TAU);
+    ctx.fill();
+    if (!picked) {
+      // the seeds, waiting up in there where only a climbing body goes
+      ctx.fillStyle = 'rgba(217,189,123,.9)';
+      for (const [dx, dy] of [[0, 4], [13, -6], [-12, -2]]) {
+        ctx.beginPath();
+        ctx.ellipse(crown.x + dx, crown.y + dy, 5, 3.4, 0.6, 0, TAU);
+        ctx.fill();
+      }
+    }
+  }
+
+  // The old cache at the road's side.
+  ctx.fillStyle = dawn ? 'rgba(70,54,36,.9)' : 'rgba(30,24,16,.92)';
+  ctx.beginPath();
+  ctx.ellipse(cache.x, cache.y, 46, 30, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = dawn ? 'rgba(24,18,10,.9)' : 'rgba(10,8,4,.92)';
+  ctx.beginPath();
+  ctx.ellipse(cache.x, cache.y + 6, 20, 13, 0, 0, TAU);
+  ctx.fill();
+  if (seedsScattered()) {
+    ctx.strokeStyle = `rgba(191,208,160,${0.2 + Math.sin(performance.now() * 0.002) * 0.07})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cache.x, cache.y, 62, 0, TAU);
     ctx.stroke();
   }
 }

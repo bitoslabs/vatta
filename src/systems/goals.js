@@ -17,11 +17,12 @@ import { gatherInGrove } from '../game/elephant.js';
 import { settleRange, tigerGoal } from '../game/tiger.js';
 import { geckoGoal, settleRefuge } from '../game/gecko.js';
 import { batGoal, settleRoost as settleBatRoost } from '../game/bat.js';
+import { settleCache, squirrelGoal } from '../game/squirrel.js';
 
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure', 'dark-roost']);
+const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure', 'dark-roost', 'cache']);
 
 function nearestRiverPoint(target) {
   let best = RIVER[0];
@@ -71,6 +72,9 @@ function nearestRiverPoint(target) {
  *   roost  the bat's night: find the pup in a chamber too dark to see, then
  *          answer for it at the roost — the gate is not a wall at all, it is a
  *          sound the body has to make (systems/echo.js#perceivesPoint)
+ *   cache  the squirrel's gathering: climb into three crowns for seeds, then
+ *          decide at the old cache whether to keep them or scatter them — the
+ *          only life that accumulates before it answers (game/squirrel.js)
  */
 export function goalFor() {
   if (isWaterBound() || getForm().lifeGoal === 'water') {
@@ -92,6 +96,7 @@ export function goalFor() {
   if (lifeGoal === 'trail') return tigerGoal();
   if (lifeGoal === 'enclosure') return geckoGoal();
   if (lifeGoal === 'echo') return batGoal();
+  if (lifeGoal === 'seeds') return squirrelGoal();
   return { x: TEMPLE.x, y: TEMPLE.y, r: LAND_GOAL_RADIUS, kind: 'land' };
 }
 
@@ -119,6 +124,7 @@ export function updateLifeGoal() {
     if (goal.kind === 'range') settleRange();
     if (goal.kind === 'enclosure') settleRefuge();
     if (goal.kind === 'dark-roost') settleBatRoost();
+    if (goal.kind === 'cache') settleCache();
     emit(EVENTS.LIFE_COMPLETE, goal.kind);
   }
 }

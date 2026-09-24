@@ -142,6 +142,79 @@ export const BURROW = Object.freeze({
 });
 
 /**
+ * The seed trees and the cache (docs/animal-lives-story.md reserve table,
+ * "กระรอก — ปีนและกระจายเมล็ด · การสะสมกับการแบ่งปัน").
+ *
+ * Three crowns stand along the forest road, and their seeds are *inside* the
+ * canopy: a body that can climb reaches them, a walker passes underneath and sees
+ * nothing to pick (world/rooms.js `canopy`). The cache is an old hollow at the
+ * road's side where the squirrel decides what to do with what it has gathered —
+ * bury it all in one place, or scatter it where it will grow. Scattering records
+ * `seeds-scattered`, and the road the later lives walk carries saplings because of
+ * it (`saplingsAlong`).
+ */
+export const SEEDS = Object.freeze({
+  // Placed clear of the roadside beings on purpose: an encounter's prompt takes
+  // priority over a crown's, and a seed you cannot reach is not a door.
+  canopies: Object.freeze([
+    Object.freeze({ x: 1560, y: 1180 }),
+    Object.freeze({ x: 2230, y: 900 }),
+    Object.freeze({ x: 2900, y: 1180 }),
+  ]),
+  cache: Object.freeze({ x: 2740, y: 1620 }),
+  canopyRadius: 66,
+  cacheRadius: 96,
+  saplingEvery: 340,
+  saplingOffset: 74,
+});
+
+/** Seeded dressing keeps off the seed trees and the cache. */
+export const SEEDS_KEEPOUTS = Object.freeze([
+  ...SEEDS.canopies.map((crown) => Object.freeze({ x: crown.x, y: crown.y, r: 150 })),
+  Object.freeze({ x: SEEDS.cache.x, y: SEEDS.cache.y, r: 150 }),
+]);
+
+/** The squirrel's errand: the road → the crowns → the cache. Kept clear of trunks. */
+export const SEEDS_APPROACH = Object.freeze([
+  Object.freeze([1560, 1580]),
+  Object.freeze([SEEDS.canopies[0].x, SEEDS.canopies[0].y]),
+  Object.freeze([SEEDS.canopies[1].x, SEEDS.canopies[1].y]),
+  Object.freeze([SEEDS.canopies[2].x, SEEDS.canopies[2].y]),
+  Object.freeze([SEEDS.cache.x, SEEDS.cache.y]),
+]);
+
+/**
+ * Where the saplings of a scattered seed stand: every so often along this plane's
+ * road, a little to one side. One list, read by the renderer that draws them and
+ * by the rest rule that lets them shade a body (systems/rest.js).
+ */
+export function saplingsAlong(biomeId = 'memory-forest') {
+  const route = routeForPlane(biomeId);
+  const out = [];
+  let travelled = 0;
+  let side = 1;
+  for (let i = 0; i < route.length - 1; i++) {
+    const [ax, ay] = route[i];
+    const [bx, by] = route[i + 1];
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len = Math.hypot(dx, dy);
+    if (!len) continue;
+    const nx = -dy / len;
+    const ny = dx / len;
+    for (let d = SEEDS.saplingEvery - (travelled % SEEDS.saplingEvery); d < len; d += SEEDS.saplingEvery) {
+      side = -side;
+      out.push({
+        x: ax + (dx * d) / len + nx * SEEDS.saplingOffset * side,
+        y: ay + (dy * d) / len + ny * SEEDS.saplingOffset * side,
+      });
+    }
+    travelled += len;
+  }
+  return out;
+}
+
+/**
  * The dark cave (docs/animal-lives-story.md reserve table, "ค้างคาว — รับรู้โดยไม่
  * พึ่งภาพเพียงอย่างเดียว").
  *
@@ -583,6 +656,8 @@ export const TREES = (() => {
     if (ENCLOSURE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
     if (distToPoly(ENCLOSURE_APPROACH, x, y) < 84) continue;
     if (CAVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (SEEDS_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) continue;
+    if (distToPoly(SEEDS_APPROACH, x, y) < 84) continue;
     if (trees.some((tree) => dist(x, y, tree.x, tree.y) < 52)) continue;
     trees.push({ x, y, r: 16 + rng() * 14, c: 52 + rng() * 64, s: rng() });
   }

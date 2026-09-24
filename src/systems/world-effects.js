@@ -24,6 +24,7 @@ export const WORLD_EFFECTS = Object.freeze({
   'trust-built': { key: 'effect.trustBuilt', color: '#d8c8b4' },
   'gate-opened': { key: 'effect.gateOpened', color: '#b9c9a8' },
   'echo-shared': { key: 'effect.echoShared', color: '#cbd6ea' },
+  'seeds-scattered': { key: 'effect.seedsScattered', color: '#bfd0a0' },
 });
 
 /** The effect store, created on demand so old saves need no migration. */

@@ -5,6 +5,7 @@ import { dist, distToPoly } from '../core/math.js';
 import { mulberry32 } from '../core/rng.js';
 import {
   BURROW, BURROW_KEEPOUT, CREVICE, CREVICE_APPROACH, CREVICE_KEEPOUT,
+  SEEDS, SEEDS_APPROACH, SEEDS_KEEPOUTS,
   ENCLOSURE, ENCLOSURE_APPROACH, ENCLOSURE_KEEPOUTS,
   FIELD, FIELD_APPROACH, FIELD_KEEPOUTS, GROVE, GROVE_APPROACH, GROVE_KEEPOUTS,
   MARSH, MARSH_APPROACH, MARSH_KEEPOUT, MARSH_PONDS,
@@ -74,7 +75,14 @@ export const GROVE_FEATURE_TYPES = Object.freeze(['log', 'crawlway']);
  */
 export const ENCLOSURE_FEATURE_TYPES = Object.freeze(['wall']);
 
-const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone', 'log', 'wall']);
+/**
+ * The seed trees' own kind (reserve table, กระรอก): `canopy` is a crown that only
+ * a climbing body gets into. A walker passes underneath it and finds nothing,
+ * because the seeds are up there.
+ */
+export const SEEDS_FEATURE_TYPES = Object.freeze(['canopy']);
+
+const SOLID_TYPES = new Set(['thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone', 'log', 'wall', 'canopy']);
 
 function featureRadius(type, rng) {
   if (type === 'boulders') return 36 + rng() * 14;
@@ -95,6 +103,7 @@ function featureRadius(type, rng) {
   if (type === 'log') return GROVE.logRadius;
   if (type === 'crawlway') return GROVE.crawlRadius;
   if (type === 'wall') return ENCLOSURE.wallRadius;
+  if (type === 'canopy') return SEEDS.canopyRadius;
   if (type === 'pebble') return 18 + rng() * 10;
   return 62;
 }
@@ -138,6 +147,8 @@ export function blockedAt(features, x, y, abilities = {}) {
     if (feature.type === 'gully') return abilities.leap !== true && featureAt(feature, x, y);
     if (feature.type === 'crawlway') return abilities.small !== true && featureAt(feature, x, y);
     if (feature.type === 'wall') return abilities.cling !== true && featureAt(feature, x, y);
+    // A canopy is the squirrel's door: only climbing (or flying) gets into it.
+    if (feature.type === 'canopy') return abilities.climbing !== true && featureAt(feature, x, y);
     if (!SOLID_TYPES.has(feature.type)) return false;
     if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
     if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
@@ -165,6 +176,8 @@ function mayPlace(type, x, y, radius, route) {
   if (GROVE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   // Nor the walled enclosure, or a trunk could lean over the wall.
   if (ENCLOSURE_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
+  // Nor the seed trees or the cache, or a trunk could close a crown.
+  if (SEEDS_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   void type;
   return true;
 }
@@ -450,6 +463,52 @@ export function groveWithoutLog(features = assembleGrove()) {
 }
 
 /**
+ * The seed trees (reserve table, กระรอก — "ปีนและกระจายเมล็ด").
+ *
+ * Three crowns, one of which is a hollow cache: the seeds wait inside the crowns,
+ * so a climbing body can reach them and a walking body cannot. Nothing else is
+ * added here — the errand is a count and a decision, not a wall.
+ */
+export function assembleSeedTrees() {
+  return SEEDS.canopies.map((crown) => ({
+    i: 0,
+    site: 'seeds',
+    type: 'canopy',
+    fixed: true,
+    x: crown.x,
+    y: crown.y,
+    r: SEEDS.canopyRadius,
+  }));
+}
+
+/** The crowns without their seeds: what the world looks like once they are picked. */
+export function canopyPicked(features, picked) {
+  return features.map((feature) => (
+    feature.type === 'canopy' && picked.includes(feature.x) ? { ...feature, picked: true } : feature
+  ));
+}
+
+/**
+ * Prove the crowns are a climbing body's door (reserve table, กระรอก): a climbing
+ * body reaches the inside of each crown from the road, a walking body never does.
+ */
+export function validateSquirrelRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false };
+  const start = SEEDS_APPROACH[0];
+  const from = { x: start[0], y: start[1] };
+  // "into the crown", not "beside it": a walker finds no free cell up there at all.
+  const middle = SEEDS.canopyRadius * 0.4;
+  const climbReaches = SEEDS.canopies.every((crown) => (
+    reachableBetween(features, from, crown, { ...base, climbing: true }, middle)
+  ));
+  const walkerReaches = SEEDS.canopies.some((crown) => (
+    reachableBetween(features, from, crown, { ...base, climbing: false }, middle)
+  ));
+  const ok = climbReaches === true && walkerReaches === false;
+  return { ok, climbReaches, walkerReaches };
+}
+
+/**
  * The walled enclosure (reserve table, จิ้งจก — "มองปัญหาจากมุมใหม่").
  *
  * A sheer ring of wall with one gate in it, and the gate stands in the same ring:
@@ -517,6 +576,7 @@ export function assembleRooms(seed, biomeId = 'memory-forest') {
   if (sites.includes('field')) for (const f of assembleField()) features.push({ ...f, i: features.length });
   if (sites.includes('grove')) for (const f of assembleGrove()) features.push({ ...f, i: features.length });
   if (sites.includes('enclosure')) for (const f of assembleEnclosure()) features.push({ ...f, i: features.length });
+  if (sites.includes('seeds')) for (const f of assembleSeedTrees()) features.push({ ...f, i: features.length });
 
   // Occasionally silt builds up in the river — which the route check must catch.
   if (rng() < 0.35) {
@@ -614,7 +674,17 @@ export function validateRoute(features, formId, abilities = {}, biomeId = 'memor
 }
 
 /** Can `to` be reached from `from` on the coarse grid, at these abilities? */
-function reachableBetween(features, from, to, abilities) {
+/**
+ * Can `to` be reached from `from` on the coarse grid, at these abilities?
+ *
+ * `goalRadius` asks a different question: not "can the walker stand exactly
+ * there", but "can it get *into that place*" — true when any free cell within the
+ * radius is reached. The seed crowns need that, because their middle is solid to
+ * a walking body and there is no free cell in there to stand on at all
+ * (`nearestFreeCell` would otherwise helpfully step just outside the crown and
+ * call the place reached).
+ */
+function reachableBetween(features, from, to, abilities, goalRadius = 0) {
   const pad = 260;
   const minX = Math.min(from.x, to.x) - pad;
   const minY = Math.min(from.y, to.y) - pad;
@@ -636,15 +706,31 @@ function reachableBetween(features, from, to, abilities) {
     r: Math.floor((point.y - minY) / GRID_CELL),
   });
   const start = nearestFreeCell(blocked, cols, rows, toCell(from));
-  const goal = nearestFreeCell(blocked, cols, rows, toCell(to));
-  if (!start || !goal) return false;
+  if (!start) return false;
+
+  const goals = new Set();
+  if (goalRadius > 0) {
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (blocked[index(c, r)]) continue;
+        const x = minX + c * GRID_CELL + GRID_CELL / 2;
+        const y = minY + r * GRID_CELL + GRID_CELL / 2;
+        if (Math.hypot(x - to.x, y - to.y) <= goalRadius) goals.add(index(c, r));
+      }
+    }
+    if (!goals.size) return false;
+  } else {
+    const goal = nearestFreeCell(blocked, cols, rows, toCell(to));
+    if (!goal) return false;
+    goals.add(index(goal.c, goal.r));
+  }
 
   const seen = new Uint8Array(cols * rows);
   const queue = [start];
   seen[index(start.c, start.r)] = 1;
   while (queue.length) {
     const cell = queue.shift();
-    if (cell.c === goal.c && cell.r === goal.r) return true;
+    if (goals.has(index(cell.c, cell.r))) return true;
     for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
       const c = cell.c + dc;
       const r = cell.r + dr;

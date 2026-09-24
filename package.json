@@ -12,8 +12,10 @@
   "scripts": {
     "start": "npx --yes serve . -l 5173",
     "serve:py": "python3 -m http.server 5173",
-    "check": "node --check src/main.js",
-    "test": "node tests/life-transition.test.mjs && node tests/burrow.test.mjs && node tests/ant.test.mjs && node tests/frog.test.mjs && node tests/snake.test.mjs && node tests/rabbit.test.mjs && node tests/owl.test.mjs && node tests/elephant.test.mjs && node tests/tiger.test.mjs && node tests/gecko.test.mjs && node tests/title.test.mjs && node tests/settings.test.mjs && node tests/routes.test.mjs && node tests/fonts.test.mjs && node tests/bat.test.mjs"
+    "check": "node tests/run.mjs --syntax-only",
+    "test": "node tests/run.mjs",
+    "test:all": "node tests/run.mjs --all",
+    "test:watch": "node tests/run.mjs --watch"
   },
   "keywords": [
     "game",

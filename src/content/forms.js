@@ -40,6 +40,8 @@
  *                      and opening the gate from the inside for everyone
  *              'echo'  the roost a bat ends in, after finding its pup in a cave
  *                      that only sound maps
+ *              'seeds' the cache a squirrel ends at, once it has climbed for
+ *                      seeds and decided where they should go
  * maps       the maps that can carry this body (see systems/life-route.js):
  *              'land' the forest road · 'water' the river · 'burrow' the soil
  *              under the great root · 'air' anywhere above the ground
@@ -50,6 +52,7 @@
  *              burrow  tunnels through soft soil (`burrow`), but not hard root
  *              leap    crosses deep mire, but not a slot in stone
  *              slither flattens through a crevice, but not through soil
+ *              climbing also reaches a canopy, where a squirrel's seeds are
  *              cling   climbs a sheer wall nothing else passes (the gecko)
  *              echo    maps the dark by sound: a pulse shows what eyes cannot
  *                      (the bat), and only what a pulse has shown can be found
@@ -187,8 +190,8 @@ export const FORMS = Object.freeze([
    * snake (the crevice, game/snake.js), the rabbit (the field, game/rabbit.js)
    * the owl (the roost, game/owl.js), the elephant (the grove,
    * game/elephant.js), the tiger (the trail, game/tiger.js) and now the reserve
-   * roster: the gecko (game/gecko.js) and the bat (game/bat.js) are born into the
-   * life cycle as well.
+   * roster: the gecko (game/gecko.js), the bat (game/bat.js) and the squirrel
+   * (game/squirrel.js) are born into the life cycle as well.
    */
   {
     id: 'worm',
@@ -278,6 +281,19 @@ export const FORMS = Object.freeze([
     lifeGoal: 'trail',
     maps: ['land'],
     abilities: { flying: false, climbing: false, small: false, stealth: true, tracker: true },
+  },
+  {
+    id: 'squirrel',
+    speed: 1.15,
+    waterSpeed: 0.7,
+    vision: 30,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 1.15,
+    rebirth: true,
+    lifeGoal: 'seeds',
+    maps: ['land'],
+    abilities: { flying: false, climbing: true, small: false },
   },
   {
     id: 'bat',

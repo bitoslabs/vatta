@@ -94,6 +94,22 @@ export function drawAnimalVector(ctx, animal, actor, moving, options = {}) {
       eye(23, -18 + crouch);
       break;
     }
+    case 'squirrel': {
+      // An upright body with a plume of a tail, and paws that hold a seed.
+      const wag = Math.sin(actor.phase * 1.4) * 4;
+      line([[-6, -6], [-14, -14 + step], [-9, -20]], '#8a6b45', 3.4);
+      ellipse(-2, -9, 9, 8, '#a8825a');
+      ellipse(0, -20, 6.5, 6, '#b98f63');
+      line([[2, -25], [4, -30], [7, -31]], '#8a6b45', 1.6);
+      eye(3, -21);
+      for (const side of [-1, 1]) {
+        line([[side * 2, -2], [side * 4, 2]], '#8a6b45', 1.8);
+      }
+      // the tail: the animal's signature, drawn last so it reads over the body
+      line([[-6, -6], [-16, -12 + wag], [-20, -24 + wag * 1.4], [-13, -30 + wag]], '#9c7b4e', 5);
+      if (active) ellipse(5, -14, 5, 4, '#d9bd7b', .3);
+      break;
+    }
     case 'bat': {
       // Wings spread on a beat, and the ears that do the seeing.
       const flap = Math.sin(actor.phase * 1.6) * 8;

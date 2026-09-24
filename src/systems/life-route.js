@@ -12,7 +12,7 @@ import { FORMS, mapsFor } from '../content/forms.js';
  */
 export const CHAPTER_ANIMALS = [
   ['deer', 'dog', 'crane', 'snake', 'tiger'], ['turtle', 'dog', 'worm', 'ant', 'bat'],
-  ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko'], ['dog', 'turtle', 'crane', 'frog', 'elephant'],
+  ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko', 'squirrel'], ['dog', 'turtle', 'crane', 'frog', 'elephant'],
   ['butterfly', 'monkey', 'worm', 'snake', 'gecko'], ['crane', 'dog', 'turtle', 'tiger'],
   ['turtle', 'deer', 'butterfly', 'frog', 'bat'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
   ['deer', 'butterfly', 'turtle', 'rabbit', 'tiger'], ['monkey', 'crane', 'dog', 'frog', 'owl'],

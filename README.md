@@ -12,6 +12,18 @@ npm start        # npx serve . -l 5173
 npm run serve:py # python3 -m http.server 5173
 ```
 
+## Test
+
+```bash
+npm test              # every tests/*.test.mjs (discovered, no list to maintain)
+npm test -- routes    # only suites matching "routes"
+npm run test:watch    # re-run on changes
+npm run check         # node --check every module in src/
+```
+
+The runner (`tests/run.mjs`) parses every module first, then runs each suite in its
+own process and prints a one-line-per-suite summary — see [docs/testing.md](./docs/testing.md).
+
 Open http://localhost:5173 · `npm run check` syntax-checks the entry module ·
 `npm test` runs the node test suite.
 

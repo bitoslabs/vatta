@@ -26,7 +26,7 @@ export const BIOMES = Object.freeze({
     veil: null,
     ambient: 0.87,
     features: ['thicket', 'boulders', 'pond', 'clearing'],
-    sites: ['marsh', 'crevice', 'field', 'grove', 'enclosure'],
+    sites: ['marsh', 'crevice', 'field', 'grove', 'enclosure', 'seeds'],
     site: null,
   },
   'under-root': {
