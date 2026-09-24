@@ -63,7 +63,8 @@ src/
 │   └── ghost-status.js    HUNT | FADE
 ├── render/                canvas ล้วน
 │   ├── world-renderer.js  ฉากโลก
-│   ├── sprites.js         ต้นไม้/ตัวละคร/ผี/วัด/ศาลา/ป้าย
+│   ├── sprites.js         ต้นไม้/ผี/ไอเทม/NPC/วัด/ศาลา/ป้ายผู้เล่น
+│   ├── forms-sprites.js   silhouette ผู้เล่น 10 ร่าง + แสงที่อก + flourish
 │   ├── lighting.js        ชั้นความมืด + punch light
 │   └── memory-renderer.js ฉากความทรงจำ
 ├── ui/                    DOM ล้วน

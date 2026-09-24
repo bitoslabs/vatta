@@ -6,6 +6,8 @@ import { ctx } from '../systems/viewport.js';
 import { STATUS } from '../entities/ghost-status.js';
 import { ghost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
+import { getForm } from '../systems/forms.js';
+import { drawActFlourish, drawChestLight, drawFormBody } from './forms-sprites.js';
 
 export function drawTree(tree, dawn) {
   const sway = Math.sin(performance.now() * 0.0006 + tree.s * 9) * 2;
@@ -34,35 +36,20 @@ export function drawTree(tree, dawn) {
   ctx.fill();
 }
 
+/** The player, in whatever body this life wears (design §10). */
 export function drawPlayer(dawn) {
+  const formId = getForm().id;
   const bob = Math.sin(player.bob) * 1.6;
-
-  ctx.fillStyle = 'rgba(0,0,0,.4)';
-  ctx.beginPath();
-  ctx.ellipse(player.x, player.y + 12, 12, 5, 0, 0, TAU);
-  ctx.fill();
-
-  ctx.fillStyle = dawn ? '#e9e2cf' : '#d5cfba';
-  ctx.beginPath();
-  ctx.ellipse(player.x, player.y + 3 + bob * 0.4, 11, 9, 0, 0, TAU);
-  ctx.fill();
-
-  ctx.fillStyle = dawn ? '#caa877' : '#b99a6c';
-  ctx.beginPath();
-  ctx.arc(player.x, player.y - 8 + bob, 7, 0, TAU);
-  ctx.fill();
-
-  ctx.fillStyle = '#141210';
-  ctx.beginPath();
-  ctx.arc(player.x, player.y - 10 + bob, 6.4, Math.PI, TAU);
-  ctx.fill();
-
-  // The little lamp (ta-kai) the player carries.
-  const flicker = 0.75 + Math.sin(performance.now() * 0.011) * 0.25;
-  ctx.fillStyle = `rgba(255,206,130,${flicker})`;
-  ctx.beginPath();
-  ctx.arc(player.x + player.face * 10, player.y + 2, 3, 0, TAU);
-  ctx.fill();
+  drawFormBody(ctx, formId, player.x, player.y, {
+    face: player.face,
+    bob,
+    moving: player.moving,
+    act: player.actT,
+    dawn,
+  });
+  // The shared chest light marks the player in any form.
+  drawChestLight(ctx, player.x, player.y - 6, player.actT > 0 ? 1.4 : 0.8);
+  if (player.actT > 0) drawActFlourish(ctx, player.x, player.y - 6, player.actT);
 }
 
 export function drawGhost(target = ghost) {
@@ -156,7 +143,6 @@ export function drawLure(lure) {
   ctx.arc(lure.x, lure.y, 24 * greed, 0, TAU);
   ctx.fill();
 
-  // Mound of coins.
   ctx.fillStyle = '#c9a24a';
   ctx.beginPath();
   ctx.ellipse(lure.x, lure.y, 13 * greed, 8 * greed, 0, 0, TAU);
@@ -174,7 +160,6 @@ export function drawLure(lure) {
     ctx.fill();
   }
 
-  // Rising sparkle.
   const rise = (t * 22 + lure.y) % 30;
   ctx.fillStyle = `rgba(255,240,190,${0.7 - rise / 42})`;
   ctx.beginPath();
@@ -223,41 +208,6 @@ export function drawGuardian(x, y) {
   ctx.fill();
 }
 
-/** A floating name for a landmark, used by classroom mode. */
-export function drawTeacherLabel(x, y, text, scale = 1) {
-  const size = Math.round(13 * scale);
-  ctx.save();
-  ctx.font = `300 ${size}px 'Bai Jamjuree'`;
-  ctx.textAlign = 'center';
-  const width = ctx.measureText(text).width + Math.round(18 * scale);
-  const height = Math.round(20 * scale);
-  const top = y - height - Math.round(2 * scale);
-  ctx.fillStyle = 'rgba(6,11,8,.78)';
-  ctx.fillRect(x - width / 2, top, width, height);
-  ctx.strokeStyle = 'rgba(214,180,120,.35)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x - width / 2, top, width, height);
-  ctx.fillStyle = '#e9d9a8';
-  ctx.fillText(text, x, top + height - Math.round(5 * scale));
-  ctx.restore();
-  ctx.textAlign = 'left';
-}
-
-/** A pulsing ring marking the next stop of the guided tour. */
-export function drawTourMarker(x, y) {
-  const t = performance.now() * 0.003;
-  const radius = 26 + Math.sin(t) * 5;
-  ctx.strokeStyle = 'rgba(233,217,168,.75)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, TAU);
-  ctx.stroke();
-  ctx.strokeStyle = 'rgba(233,217,168,.28)';
-  ctx.beginPath();
-  ctx.arc(x, y, radius + 12, 0, TAU);
-  ctx.stroke();
-}
-
 /** Roadside beings of design §6, drawn from a small shared kit. */
 export function drawEncounter(x, y, kind) {
   const now = performance.now() * 0.001;
@@ -283,7 +233,6 @@ export function drawEncounter(x, y, kind) {
   ctx.fill();
 
   if (kind === 'naga') {
-    // A serpent coil.
     ctx.strokeStyle = palette.robe;
     ctx.lineWidth = 9;
     ctx.beginPath();
@@ -323,7 +272,6 @@ export function drawEncounter(x, y, kind) {
     ctx.arc(x, y - 38, 8, 0, TAU);
     ctx.fill();
   } else {
-    // Robed figures: nymph, māra, keeper.
     ctx.fillStyle = palette.robe;
     ctx.beginPath();
     ctx.moveTo(x - 13, y + 12);
@@ -336,7 +284,6 @@ export function drawEncounter(x, y, kind) {
     ctx.arc(x, y - 38, 8, 0, TAU);
     ctx.fill();
     if (kind === 'nymph') {
-      // Rings of sound.
       ctx.strokeStyle = 'rgba(220,225,255,.35)';
       ctx.lineWidth = 1;
       for (let i = 0; i < 3; i++) {
@@ -345,7 +292,6 @@ export function drawEncounter(x, y, kind) {
         ctx.stroke();
       }
     } else if (kind === 'mara') {
-      // A hanging set of scales.
       ctx.strokeStyle = 'rgba(220,200,190,.5)';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
@@ -355,7 +301,6 @@ export function drawEncounter(x, y, kind) {
       ctx.lineTo(x + 26, y - 26);
       ctx.stroke();
     } else {
-      // A still halo.
       ctx.strokeStyle = 'rgba(235,245,240,.4)';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
@@ -393,7 +338,6 @@ export function drawPeta(x, y) {
   ctx.arc(x, y - 40, 8, 0, TAU);
   ctx.fill();
 
-  // The cracked bowl, always dripping.
   ctx.fillStyle = '#6b6274';
   ctx.beginPath();
   ctx.ellipse(x - 16, y - 6, 13, 6, 0, 0, TAU);
@@ -406,6 +350,41 @@ export function drawPeta(x, y) {
   ctx.beginPath();
   ctx.arc(x - 16, y + 12, 1.4, 0, TAU);
   ctx.fill();
+}
+
+/** A floating name for a landmark, used by classroom mode. */
+export function drawTeacherLabel(x, y, text, scale = 1) {
+  const size = Math.round(13 * scale);
+  ctx.save();
+  ctx.font = `300 ${size}px 'Bai Jamjuree'`;
+  ctx.textAlign = 'center';
+  const width = ctx.measureText(text).width + Math.round(18 * scale);
+  const height = Math.round(20 * scale);
+  const top = y - height - Math.round(2 * scale);
+  ctx.fillStyle = 'rgba(6,11,8,.78)';
+  ctx.fillRect(x - width / 2, top, width, height);
+  ctx.strokeStyle = 'rgba(214,180,120,.35)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x - width / 2, top, width, height);
+  ctx.fillStyle = '#e9d9a8';
+  ctx.fillText(text, x, top + height - Math.round(5 * scale));
+  ctx.restore();
+  ctx.textAlign = 'left';
+}
+
+/** A pulsing ring marking the next stop of the guided tour. */
+export function drawTourMarker(x, y) {
+  const t = performance.now() * 0.003;
+  const radius = 26 + Math.sin(t) * 5;
+  ctx.strokeStyle = 'rgba(233,217,168,.75)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, TAU);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(233,217,168,.28)';
+  ctx.beginPath();
+  ctx.arc(x, y, radius + 12, 0, TAU);
+  ctx.stroke();
 }
 
 export function drawTemple(dawn) {
@@ -422,7 +401,6 @@ export function drawTemple(dawn) {
   ctx.ellipse(T.x, T.y, T.r + 20, T.r * 0.66, 0, 0, TAU);
   ctx.stroke();
 
-  // Ubosot hall.
   const bx = 540;
   const by = 1330;
   ctx.fillStyle = dawn ? '#2c1f12' : '#1a1109';
@@ -451,7 +429,6 @@ export function drawTemple(dawn) {
     ctx.fillRect(bx + i * 62 - 6, by - 38, 12, 120);
   }
 
-  // Centipede banners.
   ctx.fillStyle = '#3a270e';
   ctx.fillRect(830, 1240, 6, 180);
   for (let i = 0; i < 3; i++) {
@@ -465,7 +442,6 @@ export function drawTemple(dawn) {
     ctx.fill();
   }
 
-  // Bodhi tree.
   ctx.fillStyle = 'rgba(0,0,0,.4)';
   ctx.beginPath();
   ctx.ellipse(360, 1830, 150, 44, 0, 0, TAU);
@@ -480,7 +456,6 @@ export function drawTemple(dawn) {
   ctx.fillStyle = dawn ? '#25401e' : '#0c1c11';
   ctx.beginPath(); ctx.arc(360, 1660, 80, 0, TAU); ctx.fill();
 
-  // Candles.
   const candles = [[470, 1420], [700, 1540], [560, 1650], [820, 1600], [380, 1560]];
   for (const [cx, cy] of candles) {
     const flicker = 0.7 + Math.sin(now * 0.01 + cx) * 0.3;
@@ -490,7 +465,6 @@ export function drawTemple(dawn) {
     ctx.beginPath(); ctx.arc(cx, cy, 14, 0, TAU); ctx.fill();
   }
 
-  // The elder monk.
   const mx = 700;
   const my = 1450;
   ctx.fillStyle = 'rgba(0,0,0,.35)';
@@ -505,7 +479,6 @@ export function drawTemple(dawn) {
   ctx.fillStyle = dawn ? '#caa877' : '#a8865a';
   ctx.beginPath(); ctx.arc(mx, my - 24, 8, 0, TAU); ctx.fill();
 
-  // Temple gate (exit to the east).
   ctx.fillStyle = dawn ? '#3a2a16' : '#1e1408';
   ctx.fillRect(GATE_OUT.x - 14, GATE_OUT.y - 58, 14, 116);
   ctx.fillRect(GATE_OUT.x + 42, GATE_OUT.y - 58, 14, 116);

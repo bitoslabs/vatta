@@ -12,7 +12,7 @@ import { getForm } from '../systems/forms.js';
 import { dynamicFeatures, removeFeature } from '../systems/worldgen.js';
 import { getRealmModifier } from '../systems/samsara.js';
 import { ghost, updateGhosts } from '../entities/ghost.js';
-import { inSafeZone, player, updatePlayer } from '../entities/player.js';
+import { animatePlayer, inSafeZone, player, updatePlayer } from '../entities/player.js';
 import { cam } from './camera.js';
 import { updateEchoes } from './echoes.js';
 import { updateGuardian } from './npc.js';
@@ -100,6 +100,7 @@ function clearBouldersForStrongForms() {
     if (feature.type !== 'boulders') continue;
     if (dist(player.x, player.y, feature.x, feature.y) < feature.r + 14) {
       removeFeature(feature.i);
+      animatePlayer();
       playThud();
       addFloater(player.x, player.y - 120, t('form.asura.lift'), '#c9bcd6', 15);
     }

@@ -18,7 +18,14 @@ export const player = {
   face: 1,
   moving: false,
   bob: 0,
+  /** Seconds remaining of an action flourish (ability, interact, build...). */
+  actT: 0,
 };
+
+/** Trigger the action flourish (design §10: idle / move / ability / interact). */
+export function animatePlayer(seconds = 0.55) {
+  player.actT = Math.max(player.actT, seconds);
+}
 
 export function inSafeZone(x, y) {
   return dist(x, y, TEMPLE.x, TEMPLE.y) < TEMPLE.r || dist(x, y, SALA.x, SALA.y) < SALA.r;
@@ -83,6 +90,7 @@ export function updatePlayer(dt) {
   if (ax) player.face = ax > 0 ? 1 : -1;
   player.moving = magnitude > 0.1;
   if (player.moving) player.bob += dt * (running ? 11 : 6);
+  player.actT = Math.max(0, player.actT - dt);
 
   resolveTreeCollisions();
 

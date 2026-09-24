@@ -7,7 +7,7 @@ import { ENCOUNTERS } from '../content/encounters.js';
 import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
-import { player } from '../entities/player.js';
+import { animatePlayer, player } from '../entities/player.js';
 import { choose } from '../ui/choices.js';
 
 /** The encounter the walker is standing beside, or null. */
@@ -39,6 +39,7 @@ function talk(encounter) {
   choose(options, (index) => {
     const choice = encounter.choices[index];
     if (!choice) return;
+    animatePlayer();
     recordKarma(choice.karma);
     addFloater(player.x, player.y - 130, t(choice.answer), choice.color || '#bfd9cd', 15);
   });
