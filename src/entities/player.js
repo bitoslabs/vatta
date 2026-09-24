@@ -4,7 +4,7 @@ import { MODE, PATH_WIDTH, PLAYER, TEMPLE, SALA, WORLD } from '../core/constants
 import { clamp, dist, distToPoly } from '../core/math.js';
 import { state } from '../core/state.js';
 import { input, isMindful } from '../systems/input.js';
-import { inWater, isWaterBound, speedMultiplier } from '../systems/forms.js';
+import { getForm, inWater, isWaterBound, speedMultiplier } from '../systems/forms.js';
 import { debrisBlocked } from '../game/world-memory.js';
 import { dynamicBlocked } from '../systems/worldgen.js';
 import { getRealmModifier } from '../systems/samsara.js';
@@ -89,8 +89,9 @@ export function updatePlayer(dt) {
   return { frozen, mind, running, speed };
 }
 
-/** Push the player out of any overlapping tree trunk. */
+/** Push the player out of any overlapping tree trunk (flyers pass over). */
 function resolveTreeCollisions() {
+  if (getForm().abilities && getForm().abilities.flying) return;
   for (const tree of TREES) {
     const d = dist(player.x, player.y, tree.x, tree.y);
     const minDist = tree.r + PLAYER.radius;

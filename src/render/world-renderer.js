@@ -21,7 +21,7 @@ import { drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, dr
 import { getLures } from '../game/lures.js';
 import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
-import { isWaterBound } from '../systems/forms.js';
+import { getForm, isWaterBound } from '../systems/forms.js';
 import { goalFor } from '../systems/goals.js';
 import { GUARDIAN } from '../game/npc.js';
 
@@ -203,9 +203,10 @@ function drawPaths(dawn) {
 
 function drawFootprints(mind) {
   const { W, H } = viewport;
-  const alpha = state.story.released
+  const scent = getForm().scent ? 1.6 : 1;
+  const alpha = clamp((state.story.released
     ? 0.85
-    : clamp(0.5 - state.fear * 0.55 + (mind ? 0.55 : 0), 0, 0.95);
+    : clamp(0.5 - state.fear * 0.55 + (mind ? 0.55 : 0), 0, 0.95)) * scent, 0, 1);
   if (alpha <= 0.04) return;
 
   for (const foot of FOOT) {

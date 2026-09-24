@@ -30,9 +30,15 @@ export function dynamicFeatures() {
   return dynamicWorld().features || [];
 }
 
-/** Solid dressing the player collides with. */
+/** Solid dressing the player collides with, given the form's abilities. */
 export function dynamicBlockers() {
-  return dynamicFeatures().filter((feature) => feature.type === 'thicket' || feature.type === 'boulders');
+  const abilities = getForm().abilities || {};
+  if (abilities.flying === true) return [];
+  return dynamicFeatures().filter((feature) => {
+    if (feature.type === 'thicket') return abilities.climbing !== true;
+    if (feature.type === 'boulders') return abilities.small !== true;
+    return false;
+  });
 }
 
 export function dynamicWaterAt(x, y) {
@@ -40,7 +46,7 @@ export function dynamicWaterAt(x, y) {
 }
 
 export function dynamicBlocked(x, y) {
-  return blockedAt(dynamicFeatures(), x, y);
+  return blockedAt(dynamicFeatures(), x, y, getForm().abilities || {});
 }
 
 export { assembleRooms };

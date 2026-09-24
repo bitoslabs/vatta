@@ -33,10 +33,13 @@ export function waterAt(features, x, y) {
   return features.some((feature) => feature.type === 'pond' && featureAt(feature, x, y));
 }
 
-export function blockedAt(features, x, y) {
-  return features.some(
-    (feature) => (feature.type === 'thicket' || feature.type === 'boulders') && featureAt(feature, x, y),
-  );
+export function blockedAt(features, x, y, abilities = {}) {
+  if (abilities.flying === true) return false;
+  return features.some((feature) => {
+    if (feature.type === 'thicket') return abilities.climbing !== true && featureAt(feature, x, y);
+    if (feature.type === 'boulders') return abilities.small !== true && featureAt(feature, x, y);
+    return false;
+  });
 }
 
 function mayPlace(type, x, y, radius) {
@@ -104,7 +107,6 @@ function nearestFreeCell(blocked, cols, rows, cell) {
  */
 export function validateRoute(features, formId, abilities = {}) {
   const waterBound = formId === 'fish';
-  const flying = abilities.flying === true;
   const route = routeFor(formId);
   const start = route[0];
   const goal = route[route.length - 1];
@@ -123,7 +125,7 @@ export function validateRoute(features, formId, abilities = {}) {
     for (let c = 0; c < cols; c++) {
       const x = minX + c * GRID_CELL + GRID_CELL / 2;
       const y = minY + r * GRID_CELL + GRID_CELL / 2;
-      const solid = flying ? false : blockedAt(features, x, y);
+      const solid = blockedAt(features, x, y, abilities);
       const water = waterAt(features, x, y);
       blocked[index(c, r)] = (solid || (waterBound && !water)) ? 1 : 0;
     }

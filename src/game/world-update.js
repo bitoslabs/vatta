@@ -7,6 +7,7 @@ import { playHeart } from '../systems/audio.js';
 import { updateEffects } from '../systems/effects.js';
 import { isMindful } from '../systems/input.js';
 import { getPathModifiers } from '../systems/path.js';
+import { getForm } from '../systems/forms.js';
 import { getRealmModifier } from '../systems/samsara.js';
 import { ghost, updateGhosts } from '../entities/ghost.js';
 import { inSafeZone, player, updatePlayer } from '../entities/player.js';
@@ -60,9 +61,10 @@ function updateFear(dt, { frozen, mind, running }) {
 
   const modifier = getRealmModifier();
   const path = getPathModifiers();
-  const gain = modifier.fearGain;
-  // Unlocked factors of the path let the mind settle faster.
-  const relief = modifier.safeRelief * (1 + path.fearRelief);
+  const form = getForm();
+  const gain = modifier.fearGain * (form.fearGain || 1);
+  // Unlocked factors of the path — and a steady form — let the mind settle faster.
+  const relief = modifier.safeRelief * (1 + path.fearRelief) * (form.fearGuard || 1);
 
   if (running && player.moving) state.fear += FEAR.runGain * gain * dt;
   if (ghost.active) {

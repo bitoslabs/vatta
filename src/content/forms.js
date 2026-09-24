@@ -4,15 +4,22 @@
  * Playable forms (ร่าง) for the multi-life prototype.
  *
  * Per the design: a form is a *set of tools*, not a rank. Each changes how the
- * same forest is traversed. Only three are implemented for the first slice —
- * human, deer, fish — chosen per docs/dynamic-samsara-design.md §12.
+ * same forest is traversed. All eight forms from docs/dynamic-samsara-design.md
+ * §5 are listed here; the slice currently playable in the life cycle is chosen
+ * by `systems/forms.js#nextFormId`.
  *
  * speed      × movement on land
  * waterSpeed × movement in the river band
- * waterBound fish may not leave the river at all
- * vision     ± pixels of sight (deer hear far; fish see poorly on land)
+ * waterBound may not leave the water at all
+ * vision     ± pixels of sight
+ * fearGain   × how fast fear builds (fragile forms fear sooner)
+ * fearGuard  × how firmly the mind holds (turtle)
+ * scent      reveals the glowing footprints strongly
  * canSpeak   flavour only for now: animals would use gestures for dialogue
- * abilities  fed to the route checker: a flying form ignores ground solids
+ * abilities  fed to the route checker and to collision:
+ *              flying  ignores ground solids (trees, thickets, boulders)
+ *              climbing passes thickets, but not boulders
+ *              small   slips through boulders, but not thickets
  */
 export const FORMS = Object.freeze([
   {
@@ -22,7 +29,7 @@ export const FORMS = Object.freeze([
     vision: 0,
     waterBound: false,
     canSpeak: true,
-    abilities: { flying: false, climbing: false },
+    abilities: { flying: false, climbing: false, small: false },
   },
   {
     id: 'deer',
@@ -31,7 +38,56 @@ export const FORMS = Object.freeze([
     vision: 60,
     waterBound: false,
     canSpeak: false,
-    abilities: { flying: false, climbing: false },
+    abilities: { flying: false, climbing: false, small: false },
+  },
+  {
+    id: 'dog',
+    speed: 1.05,
+    waterSpeed: 0.8,
+    vision: 30,
+    waterBound: false,
+    canSpeak: false,
+    scent: true,
+    abilities: { flying: false, climbing: false, small: false },
+  },
+  {
+    id: 'crane',
+    speed: 1.12,
+    waterSpeed: 1.05,
+    vision: 90,
+    waterBound: false,
+    canSpeak: false,
+    abilities: { flying: true, climbing: false, small: false },
+  },
+  {
+    id: 'turtle',
+    speed: 0.7,
+    waterSpeed: 1,
+    vision: -10,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 0.6,
+    fearGuard: 1.2,
+    abilities: { flying: false, climbing: false, small: false },
+  },
+  {
+    id: 'monkey',
+    speed: 1.05,
+    waterSpeed: 0.85,
+    vision: 20,
+    waterBound: false,
+    canSpeak: false,
+    abilities: { flying: false, climbing: true, small: false },
+  },
+  {
+    id: 'butterfly',
+    speed: 1.25,
+    waterSpeed: 0.8,
+    vision: -40,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 1.3,
+    abilities: { flying: false, climbing: false, small: true },
   },
   {
     id: 'fish',
@@ -40,7 +96,7 @@ export const FORMS = Object.freeze([
     vision: -30,
     waterBound: true,
     canSpeak: false,
-    abilities: { flying: false, climbing: false },
+    abilities: { flying: false, climbing: false, small: false },
   },
 ]);
 
