@@ -17,7 +17,7 @@ import { toast } from '../ui/feedback.js';
 import { cam } from './camera.js';
 import { registerChapterHandler } from './chapters.js';
 import { anchoredPoint } from '../world/world-data.js';
-import { currentBiomeId } from '../systems/biome.js';
+import { currentMapId } from '../systems/biome.js';
 
 const RETALIATE_RANGE = 150;
 const BODHI = { x: 360, y: 1690 };
@@ -30,7 +30,7 @@ const ANGER_SPAWN = { x: 2500, y: 1450 };
  * nearest place on the plane's own road anywhere else (design §7).
  */
 export function angerSpawn() {
-  return anchoredPoint(currentBiomeId(), ANGER_SPAWN.x, ANGER_SPAWN.y);
+  return anchoredPoint(currentMapId(), ANGER_SPAWN.x, ANGER_SPAWN.y);
 }
 const ENRAGE_SECONDS = 6;
 const RETALIATE_FEAR = 0.28;

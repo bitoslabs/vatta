@@ -192,3 +192,12 @@ for (const tree of TREES) {
 log('ground clear ok');
 
 console.error('GARDEN TEST OK — a shadow only the light opens, beds in flower and ripe, and seeds let go to travel on');
+
+// All six sense-desire heavens use the garden and its route, even in an animal body.
+for (const realmId of ['catumaharajika', 'tavatimsa', 'yama', 'tusita', 'nimmanarati', 'paranimmita']) {
+  state.formId = 'deer';
+  state.realmId = realmId;
+  assert.equal(currentBiomeId(), 'light-garden', realmId);
+  const features = assembleRooms(7919, currentBiomeId());
+  assert.equal(validateRoute(features, 'deer', {}, currentBiomeId()).ok, true, realmId);
+}

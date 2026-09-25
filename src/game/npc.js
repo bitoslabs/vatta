@@ -7,7 +7,7 @@ import { pickGreeting } from '../systems/greetings.js';
 import { player } from '../entities/player.js';
 import { say } from '../ui/dialogue.js';
 import { anchoredPoint } from '../world/world-data.js';
-import { currentBiomeId } from '../systems/biome.js';
+import { currentMapId } from '../systems/biome.js';
 
 /** A still figure on the road: the Dharma guardian (ธรรมบาล). */
 export const GUARDIAN = Object.freeze({ x: 2560, y: 1240, r: 95 });
@@ -18,7 +18,7 @@ export const GUARDIAN = Object.freeze({ x: 2560, y: 1240, r: 95 });
  * to the nearest place on that plane's road (world-data.js#anchoredPoint).
  */
 export function guardianSpot() {
-  return { ...anchoredPoint(currentBiomeId(), GUARDIAN.x, GUARDIAN.y), r: GUARDIAN.r };
+  return { ...anchoredPoint(currentMapId(), GUARDIAN.x, GUARDIAN.y), r: GUARDIAN.r };
 }
 
 /**

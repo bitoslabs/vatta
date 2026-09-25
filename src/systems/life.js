@@ -1,5 +1,6 @@
 'use strict';
 
+import { resetReflections } from './reflections.js';
 import { state } from '../core/state.js';
 import { getKarmaMemory } from './karma-memory.js';
 import { getForm, isWaterBound, setForm } from './forms.js';
@@ -32,6 +33,7 @@ export function lifeForm() {
 
 /** Begin the multi-life prototype with a human life in chapter one. */
 export function startLifeMode(chapterId = CHAPTERS[0].id) {
+  resetReflections();
   state.lifeMode = true;
   state.lifeId = 1;
   state.formHistory = ['human'];

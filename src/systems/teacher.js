@@ -5,7 +5,7 @@ import { emit, EVENTS, on } from '../core/events.js';
 import { dist } from '../core/math.js';
 import { player } from '../entities/player.js';
 import { anchoredPoint } from '../world/world-data.js';
-import { currentBiomeId } from './biome.js';
+import { currentMapId } from './biome.js';
 
 const KEY = 'vimutti.teacher';
 
@@ -85,7 +85,7 @@ export function currentNote() {
 
 /** The landmarks this plane has, with the road-bound ones standing on its road. */
 export function teacherLandmarks() {
-  const plane = currentBiomeId();
+  const plane = currentMapId();
   const forest = plane === 'memory-forest';
   return NOTES
     .filter((note) => forest || !FOREST_NOTES.has(note.key))

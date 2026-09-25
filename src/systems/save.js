@@ -1,5 +1,6 @@
 'use strict';
 
+import { exportReflections, importReflections } from './reflections.js';
 import { state } from '../core/state.js';
 import { exportKarma, importKarma } from './karma.js';
 import { exportTransition, importTransition } from './transition.js';
@@ -86,6 +87,7 @@ export function snapshot() {
     rebirth: exportRebirth(),
     stats: { ...state.stats },
     karma: exportKarma(),
+    reflections: exportReflections(),
     path: exportPath(),
     precepts: exportPrecepts(),
     echoes: exportEchoes(),
@@ -178,6 +180,7 @@ export function applySaveMeta(data) {
 /** Apply the parts that loadChapter resets (chapter, stats, realm, liberation). */
 export function applySaveRuntime(data) {
   if (!data) return;
+  importReflections(data.reflections);
   if (typeof data.chapter === 'number') state.chapter = data.chapter;
   state.runName = typeof data.name === 'string' ? data.name : '';
   state.stats = { ...emptyStats(), ...(data.stats || {}) };

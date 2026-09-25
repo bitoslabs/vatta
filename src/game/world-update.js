@@ -1,5 +1,8 @@
 'use strict';
 
+import { tickReflections } from '../systems/reflections.js';
+import { perspectiveFor } from '../systems/perspective.js';
+
 import { FEAR, MODE } from '../core/constants.js';
 import { clamp, dist, lerp } from '../core/math.js';
 import { state } from '../core/state.js';
@@ -60,7 +63,9 @@ let heartCd = 0;
 
 /** Per-frame update of the explorable world scene. */
 export function updateWorld(dt) {
+  if (state.journeyPanelOpen) return;
   state.stats.time += dt;
+  if (state.mode === MODE.WORLD && !state.dialogueOpen && !state.choiceOpen) tickReflections(dt);
   const frozen = state.dialogueOpen || state.mode === MODE.TITLE;
   const mind = isMindful();
 
@@ -228,6 +233,7 @@ function clearBouldersForStrongForms() {
 }
 
 function updateCamera(dt) {
+  cam.zoom = perspectiveFor().zoom;
   const smoothing = 1 - Math.pow(0.0012, dt);
   cam.x = lerp(cam.x, player.x, smoothing);
   cam.y = lerp(cam.y, player.y, smoothing);

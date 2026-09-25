@@ -105,15 +105,18 @@ export function resolveRebirth(karma = {}) {
 
   // Concentration lifts the mind through the jhānas, whether or not much fruit was
   // ripened: the ladder is read from the tendency itself.
-  if (wholesome.key === 'concentration') {
-    const rung = ladderPick(JHANA_LADDER, wholesome.score);
+  // Sati protects the wholesome tie-break above, but must not mask cultivated
+  // concentration or goodwill when choosing a destination.
+  const destination = dominantTendencyWholesome(tendencies, false);
+  if (destination.key === 'concentration') {
+    const rung = ladderPick(JHANA_LADDER, destination.score);
     if (rung) return { realmId: rung.realmId, reasonKey: rung.reasonKey };
     return { realmId: DEFAULT_REALM_ID, reasonKey: 'rebirth.reason.smallMerit' };
   }
 
   // Metta and the merit of giving open the deva planes.
-  if (wholesome.key === 'metta' || wholesome.key === 'generosity') {
-    const rung = ladderPick(DEVAS_LADDER, Math.max(wholesome.score, Math.floor(merit / 10)));
+  if (destination.key === 'metta' || destination.key === 'generosity') {
+    const rung = ladderPick(DEVAS_LADDER, Math.max(destination.score, Math.floor(merit / 10)));
     if (rung) return { realmId: rung.realmId, reasonKey: rung.reasonKey };
   }
 
@@ -124,10 +127,11 @@ export function resolveRebirth(karma = {}) {
 }
 
 /** The strongest wholesome tendency (metta, sati, generosity, concentration). */
-function dominantTendencyWholesome(tendencies = {}) {
+function dominantTendencyWholesome(tendencies = {}, includeSati = true) {
   let key = null;
   let score = 0;
   for (const name of ['concentration', 'metta', 'sati', 'generosity']) {
+    if (name === 'sati' && !includeSati) continue;
     const value = tendencies[name];
     if (Number.isFinite(value) && value > score) {
       key = name;

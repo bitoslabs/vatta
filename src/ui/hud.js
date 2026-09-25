@@ -1,5 +1,6 @@
 'use strict';
 
+import { updateJourneyLauncher } from './journey-panel.js';
 import { MODE } from '../core/constants.js';
 import { state } from '../core/state.js';
 import { t, tList } from '../systems/i18n.js';
@@ -43,6 +44,7 @@ const MIND_HINT_ROTATE_MS = 1600;
 
 /** Sync the HUD DOM with the current meter / mindfulness state. */
 export function updateHud(mind) {
+  updateJourneyLauncher();
   if (state.mode === MODE.WORLD && !state.story.released) {
     hudEl.classList.remove('hidden');
     fearLabel.textContent = t(state.meterKey || 'hud.fear');

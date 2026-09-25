@@ -10,6 +10,7 @@ import { resetChoices } from '../ui/choices.js';
 import { resetDialogue } from '../ui/dialogue.js';
 import { resetGhost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
+import { perspectiveFor } from '../systems/perspective.js';
 import { cam } from './camera.js';
 import { resetRelease } from './release.js';
 import { resetAnt } from './ant.js';
@@ -545,6 +546,7 @@ export function loadChapter(id, { autosave = true, realmId = null } = {}) {
   cam.x = player.x;
   cam.y = player.y;
   cam.shake = 0;
+  cam.zoom = perspectiveFor().zoom;
 
   floaters.length = 0;
   sparks.length = 0;

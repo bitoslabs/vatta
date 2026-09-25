@@ -9,7 +9,7 @@ import { debrisBlocked } from '../game/world-memory.js';
 import { dynamicBlocked, dynamicFeatures } from '../systems/worldgen.js';
 import { isOnRoute } from '../world/rooms.js';
 import { terrainSpeed } from '../systems/terrain.js';
-import { currentBiomeId } from '../systems/biome.js';
+import { currentMapId } from '../systems/biome.js';
 import { getRealmModifier } from '../systems/samsara.js';
 import { TREES } from '../world/world-data.js';
 
@@ -70,7 +70,7 @@ export function updatePlayer(dt) {
 
   // The road belongs to the plane (world/rooms.js#isOnRoute), so a body moves at
   // full speed along the street of its own world.
-  const onPath = isOnRoute(player.x, player.y, currentBiomeId());
+  const onPath = isOnRoute(player.x, player.y, currentMapId());
 
   let speed = PLAYER.walkSpeed;
   if (running) speed = PLAYER.runSpeed;

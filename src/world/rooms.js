@@ -22,7 +22,7 @@ import {
   NEST, NEST_KEEPOUT, RIVER, RIVER_WIDTH, routeForPlane,
 } from './world-data.js';
 import { PATH_WIDTH } from '../core/constants.js';
-import { BIOMES } from '../content/biomes.js';
+import { biomeForMap } from '../content/realm-maps.js';
 
 /**
  * Dynamic rooms: a fixed skeleton with seed-varied dressing (design §3).
@@ -1605,7 +1605,7 @@ export function assemblePollinatedBlooms(seed = 1) {
 export function assembleRooms(seed, biomeId = 'memory-forest', options = {}) {
   const rng = mulberry32(seed);
   const features = [];
-  const pool = (BIOMES[biomeId] && BIOMES[biomeId].features) || FEATURE_TYPES;
+  const pool = biomeForMap(biomeId).features || FEATURE_TYPES;
   // The spine of this map: dressing sits beside *this* plane's road.
   const route = routeForPlane(biomeId);
 
@@ -1643,7 +1643,7 @@ export function assembleRooms(seed, biomeId = 'memory-forest', options = {}) {
 
   // The plane's fixed sites: whole lives hang on these, so they come from the
   // plane's own geometry rather than from the seed (design §7, design §12).
-  const sites = (BIOMES[biomeId] && BIOMES[biomeId].sites) || [];
+  const sites = biomeForMap(biomeId).sites || [];
   if (sites.includes('burrow')) for (const f of assembleBurrow()) features.push({ ...f, i: features.length });
   if (sites.includes('nest')) for (const f of assembleNest()) features.push({ ...f, i: features.length });
   if (sites.includes('marsh')) for (const f of assembleMarsh()) features.push({ ...f, i: features.length });

@@ -3,7 +3,7 @@
 import { state } from '../core/state.js';
 import { assembleRooms, buildDynamicWorld, blockedAt, waterAt } from '../world/rooms.js';
 import { getForm } from './forms.js';
-import { currentBiomeId } from './biome.js';
+import { currentBiomeId, currentMapId } from './biome.js';
 import { hasEffect } from './world-effects.js';
 import { isLowTide } from './tide.js';
 import { isDamp } from './moisture.js';
@@ -83,7 +83,7 @@ export function initDynamicWorld(chapterId) {
   // Anything lifted away in an earlier life stays away.
   const removed = new Set(state.world.removed || []);
   built.features = built.features.filter((feature) => !removed.has(feature.i));
-  state.dynamic = { ...built, seed };
+  state.dynamic = { ...built, seed, mapId: currentMapId() };
   return state.dynamic;
 }
 

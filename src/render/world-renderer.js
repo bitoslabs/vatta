@@ -58,7 +58,7 @@ import { canTrack, inHollowRest, isHunted, tracksRead, trailSite } from '../game
 import { enclosureSite, gateOpened as geckoGateOpened } from '../game/gecko.js';
 import { visionRadius } from '../systems/vision.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
-import { currentBiome, currentBiomeId } from '../systems/biome.js';
+import { currentBiome, currentBiomeId, currentMapId } from '../systems/biome.js';
 import { getForm, isWaterBound } from '../systems/forms.js';
 import { goalFor } from '../systems/goals.js';
 import { guardianSpot } from '../game/npc.js';
@@ -106,7 +106,9 @@ export function renderWorld() {
 
   ctx.save();
   const shake = shakeOffset();
-  ctx.translate(Math.round(W / 2 - cam.x + shake.x), Math.round(H / 2 - cam.y + shake.y));
+  ctx.translate(W / 2 + shake.x, H / 2 + shake.y);
+  ctx.scale(cam.zoom || 1, cam.zoom || 1);
+  ctx.translate(-cam.x, -cam.y);
 
   drawGround(dawn);
   drawRiver(dawn);
@@ -1861,7 +1863,7 @@ function drawSquirrelSeeds(dawn) {
 
   // Saplings stand on every plane's road once the seeds were scattered.
   if (seedsScattered()) {
-    for (const sapling of saplingsAlong(currentBiomeId())) {
+    for (const sapling of saplingsAlong(currentMapId())) {
       ctx.strokeStyle = dawn ? 'rgba(120,148,92,.85)' : 'rgba(96,128,80,.8)';
       ctx.lineWidth = 2.4;
       ctx.beginPath();
@@ -2013,7 +2015,7 @@ function drawPaths(dawn) {
   // The plane lays its own road, in its own material (design §7): the forest's
   // false branches and their light gates belong to the forest lesson alone.
   const look = routeLook(plane, dawn);
-  drawPath(routeForPlane(plane), look.width, look.color);
+  drawPath(routeForPlane(currentMapId()), look.width, look.color);
   if (plane === 'memory-forest') {
     drawPath(FALSE_A, 60, dawn ? '#222015' : '#0d120c');
     drawPath(FALSE_B, 60, dawn ? '#222015' : '#0d120c');
@@ -2029,9 +2031,9 @@ function drawFootprints(mind) {
   if (alpha <= 0.04) return;
 
   // Footprints follow whichever road this body is walking.
-  const footmarks = currentBiomeId() === 'memory-forest' ? FOOT : footprintsAlong(routeForPlane(currentBiomeId()));
+  const footmarks = footprintsAlong(routeForPlane(currentMapId()));
   for (const foot of footmarks) {
-    if (Math.abs(foot.x - cam.x) > W * 0.6 || Math.abs(foot.y - cam.y) > H * 0.6) continue;
+    if (Math.abs(foot.x - cam.x) > W * 0.6 / (cam.zoom || 1) || Math.abs(foot.y - cam.y) > H * 0.6 / (cam.zoom || 1)) continue;
     ctx.save();
     ctx.translate(foot.x, foot.y);
     ctx.rotate(foot.ang);
@@ -2193,7 +2195,7 @@ function drawLures() {
 function drawEntities(dawn) {
   const { W, H } = viewport;
   const treesNear = TREES.filter(
-    (tree) => Math.abs(tree.x - cam.x) < W * 0.62 && Math.abs(tree.y - cam.y) < H * 0.62,
+    (tree) => Math.abs(tree.x - cam.x) < W * 0.62 / (cam.zoom || 1) && Math.abs(tree.y - cam.y) < H * 0.62 / (cam.zoom || 1),
   );
 
   for (const tree of treesNear) if (tree.y < player.y - 6) drawTree(tree, dawn);
@@ -2247,8 +2249,8 @@ function drawFloaters() {
   ctx.textAlign = 'center';
   for (const floater of floaters) {
     const alpha = clamp(Math.min(floater.t * 2, (floater.life - floater.t) * 1.4), 0, 1);
-    const sx = floater.x - cam.x + W / 2;
-    const sy = floater.y - cam.y + H / 2;
+    const sx = (floater.x - cam.x) * (cam.zoom || 1) + W / 2;
+    const sy = (floater.y - cam.y) * (cam.zoom || 1) + H / 2;
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.font = canvasFont(floater.size);

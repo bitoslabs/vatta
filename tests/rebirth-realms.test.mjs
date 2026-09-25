@@ -86,3 +86,15 @@ assert.equal(resolveRebirth({ tendencies: { anger: 4, metta: 3 } }).realmId, 'ni
 }
 
 console.error('REBIRTH REALMS TEST OK — fruit and roots read together, 31 planes, and every reason named in three languages');
+
+// Mindfulness accompanies meditation and is also earned during ordinary play.
+// It must not turn an otherwise identical heaven/Brahma destination into human.
+for (const [action, times, expected] of [
+  ['meditate', 4, 'mahabrahma'], ['compassion', 1, 'tavatimsa'],
+]) {
+  resetKarma();
+  recordKarma(action, times);
+  recordKarma('mindful', 2);
+  assert.equal(resolveRebirth(getKarma()).realmId, expected);
+}
+assert.equal(resolveRebirth({ tendencies: { sati: 100 } }).realmId, 'manussa');

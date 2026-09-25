@@ -1,5 +1,6 @@
 'use strict';
 
+import { realmById } from '../content/realms.js';
 import { state } from '../core/state.js';
 import { FORMS, mapsFor } from '../content/forms.js';
 import { CHAPTERS, loadChapter } from '../game/chapters.js';
@@ -41,7 +42,8 @@ export function explorableForms() {
  * Enter a body (and a chapter) in explore mode. The run's save is left alone, and
  * teacher mode is on so a trial body cannot be punished for being tried.
  */
-export function startExplore({ formId, chapterId = CHAPTERS[0].id } = {}) {
+export function startExplore({ formId, chapterId = CHAPTERS[0].id, realmId = null } = {}) {
+  if (realmId !== null && !realmById(realmId)) return false;
   const form = FORMS.find((entry) => entry.id === formId);
   if (!form || !explorableForms().some((entry) => entry.id === formId)) return false;
   const chapter = CHAPTERS.find((entry) => entry.id === chapterId) || CHAPTERS[0];
@@ -49,7 +51,7 @@ export function startExplore({ formId, chapterId = CHAPTERS[0].id } = {}) {
   state.lifeMode = false;
   state.formId = form.id;
   setTeacher(true);
-  loadChapter(chapter.id, { autosave: false });
+  loadChapter(chapter.id, { autosave: false, realmId });
   return true;
 }
 

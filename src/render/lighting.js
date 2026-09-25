@@ -33,8 +33,10 @@ export function renderLighting(mind) {
   lightCtx.globalCompositeOperation = 'destination-out';
 
   const punch = (x, y, radius, strength) => {
-    const sx = x - cam.x + W / 2;
-    const sy = y - cam.y + H / 2;
+    const zoom = cam.zoom || 1;
+    radius *= zoom;
+    const sx = (x - cam.x) * zoom + W / 2;
+    const sy = (y - cam.y) * zoom + H / 2;
     if (sx < -radius || sx > W + radius || sy < -radius || sy > H + radius) return;
     const gradient = lightCtx.createRadialGradient(sx, sy, radius * 0.1, sx, sy, radius);
     gradient.addColorStop(0, `rgba(0,0,0,${strength})`);

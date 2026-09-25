@@ -7,4 +7,5 @@ export const cam = {
   x: PLAYER.x,
   y: PLAYER.y,
   shake: 0,
+  zoom: 1,
 };

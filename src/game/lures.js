@@ -2,7 +2,7 @@
 
 import { LURES } from '../content/lures.js';
 import { anchoredPoint } from '../world/world-data.js';
-import { currentBiomeId } from '../systems/biome.js';
+import { currentMapId } from '../systems/biome.js';
 
 /** Runtime lure state for chapter 3 (reset on every chapter load). */
 let runtime = LURES.map((lure) => ({ ...lure, taken: false }));
@@ -16,7 +16,7 @@ let placedFor = null;
  * objects keep their identity — `taken` lives on them.
  */
 function placeLures() {
-  const plane = currentBiomeId();
+  const plane = currentMapId();
   if (placedFor === plane) return;
   placedFor = plane;
   runtime.forEach((lure, i) => {

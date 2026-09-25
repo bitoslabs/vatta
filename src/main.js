@@ -1,5 +1,6 @@
 'use strict';
 
+import { initJourneyPanel } from './ui/journey-panel.js';
 import { on, EVENTS } from './core/events.js';
 import { initAudioControls } from './systems/audio.js';
 import { initI18n } from './systems/i18n.js';
@@ -72,6 +73,7 @@ function bootstrap() {
   initMirrorCourt();
   initCodex();
   initAnimalBook();
+  initJourneyPanel();
   startLoop();
   registerPwa();
 }

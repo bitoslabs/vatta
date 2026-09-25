@@ -7,7 +7,7 @@ import { ENCOUNTERS } from '../content/encounters.js';
 import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
-import { currentBiomeId } from '../systems/biome.js';
+import { currentMapId, currentBiomeId } from '../systems/biome.js';
 import { anchoredPoint } from '../world/world-data.js';
 
 /**
@@ -21,9 +21,9 @@ import { choose } from '../ui/choices.js';
 
 /** Only the beings whose plane this is, standing beside this plane's road. */
 export function encountersHere() {
-  const biome = currentBiomeId();
+  const biome = currentMapId();
   return ENCOUNTERS
-    .filter((encounter) => !encounter.biome || encounter.biome === biome)
+    .filter((encounter) => !encounter.biome || encounter.biome === currentBiomeId())
     .map((encounter) => {
       if (SITE_BEINGS.has(encounter.id)) return encounter;
       const spot = anchoredPoint(biome, encounter.x, encounter.y);

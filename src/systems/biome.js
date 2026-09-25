@@ -6,6 +6,8 @@ import { getForm } from './forms.js';
 import { getKarma } from './karma.js';
 import { realmById } from '../content/realms.js';
 
+import { mapIdentity, mapProfile } from '../content/realm-maps.js';
+
 const DEFAULT_BIOME = 'memory-forest';
 
 /**
@@ -27,9 +29,11 @@ export function currentBiomeId() {
     // The asura realm has a city of its own (design §7): it is the one apāya plane
     // that is not the woeful one.
     if (realm.id === 'asurakaya') return 'asura-city';
+    if (realm.id === 'peta') return 'craving-market';
+    if (realm.id === 'tiracchana') return DEFAULT_BIOME;
     if (realm.group === 'apaya') return 'woeful';
     if (realm.group === 'arupa') return 'formless';
-    if (realm.group === 'rupa') return 'light-garden';
+    if (realm.group === 'rupa' || (realm.group === 'kamasugati' && realm.id !== 'manussa')) return 'light-garden';
   }
 
   const tendencies = getKarma().tendencies;
@@ -41,6 +45,13 @@ export function currentBiomeId() {
   return DEFAULT_BIOME;
 }
 
+export function currentMapId() {
+  return mapIdentity(state.realmId, currentBiomeId());
+}
+
 export function currentBiome() {
-  return BIOMES[currentBiomeId()] || BIOMES[DEFAULT_BIOME];
+  const biome = BIOMES[currentBiomeId()] || BIOMES[DEFAULT_BIOME];
+  const profile = mapProfile(currentMapId());
+  return profile ? { ...biome, ground: profile.ground, water: profile.water,
+    waterCore: profile.waterCore, veil: profile.veil } : biome;
 }

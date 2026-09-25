@@ -1,5 +1,7 @@
 'use strict';
 
+import { mapProfile, baseBiomeId } from '../content/realm-maps.js';
+
 import { TEMPLE, SALA, WORLD, TAU } from '../core/constants.js';
 import { dist, distToPoly } from '../core/math.js';
 import { mulberry32, rng, seedFrom } from '../core/rng.js';
@@ -69,8 +71,23 @@ export const ROUTES = Object.freeze({
 });
 
 /** The road this plane walks (a plane with no road of its own walks the forest's). */
+const realmRoutes = new Map();
 export function routeForPlane(biomeId) {
-  return ROUTES[biomeId] || PATH;
+  const profile = mapProfile(biomeId);
+  if (!profile) return ROUTES[biomeId] || PATH;
+  if (realmRoutes.has(biomeId)) return realmRoutes.get(biomeId);
+  const base = ROUTES[baseBiomeId(biomeId)] || PATH;
+  // Keep chapter-one tutorial junctions intact in the human forest.
+  if (profile.id === 'manussa' && base === PATH) return PATH;
+  const random = mulberry32(seedFrom(biomeId));
+  const spine = base.length === 2 ? [base[0], ...[.25,.5,.75].map(t => [
+    base[0][0] + (base[1][0]-base[0][0])*t,
+    base[0][1] + (base[1][1]-base[0][1])*t,
+  ]), base[1]] : base;
+  const route = spine.map((point,i) => i === 0 || i === spine.length-1 ? [...point]
+    : [point[0] + Math.round((random()-.5)*110), point[1] + Math.round((random()-.5)*140)]);
+  realmRoutes.set(biomeId, route);
+  return route;
 }
 
 /** The point on this plane's road closest to (x, y). */

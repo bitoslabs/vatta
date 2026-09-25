@@ -24,6 +24,7 @@ export function isMindful() {
 const PREVENT_DEFAULT = new Set([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
 
 function onKeyDown(e) {
+  if (state.journeyPanelOpen) return;
   if (PREVENT_DEFAULT.has(e.key)) e.preventDefault();
   if (e.repeat) return;
 
