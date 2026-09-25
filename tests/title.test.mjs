@@ -190,13 +190,13 @@ assert.equal(teacherSub.textContent.length > 0, true, 'the teacher row has a des
 teacherPanel.initTeacherPanel();
 byId.teacherBtn.click();
 assert.equal(isTeacher(), true, 'clicking the tool row turns classroom mode on');
-assert.notEqual(teacherName.textContent, 'โหมดครู: ปิด', `the label reflects the toggle (${teacherName.textContent})`);
+assert.equal(teacherName.textContent, t('teacher.toggle.on'), 'the label reflects the toggle in the active locale');
 assert.equal(teacherSub.textContent.length > 0, true, 'and the description survived it');
 teacherPanel.updateTeacherPanel();
 assert.equal(teacherSub.textContent.length > 0, true, 'still there after a frame update');
 byId.teacherBtn.click();
 assert.equal(isTeacher(), false, 'and clicking again turns it off');
-assert(teacherName.textContent.includes('ปิด'), 'the label comes back to off');
+assert.equal(teacherName.textContent, t('teacher.toggle.off'), 'the label comes back to off in the active locale');
 log('tool rows ok');
 
 // ---- 6. every id the screen reaches for exists in index.html ----
@@ -219,6 +219,9 @@ assert(baseCss.includes("'Lao_Buhan'"), 'Lao headings use Lao_Buhan');
 assert(baseCss.includes("'Kom'"), 'Lao body text uses Kom');
 
 const { locales } = await import('../src/locales/index.js');
+assert.equal(locales.default, 'lo', 'new players open in Lao');
+assert(html.includes('<html lang="lo">'), 'the unhydrated document starts in Lao');
+assert(html.includes('<title>ວັດຕະ — ປ່າສຽງເອີ້ນ</title>'), 'the initial browser title is Lao');
 assert.equal(locales.th.strings['title.name'], 'วัฏฏะ', 'Thai name is วัฏฏะ');
 assert.equal(locales.lo.strings['title.name'], 'ວັດຕະ', 'Lao name is ວັດຕະ');
 assert.equal(locales.en.strings['title.name'], 'Vatta', 'English name is Vatta');

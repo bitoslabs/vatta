@@ -9,6 +9,6 @@ export const locales = {
   th,
   lo,
   en,
-  default: 'th',
-  order: ['th', 'lo', 'en'],
+  default: 'lo',
+  order: ['lo', 'th', 'en'],
 };

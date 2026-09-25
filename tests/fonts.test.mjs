@@ -47,18 +47,11 @@ const fs = await import('node:fs');
 
 const familyOf = (font) => font.split(/px\s+/)[1].split(',')[0].trim().replace(/^'|'$/g, '');
 
-// ---- 1. Thai (the default) keeps the face the game has always used ----
+// ---- 1. New players start in Lao, including the canvas font ----
 initI18n();
-assert.equal(getLocale(), 'th', 'the game opens in Thai');
-const thai = canvasFont(13);
-assert.equal(thai, `300 13px ${canvasFontFamily('th')}`, 'the Thai font string is weight, size, stack');
-assert(thai.includes("'Bai Jamjuree'"), 'Thai canvas text uses the Thai face');
-assert.equal(localeFontScale('th'), 1, 'and needs no size nudge');
-log('thai ok');
-
-// ---- 2. Lao draws in Kom, a little larger ----
-setLocale('lo');
-assert.equal(getLocale(), 'lo', 'switching to Lao');
+assert.equal(getLocale(), 'lo', 'the game opens in Lao when nothing was saved');
+assert.equal(document.documentElement.lang, 'lo', 'the document language follows the default');
+assert.equal(document.title, t('app.title'), 'the page title follows the default');
 const lao = canvasFont(13);
 assert(lao.includes("'Kom'"), `Lao canvas text uses Kom (${lao})`);
 assert.equal(familyOf(lao), 'Kom', 'and Kom comes first, before any Thai fallback');
@@ -66,16 +59,26 @@ assert.equal(localeFontScale('lo') > 1, true, 'Lao letters sit smaller, so canva
 assert(lao.includes('15px'), `a 13px label is drawn at 15px under Lao (${lao})`);
 assert(canvasFont(11, 500).startsWith('500 '), 'weight is preserved for Lao too');
 assert(canvasFont(11, 500).includes("'Kom'"), 'and so is the face');
-log('lao ok');
+log('lao default ok');
 
-// ---- 3. English is its own switch, and switching back restores Thai ----
+// ---- 2. A saved Thai choice overrides the new default ----
+setLocale('th');
+initI18n();
+assert.equal(getLocale(), 'th', 'a saved Thai choice survives reload');
+const thai = canvasFont(13);
+assert.equal(thai, `300 13px ${canvasFontFamily('th')}`, 'the Thai font string is weight, size, stack');
+assert(thai.includes("'Bai Jamjuree'"), 'Thai canvas text uses the Thai face');
+assert.equal(localeFontScale('th'), 1, 'and needs no size nudge');
+log('thai ok');
+
+// ---- 3. English is its own switch, and switching back restores Lao ----
 setLocale('en');
 assert.equal(getLocale(), 'en', 'switching to English');
 const english = canvasFont(13);
 assert(english.includes("'Bai Jamjuree'"), 'English uses the body face');
 assert.equal(localeFontScale('en'), 1, 'with no size nudge');
-setLocale('th');
-assert(canvasFont(13).includes("'Bai Jamjuree'"), 'and Thai comes back');
+setLocale('lo');
+assert(canvasFont(13).includes("'Kom'"), 'and Lao comes back');
 log('en ok');
 
 // ---- 4. the stylesheet and the canvas agree, family for family ----

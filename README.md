@@ -1,6 +1,8 @@
-# วัฏฏะ (Vatta) — ป่าเสียงเรียก
+# ວັດຕະ (Vatta) — ປ່າສຽງເອີ້ນ
 
 A contemplative 2D game prototype — Thai · ລາວ · English. Development uses Vite; production is a static build.
+
+The first visit opens in Lao (`lo`). A player's saved Thai or English selection remains in effect on later visits.
 
 ## Run and verify
 

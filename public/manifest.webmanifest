@@ -1,9 +1,9 @@
 {
   "id": "./",
-  "name": "วัฏฏะ — ป่าเสียงเรียก",
-  "short_name": "วัฏฏะ",
-  "description": "เกม 2D สำรวจชีวิตและการเกิดใหม่",
-  "lang": "th",
+  "name": "ວັດຕະ — ປ່າສຽງເອີ້ນ",
+  "short_name": "ວັດຕະ",
+  "description": "ເກມ 2D ສຳຫຼວດຊີວິດແລະການເກີດໃໝ່",
+  "lang": "lo",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
