@@ -9,7 +9,7 @@ export default {
 
   'realm.niraya.name': 'ນະລົກ',
   'realm.niraya.desc': 'ດິນແດນແຫ່ງຄວາມທຸກທໍລະມານຈາກບາບໜັກ',
-  'realm.tiracchana.name': 'ຕິຣັຈຉານ',
+  'realm.tiracchana.name': 'ຕິຣັສານ',
   'realm.tiracchana.desc': 'ເກີດເປັນສັດ ຫຼົງລືມການໃຫ້ທານແລະສິນ',
   'realm.peta.name': 'ເປຣດ',
   'realm.peta.desc': 'ຫິວກະຫາຍບໍ່ຮູ້ຈົບ ເພາະໂລພະແລະຄວາມຕະໜີ່',

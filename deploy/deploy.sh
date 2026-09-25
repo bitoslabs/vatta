@@ -3,10 +3,29 @@
 set -euo pipefail
 
 # ---- explicit target: a local build must never imply a production destination ----
-REMOTE_HOST="${REMOTE_HOST:?Set REMOTE_HOST to the deployment host}"
-REMOTE_USER="${REMOTE_USER:?Set REMOTE_USER for the deployment host}"
+ENV_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.env"
+if [[ -f "$ENV_FILE" ]]; then
+  _REMOTE_HOST="${REMOTE_HOST-}"
+  _REMOTE_USER="${REMOTE_USER-}"
+  _REMOTE_PORT="${REMOTE_PORT-}"
+  _REMOTE_DIR="${REMOTE_DIR-}"
+  _REMOTE_PATH="${REMOTE_PATH-}"
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+  [[ -n "$_REMOTE_HOST" ]] && REMOTE_HOST="$_REMOTE_HOST"
+  [[ -n "$_REMOTE_USER" ]] && REMOTE_USER="$_REMOTE_USER"
+  [[ -n "$_REMOTE_PORT" ]] && REMOTE_PORT="$_REMOTE_PORT"
+  [[ -n "$_REMOTE_DIR" ]] && REMOTE_DIR="$_REMOTE_DIR"
+  [[ -n "$_REMOTE_PATH" ]] && REMOTE_PATH="$_REMOTE_PATH"
+  unset _REMOTE_HOST _REMOTE_USER _REMOTE_PORT _REMOTE_DIR _REMOTE_PATH
+fi
+
+REMOTE_HOST="${REMOTE_HOST:?Set REMOTE_HOST in deploy/.env or the environment}"
+REMOTE_USER="${REMOTE_USER:?Set REMOTE_USER in deploy/.env or the environment}"
 REMOTE_PORT="${REMOTE_PORT:-22}"
-REMOTE_DIR="${REMOTE_DIR:?Set REMOTE_DIR to the web root}"
+REMOTE_DIR="${REMOTE_DIR:-${REMOTE_PATH:?Set REMOTE_DIR or REMOTE_PATH in deploy/.env or the environment}}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZIP_NAME="vatta-deploy.zip"
