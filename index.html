@@ -34,6 +34,7 @@
     <div id="forageReadout" class="hidden"></div>
     <div id="lightReadout" class="hidden"></div>
     <div id="carryReadout" class="hidden"></div>
+    <div id="waypointReadout" class="hidden"></div>
   </div>
   <div id="ctrlHint" class="hidden" data-i18n="hud.controls">WASD เดิน · SHIFT วิ่ง · SPACE ค้าง ตั้งสติ · E โต้ตอบ · M เสียง</div>
 
@@ -102,6 +103,10 @@
 
         <section class="tab-pane" role="tabpanel" data-pane="tools" hidden>
           <div class="tool-list">
+            <button type="button" class="tool-btn" id="bookBtn">
+              <span class="tool-name" data-i18n="title.book">สมุดสัตว์</span>
+              <span class="tool-sub" data-i18n="title.tool.book">ลองร่างใดก็ได้ — ทดลองความสามารถโดยไม่กระทบการเดินทาง</span>
+            </button>
             <button type="button" class="tool-btn" id="codexBtn">
               <span class="tool-name" data-i18n="title.codex">ไตรภูมิ 31</span>
               <span class="tool-sub" data-i18n="title.tool.codex">ดูภูมิทั้ง 31 และกรรมที่พาไป</span>
@@ -206,6 +211,18 @@
     </div>
   </div>
 
+  <!-- ============ The animal book (explore mode) ============ -->
+  <div id="bookOverlay" class="hidden">
+    <div class="codex-panel">
+      <div class="codex-head">
+        <div class="codex-title" data-i18n="book.title">สมุดสัตว์ — ลองร่าง</div>
+        <button type="button" class="link-btn hidden" id="exploreLeave" data-i18n="book.leave">กลับสู่การเดินทาง</button>
+        <button type="button" class="link-btn" id="bookClose" data-i18n="codex.close">ปิด</button>
+      </div>
+      <div id="bookBody" class="codex-body"></div>
+    </div>
+  </div>
+
   <!-- ============ Codex (kamma + 31 planes) ============ -->
   <div id="codexOverlay" class="hidden">
     <div class="codex-panel">
@@ -238,6 +255,10 @@
           <div class="settings-row">
             <button type="button" class="settings-btn" id="settingsMotion" data-i18n="help.motion.full">การเคลื่อนไหว: ปกติ</button>
             <span class="settings-hint" data-i18n="help.motion.hint">ลดการเคลื่อนไหวตัดอนุภาคออก แต่เรื่องราวเหมือนเดิม</span>
+          </div>
+          <div class="settings-row">
+            <button type="button" class="settings-btn" id="settingsMode" data-i18n="help.mode.flow">ตามกระแสชีวิต (สุ่ม)</button>
+            <span class="settings-hint" data-i18n="help.mode.hint">มีผลตั้งแต่ชาติถัดไป · ไม่ลบประวัติชาติที่ผ่านมา</span>
           </div>
         </div>
 
@@ -300,7 +321,13 @@
         <button type="button" class="link-btn" id="lifeClose" data-i18n="codex.close">ปิด</button>
       </div>
       <div id="lifeSummaryBody" class="recap-body"></div>
+      <div id="lifeChoice" class="life-choice hidden">
+        <div class="life-choice-title" data-i18n="life.choice.title">เลือกร่างที่จะเกิด</div>
+        <div id="lifeChoiceCards" class="life-choice-cards"></div>
+        <div class="life-choice-hint" data-i18n="life.choice.hint">เลือกได้เฉพาะร่างที่ระบบเสนอ · กด "สุ่มให้ฉัน" เพื่อให้ระบบเลือกร่างหนึ่งในการ์ดที่เห็น</div>
+      </div>
       <div class="life-actions">
+        <button type="button" class="btn" id="lifeRandom" data-i18n="life.choice.random">สุ่มให้ฉัน</button>
         <button type="button" class="btn" id="lifeReborn" data-i18n="life.reborn">เกิดใหม่</button>
       </div>
       <div class="life-note" data-i18n="life.note">ต้นแบบสามชาติ: มนุษย์ → กวาง → ปลา · โลกและความจำจะถูกส่งต่อ</div>

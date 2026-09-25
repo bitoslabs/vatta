@@ -68,6 +68,9 @@ const GOAL_BEHIND_ACT = new Map([
   ['boar', (features) => validateBoarRoute(features).ok],
   ['elephant', (features) => validateElephantRoute(features).ok],
 ]);
+// (The spider's first errand — the posts — is open ground; what stands behind its
+// own act is the *ending*, the hollow past the fissure, and tests/spider.test.mjs
+// proves that crossing for it.)
 
 /**
  * Every plane a life can meet, not just the ones its own body suggests: a realm
@@ -140,8 +143,8 @@ for (const form of FORMS) {
   assert.equal(goalsByLifeGoal.get(form.lifeGoal), goal.kind,
     `${form.id}: one lifeGoal always means one goal kind`);
 }
-assert.equal(FORMS.length, 28, 'the roster is the 28 forms the audit counted');
-assert.equal(FORMS.length - STORY_ONLY.size, 25, 'and the rest are the 25 animals');
+assert.equal(FORMS.length, 29, 'the roster is the 29 forms (28 and the spider, reserve table P1)');
+assert.equal(FORMS.length - STORY_ONLY.size, 26, 'and the rest are the 26 animals');
 // Every ending kind is *declared* in one animal's own module and nowhere else: the
 // collision guard for the whole set (a kind shared by two bodies ends the wrong
 // life — see cat.js's own note about the crab's ending). Comments are stripped
@@ -287,4 +290,4 @@ for (const form of FORMS) {
 }
 log('spawn ok');
 
-console.error('ROSTER TEST OK — 28 forms audited: structure, birth, route, goal, act and save');
+console.error(`ROSTER TEST OK — ${FORMS.length} forms audited: structure, birth, route, goal, act and save`);

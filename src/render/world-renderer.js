@@ -44,6 +44,10 @@ import { boarSite, coloniesLost, groundTells, turnedSoil } from '../game/boar.js
 import { asuraSite, gatePoint, spanBuilt, spans } from '../game/asura-city.js';
 import { gardenSite, gatePoint as gardenGatePoint, releasedBeds } from '../game/garden.js';
 import { isLit, lightLevel } from '../systems/light.js';
+import { waypoint } from '../systems/waypoint.js';
+import { companionState } from '../systems/companion.js';
+import { threads, webSite, webSpun } from '../game/spider.js';
+import { drawFormBody } from './forms-sprites.js';
 import { carriedCount, gatePoint as marketGatePoint, giftTaken, marketSite } from '../game/market.js';
 import { marketAxis } from '../world/world-data.js';
 import { isDamp as isDampNow, moistureLevel } from '../systems/moisture.js';
@@ -125,6 +129,7 @@ export function renderWorld() {
   drawFord(dawn);
   drawDampGround(dawn);
   drawBoarGround(dawn);
+  drawWebSite(dawn);
   drawAsuraRooms(dawn);
   drawGardenRooms(dawn);
   drawMarketRooms(dawn);
@@ -1321,6 +1326,74 @@ function drawMarketRooms(dawn) {
 }
 
 /**
+ * The spider's web (reserve table, แมงมุม): the ring of fissure around the hollow,
+ * the two posts, and the thread a life spun between them — drawn as the thin bridge
+ * it is, so the way it opens for small bodies can be seen.
+ */
+function drawWebSite(dawn) {
+  const { hollow, ring, anchorOut, anchorIn } = webSite();
+  const spun = webSpun() || threads().length > 0;
+
+  // The hollow beyond the fissure.
+  ctx.fillStyle = dawn ? 'rgba(96,104,84,.36)' : 'rgba(40,46,36,.42)';
+  ctx.beginPath();
+  ctx.ellipse(hollow.x, hollow.y, ring - 52, (ring - 52) * 0.86, 0, 0, TAU);
+  ctx.fill();
+
+  // The fissure: a broken ring, dark and cracked.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'fissure') continue;
+    ctx.fillStyle = dawn ? 'rgba(60,54,44,.5)' : 'rgba(18,16,12,.6)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.7, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(20,16,12,.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(feature.x - feature.r * 0.5, feature.y);
+    ctx.lineTo(feature.x + feature.r * 0.5, feature.y + 4);
+    ctx.stroke();
+  }
+
+  // The posts.
+  for (const post of [anchorOut, anchorIn]) {
+    ctx.fillStyle = dawn ? 'rgba(118,98,70,.6)' : 'rgba(54,44,32,.66)';
+    ctx.beginPath();
+    ctx.ellipse(post.x, post.y, 16, 13, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(180,160,120,.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(post.x - 6, post.y + 4);
+    ctx.lineTo(post.x + 4, post.y - 12);
+    ctx.stroke();
+  }
+
+  // The thread, old and strong, and a little silver with the light.
+  if (spun) {
+    ctx.strokeStyle = dawn ? 'rgba(220,228,240,.5)' : 'rgba(190,204,224,.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(anchorOut.x, anchorOut.y);
+    ctx.lineTo(anchorIn.x, anchorIn.y);
+    ctx.stroke();
+    // The rungs a small body walks.
+    const steps = 6;
+    ctx.strokeStyle = 'rgba(220,228,240,.28)';
+    ctx.lineWidth = 1.4;
+    for (let i = 1; i <= steps; i++) {
+      const t = i / (steps + 1);
+      const x = anchorOut.x + (anchorIn.x - anchorOut.x) * t;
+      const y = anchorOut.y + (anchorIn.y - anchorOut.y) * t;
+      ctx.beginPath();
+      ctx.moveTo(x - 10, y - 7);
+      ctx.lineTo(x + 10, y - 7);
+      ctx.stroke();
+    }
+  }
+}
+
+/**
  * The ford (story table ch.11, ควาย): the mud flat, the fallen log, the chasm that
  * rings the pasture, and the bridge a dragged log leaves standing. The bridge is
  * the one piece of the map a *life* draws: it is there in later lives because
@@ -1919,7 +1992,79 @@ function drawLifeLights() {
   }
 }
 
+/**
+ * The companion (systems/companion.js): the dog, drawn from the same code art as
+ * every body, with its own small state — a raised head when it is waiting, a bark
+ * mark when it answers, and a step back when it is afraid of the water ahead.
+ */
+function drawCompanion() {
+  const dog = companionState();
+  if (!dog.active) return;
+  const moving = dog.mode === 'following';
+  try {
+    drawFormBody(ctx, 'dog', dog.x, dog.y, {
+      face: dog.face, phase: performance.now() * 0.004, moving, bob: performance.now() * 0.004, act: 0,
+    });
+  } catch {
+    ctx.fillStyle = 'rgba(120,102,82,.9)';
+    ctx.beginPath();
+    ctx.arc(dog.x, dog.y, 12, 0, TAU);
+    ctx.fill();
+  }
+  if (dog.mode === 'waiting') {
+    ctx.strokeStyle = 'rgba(233,217,160,.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(dog.x, dog.y, 30, 0, TAU);
+    ctx.stroke();
+  }
+  if (dog.bark > 0) {
+    ctx.fillStyle = `rgba(246,232,186,${Math.min(1, dog.bark).toFixed(2)})`;
+    ctx.beginPath();
+    ctx.arc(dog.x + 16 * dog.face, dog.y - 26, 4 + dog.bark * 6, 0, TAU);
+    ctx.fill();
+  }
+}
+
+/**
+ * The mark that leads to a remembered place (systems/waypoint.js): a quiet ring and
+ * a thread of light toward it, drawn only while a memory is being followed.
+ */
+function drawWaypoint(dawn) {
+  const mark = waypoint();
+  if (!mark) return;
+  const pulse = 0.35 + Math.sin(performance.now() * 0.003) * 0.12;
+  ctx.strokeStyle = `rgba(233,217,160,${pulse.toFixed(2)})`;
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash?.([7, 7]);
+  ctx.beginPath();
+  ctx.arc(mark.x, mark.y, 26, 0, TAU);
+  ctx.stroke();
+  ctx.setLineDash?.([]);
+  // A thread from the body to the place, so the mark can be followed from anywhere.
+  const from = { x: player.x, y: player.y - 18 };
+  const distance = Math.hypot(mark.x - from.x, mark.y - from.y);
+  if (distance > 120) {
+    const steps = 5;
+    ctx.strokeStyle = `rgba(233,217,160,${(pulse * 0.5).toFixed(2)})`;
+    ctx.lineWidth = 1.5;
+    for (let i = 1; i <= steps; i++) {
+      const t = i / (steps + 1);
+      ctx.beginPath();
+      ctx.arc(from.x + (mark.x - from.x) * t, from.y + (mark.y - from.y) * t, 3, 0, TAU);
+      ctx.stroke();
+    }
+  }
+  ctx.fillStyle = `rgba(233,217,160,${(pulse * 0.7).toFixed(2)})`;
+  ctx.beginPath();
+  ctx.arc(mark.x, mark.y, 5, 0, TAU);
+  ctx.fill();
+  void dawn;
+}
+
 function drawSparks() {
+  drawCompanion();
+  drawWaypoint(false);
   drawLifeLights();
   for (const spark of sparks) {
     const alpha = clamp(1 - spark.t / spark.life, 0, 1);

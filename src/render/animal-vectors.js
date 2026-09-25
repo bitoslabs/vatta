@@ -123,6 +123,27 @@ export function drawAnimalVector(ctx, animal, actor, moving, options = {}) {
       }
       break;
     }
+    case 'spider': {
+      // Low and round, eight legs bent high, and a thread trailing behind.
+      const drum = moving ? Math.abs(Math.sin(actor.phase * 3)) : 0;
+      for (const [side, spread] of [[-1, 12], [-1, 6], [1, 6], [1, 12]]) {
+        const lift = spread + drum * 2;
+        line([[-2, 0], [side * lift * 0.6, -lift], [side * (lift + 8), 2]], '#3f3a44', 2.2);
+        line([[4, 0], [side * lift * 0.7 + 4, -lift * 0.8], [side * (lift + 6) + 6, 3]], '#4a4450', 2);
+      }
+      // the body: two beads
+      ellipse(2, -4, 9, 7, '#4a4450');
+      ellipse(12, -3, 6, 5, '#3f3a44');
+      eye(14, -5);
+      eye(11, -6);
+      line([[16, 2], [22, 6]], '#b9c4d6', 1.4);
+      if (active) {
+        // the thread it is spinning
+        line([[20, 4], [30, -6]], 'rgba(220,228,240,.6)', 1.6);
+        line([[30, -6], [24, -2]], 'rgba(220,228,240,.4)', 1.2);
+      }
+      break;
+    }
     case 'snail': {
       // A spiral shell carried low, with the body stretching forward as it crawls.
       const stretch = moving ? Math.abs(Math.sin(actor.phase * 0.6)) * 4 : 0;

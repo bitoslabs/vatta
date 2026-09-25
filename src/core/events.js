@@ -24,6 +24,10 @@ export const EVENTS = Object.freeze({
   ACTION: 'action:act',
   DISMISS: 'action:dismiss',
   MUTE_TOGGLE: 'audio:mute-toggle',
+  /** A companion is called (systems/companion.js). */
+  COMPANION_CALL: 'companion:call',
+  /** A body was chosen from the animal book (ui/animal-book.js). */
+  BOOK_PICKED: 'book:picked',
   DIALOGUE_ADVANCE: 'dialogue:advance',
   CHOICE_PICK: 'choice:picked',
   LOCALE_CHANGED: 'locale:changed',

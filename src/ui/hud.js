@@ -16,6 +16,7 @@ import { forageReadout, readsForage } from '../game/boar.js';
 import { currentBiomeId } from '../systems/biome.js';
 import { isLit, lightTrend } from '../systems/light.js';
 import { carriedCount } from '../game/market.js';
+import { waypoint } from '../systems/waypoint.js';
 import { currentBiome } from '../systems/biome.js';
 import { $ } from './dom.js';
 
@@ -34,6 +35,7 @@ const groundReadoutEl = $('#groundReadout');
 const forageReadoutEl = $('#forageReadout');
 const lightReadoutEl = $('#lightReadout');
 const carryReadoutEl = $('#carryReadout');
+const waypointReadoutEl = $('#waypointReadout');
 
 const FEAR_LOW = 0.3;
 const FEAR_HIGH = 0.6;
@@ -114,6 +116,18 @@ export function updateHud(mind) {
         carryReadoutEl.textContent = held === 0
           ? t('hud.carry.empty')
           : t('hud.carry.held', { n: held });
+      }
+    }
+
+    // The memory being followed (systems/waypoint.js): which place, and where it is.
+    if (waypointReadoutEl) {
+      const mark = waypoint();
+      waypointReadoutEl.classList.toggle('hidden', !mark);
+      if (mark) {
+        const where = mark.site ? t(`site.${mark.site}`) : '';
+        waypointReadoutEl.textContent = where
+          ? `${t('hud.waypoint')} · ${where}`
+          : t('hud.waypoint');
       }
     }
 

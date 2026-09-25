@@ -37,6 +37,7 @@ function onKeyDown(e) {
   if (e.key === 'p' || e.key === 'P') emit(EVENTS.PROJECTOR_KEY);
   if (e.key === 'h' || e.key === 'H') emit(EVENTS.HELP_KEY);
   if (e.key === 'f' || e.key === 'F') emit(EVENTS.ECHO_PULSE);
+  if (e.key === 'c' || e.key === 'C') emit(EVENTS.COMPANION_CALL);
   if (e.key === ' ' || e.key === 'Enter') emit(EVENTS.DIALOGUE_ADVANCE);
 
   const n = Number.parseInt(e.key, 10);

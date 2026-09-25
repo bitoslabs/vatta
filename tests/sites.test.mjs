@@ -51,6 +51,10 @@ add('damp', 'hollow', wd.DAMP.hollow);
 add('boar', 'feed', wd.BOAR.feed);
 add('boar', 'wallow', wd.BOAR.wallow);
 wd.BOAR.patches.forEach((patch, i) => add('boar', `patch${i}`, patch));
+add('web', 'near', wd.WEB.near);
+add('web', 'hollow', wd.WEB.hollow);
+add('web', 'postOut', wd.WEB.anchorOut);
+add('web', 'postIn', wd.WEB.anchorIn);
 
 const STEP = 20;
 const gridFor = (features, abilities) => {

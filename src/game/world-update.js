@@ -17,6 +17,8 @@ import { ghost, updateGhosts } from '../entities/ghost.js';
 import { animatePlayer, inSafeZone, player, updatePlayer } from '../entities/player.js';
 import { cam } from './camera.js';
 import { updateEchoes } from './echoes.js';
+import { reachedWaypoint } from '../systems/waypoint.js';
+import { callCompanion, companionState, updateCompanion } from '../systems/companion.js';
 import { updateGuardian } from './npc.js';
 import { updateEncounters } from './npc-encounters.js';
 import { updateWorldMemory } from './world-memory.js';
@@ -37,6 +39,7 @@ import { updateCat } from './cat.js';
 import { updateBuffalo } from './buffalo.js';
 import { updateSnail } from './snail.js';
 import { updateBoar } from './boar.js';
+import { updateSpider } from './spider.js';
 import { updateAsuraCity } from './asura-city.js';
 import { updateGarden } from './garden.js';
 import { updateMarket } from './market.js';
@@ -87,6 +90,14 @@ export function updateWorld(dt) {
   updateAsuraCity();
   updateGarden();
   updateMarket();
+  // Beside the dog, calling it is an offer like any other (the C key does the same
+  // from anywhere): one act, two ways in, for hands that have no keyboard.
+  {
+    const dog = companionState();
+    if (dog.active && Math.hypot(dog.x - player.x, dog.y - player.y) <= 150) {
+      state.interact = { fn: callCompanion, labelKey: 'prompt.callCompanion' };
+    }
+  }
   updateWorldMemory();
   updateAnt();
   updateFrog();
@@ -105,6 +116,7 @@ export function updateWorld(dt) {
   updateBuffalo();
   updateSnail();
   updateBoar();
+  updateSpider();
   // A being's word waits for the body's own act — the otter reaching for driftwood
   // the current carries past a weir, a snake at its crevice — the way it already
   // waits for a room's own act above. Generic talk never hides a specific doing.
@@ -115,6 +127,10 @@ export function updateWorld(dt) {
   updateTide(dt);
   updateDrift(dt);
   updateEchoes();
+  // The dog's own frame: follow at a distance, never into water, never stuck.
+  updateCompanion(dt);
+  // Walking onto a remembered place retires the mark that led there.
+  reachedWaypoint(player.x, player.y);
   updateCamera(dt);
   updateEffects(dt);
 }

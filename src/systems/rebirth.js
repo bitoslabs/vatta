@@ -328,8 +328,43 @@ export function drawLife({ chapterId, history = [], index = null } = {}) {
 export function drawNextLife({ chapter, lifeId, history = [], chapterIds }) {
   const current = chapterIds.indexOf(chapter);
   const nextChapter = chapterIds[(current + 1) % chapterIds.length];
-  const draw = drawLife({ chapterId: nextChapter, history, index: drawCount() });
   const data = memory();
+  const index = drawCount();
+  // In choice mode the life is reserved as a *set*: three bodies, and whichever the
+  // player picks. The first is only a placeholder until they choose.
+  if (data.mode === 'choice') {
+    const { candidates, maps, reason } = drawCandidates({ chapterId: nextChapter, history, index });
+    data.draws += 1;
+    return {
+      chapter: nextChapter,
+      lifeId: lifeId + 1,
+      formId: candidates.length ? candidates[0].formId : (history[history.length - 1] || 'human'),
+      candidateIds: candidates.map((entry) => entry.formId),
+      probabilities: Object.fromEntries(candidates.map((entry) => [entry.formId, entry.probability])),
+      chosen: false,
+      drawn: candidates.length > 0,
+      reason,
+      probability: candidates.length ? candidates[0].probability : null,
+      maps,
+    };
+  }
+  // Explore mode: the body is chosen from the book, so the reservation carries only
+  // the chapter — and says so, so the summary offers the book instead of a draw.
+  if (data.mode === 'explore') {
+    data.draws += 1;
+    return {
+      chapter: nextChapter,
+      lifeId: lifeId + 1,
+      formId: history[history.length - 1] || 'human',
+      explore: true,
+      chosen: false,
+      drawn: false,
+      reason: null,
+      probability: null,
+      maps: null,
+    };
+  }
+  const draw = drawLife({ chapterId: nextChapter, history, index });
   data.draws += 1;
   const formId = draw.formId || history[history.length - 1] || 'human';
   return {
@@ -341,6 +376,40 @@ export function drawNextLife({ chapter, lifeId, history = [], chapterIds }) {
     probability: draw.probability,
     maps: draw.maps,
   };
+}
+
+/**
+ * Three bodies to choose from (the design's "ทางเลือกสามร่าง"), drawn without
+ * replacement from the same weights, and *recorded* the moment the life is
+ * reserved — so a reload shows the same three cards and never re-rolls them.
+ *
+ * Each card carries the chance that body had in the whole draw (not renormalised
+ * among the three): the player is shown a real number or none.
+ */
+export function drawCandidates({ chapterId, history = [], index = null, count = 3 } = {}) {
+  const { maps, all } = eligibleForms(chapterId);
+  if (!all.length) return { candidates: [], maps, reason: 'no-eligible-form' };
+  const recent = history.slice(-2);
+  let pool = all.filter((id) => !recent.includes(id));
+  if (!pool.length) pool = [...all];
+  const weights = pool.map((id) => weighForm(id, { chapterId, history }));
+  const total = weights.reduce((sum, entry) => sum + entry.weight, 0);
+  const remaining = weights.map((entry) => ({ ...entry, probability: entry.weight / total }));
+  const at = Number.isFinite(index) ? index : drawCount();
+  const candidates = [];
+  for (let pick = 0; pick < Math.min(count, remaining.length); pick++) {
+    const sum = remaining.reduce((acc, entry) => acc + entry.weight, 0);
+    const roll = hashUnit(runSeed(), at + pick * 977) * sum;
+    let cursor = 0;
+    let chosen = remaining[remaining.length - 1];
+    for (const entry of remaining) {
+      cursor += entry.weight;
+      if (roll < cursor) { chosen = entry; break; }
+    }
+    candidates.push({ formId: chosen.formId, probability: chosen.probability, weight: chosen.weight });
+    remaining.splice(remaining.indexOf(chosen), 1);
+  }
+  return { candidates, maps, reason: null, poolSize: all.length };
 }
 
 /** The odds of one body in one chapter, for the summary and for tests. */

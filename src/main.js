@@ -1,5 +1,6 @@
 'use strict';
 
+import { on, EVENTS } from './core/events.js';
 import { initAudioControls } from './systems/audio.js';
 import { initI18n } from './systems/i18n.js';
 import { initTeacher } from './systems/teacher.js';
@@ -15,6 +16,7 @@ import { initViewport } from './systems/viewport.js';
 import { initAbout } from './ui/about.js';
 import { initChoices } from './ui/choices.js';
 import { initCodex } from './ui/codex.js';
+import { initAnimalBook } from './ui/animal-book.js';
 import { initDialogue } from './ui/dialogue.js';
 import { initEndScreen } from './ui/end-screen.js';
 import { initLanguageSwitcher } from './ui/language-switcher.js';
@@ -24,6 +26,7 @@ import { initSaveSlots } from './ui/save-slots.js';
 import { initWorksheets } from './ui/worksheets.js';
 import { initSettingsScreen } from './ui/settings.js';
 import { initLifeSummary } from './ui/life-summary.js';
+import { callCompanion } from './systems/companion.js';
 import { initMirrorCourt } from './ui/mirror-court.js';
 import { initTeacherPanel } from './ui/teacher-panel.js';
 import { initTitleScreen } from './ui/title-screen.js';
@@ -63,8 +66,11 @@ function bootstrap() {
   initRecap();
   initWorksheets();
   initLifeSummary();
+  // The companion's one key: call it (systems/companion.js).
+  on(EVENTS.COMPANION_CALL, () => { callCompanion(); });
   initMirrorCourt();
   initCodex();
+  initAnimalBook();
   startLoop();
 }
 

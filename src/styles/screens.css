@@ -663,6 +663,104 @@
   color: var(--gold-bright);
 }
 
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.book-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px;
+  border: 1px solid rgba(233, 217, 160, .22);
+  border-radius: 10px;
+  background: rgba(20, 26, 22, .5);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+.book-card:hover {
+  border-color: rgba(233, 217, 160, .55);
+}
+.book-card canvas {
+  width: 96px;
+  height: 72px;
+}
+.book-name {
+  font-size: 15px;
+}
+.book-line {
+  font-size: 12px;
+  opacity: .72;
+}
+
+.codex-leaving {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 6px 8px;
+  border-left: 2px solid rgba(233, 217, 160, .3);
+  margin: 6px 0;
+}
+.codex-note {
+  font-size: 13px;
+  opacity: .7;
+  margin: 6px 0 10px;
+}
+
+.life-choice {
+  margin: 10px 0 4px;
+}
+.life-choice-title {
+  font-size: 15px;
+  opacity: .85;
+  margin-bottom: 6px;
+}
+.life-choice-cards {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.life-choice-card {
+  flex: 1 1 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgba(233, 217, 160, .25);
+  border-radius: 10px;
+  background: rgba(20, 26, 22, .5);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+.life-choice-card.is-picked {
+  border-color: rgba(233, 217, 160, .8);
+  background: rgba(233, 217, 160, .12);
+}
+.life-choice-card canvas {
+  width: 96px;
+  height: 64px;
+}
+.life-choice-name {
+  font-size: 15px;
+}
+.life-choice-line {
+  font-size: 12px;
+  opacity: .75;
+}
+.life-choice-hint {
+  font-size: 12px;
+  opacity: .7;
+  margin-top: 6px;
+}
+
 .recap-body {
   overflow-y: auto;
   padding: 10px 20px 22px;

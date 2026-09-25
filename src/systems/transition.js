@@ -67,7 +67,11 @@ export function pendingTransition() {
     phase: t.phase,
     fromLifeId: t.fromLifeId,
     completionId: t.completionId,
-    next: { ...t.next },
+    next: {
+      ...t.next,
+      candidateIds: t.next.candidateIds ? [...t.next.candidateIds] : null,
+      probabilities: t.next.probabilities ? { ...t.next.probabilities } : null,
+    },
     runId: t.runId,
   };
 }
@@ -112,6 +116,40 @@ export function setTransitionPhase(phase) {
   if (!PHASES.includes(phase)) return t.phase;
   t.phase = phase;
   return t.phase;
+}
+
+/**
+ * The player has chosen one of the offered bodies (choice mode). Only a body on
+ * offer may be chosen; the choice is written into the reservation so that a reload
+ * keeps both the cards and the answer.
+ */
+export function markChosenBody(formId, probability = null) {
+  const t = transition();
+  if (t.phase === 'idle' || !t.next) return false;
+  // Explore mode: any body the animal book offers may be chosen, because the book is
+  // the picker (systems/explore.js). Otherwise the choice must be one of the cards.
+  if (t.next.explore === true) {
+    t.next.formId = formId;
+    t.next.chosen = true;
+    return true;
+  }
+  if (!Array.isArray(t.next.candidateIds)) return false;
+  if (!t.next.candidateIds.includes(formId)) return false;
+  t.next.formId = formId;
+  t.next.chosen = true;
+  if (Number.isFinite(probability)) t.next.probability = probability;
+  return true;
+}
+
+/**
+ * Is a life waiting for the player to pick a body? True both for the three cards
+ * (choice mode) and for the animal book (explore mode) — either way nothing is born
+ * until a pick is made.
+ */
+export function choicePending() {
+  const t = transition();
+  if (t.phase === 'idle' || !t.next || t.next.chosen === true) return false;
+  return Array.isArray(t.next.candidateIds) || t.next.explore === true;
 }
 
 /** The reservation has been applied and the new life is in the world. */
@@ -159,6 +197,12 @@ export function importTransition(raw) {
     state.transition = idleTransition();
     return false;
   }
+  const candidates = Array.isArray(next.candidateIds)
+    ? [...new Set(next.candidateIds.filter((id) => typeof id === 'string' && id))]
+    : null;
+  const probabilities = next.probabilities && typeof next.probabilities === 'object'
+    ? Object.fromEntries(Object.entries(next.probabilities).filter(([, value]) => Number.isFinite(value)))
+    : null;
   state.transition = {
     id: typeof raw.id === 'string' ? raw.id : transitionIdFor(raw.fromLifeId, raw.completionId, raw.runId),
     phase,
@@ -171,6 +215,12 @@ export function importTransition(raw) {
       // The odds the draw gave this body, kept so the summary can show the real
       // number again after a reload (never recomputed — systems/rebirth.js).
       probability: Number.isFinite(next.probability) ? next.probability : null,
+      // Choice mode: the three bodies the draw offered, and which one was picked.
+      // Kept so a reload shows the same cards and the same selection.
+      candidateIds: candidates,
+      probabilities,
+      chosen: next.chosen === true && Boolean(candidates) && candidates.includes(next.formId),
+      explore: next.explore === true,
     },
     runId: typeof raw.runId === 'string' ? raw.runId : '',
   };

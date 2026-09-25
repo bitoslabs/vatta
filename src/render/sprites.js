@@ -7,7 +7,10 @@ import { ctx } from '../systems/viewport.js';
 import { STATUS } from '../entities/ghost-status.js';
 import { ghost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
-import { getForm, inWater, movementKind } from '../systems/forms.js';
+import { state } from '../core/state.js';
+import { isRestful } from '../systems/rest.js';
+import { MODE } from '../core/constants.js';
+import { getForm, inWater, locomotionKind, movementKind, poseForBody } from '../systems/forms.js';
 import { drawActFlourish, drawChestLight, drawFormAura, drawFormBody } from './forms-sprites.js';
 
 export function drawTree(tree, dawn) {
@@ -37,20 +40,43 @@ export function drawTree(tree, dawn) {
   ctx.fill();
 }
 
-/** The player, in whatever body this life wears (design §10). */
+/** Set when a body arrives (a life begins), for the rebirth pose. */
+let arrivedAt = 0;
+const ARRIVING = 0.7;
+
+/**
+ * The player, in whatever body this life wears (design §10), in whichever of the
+ * six poses the life is actually in: arriving, acting, meditating, resting,
+ * speaking with a being, moving, or standing still (systems/forms.js#poseForBody).
+ */
 export function drawPlayer(dawn) {
   const formId = getForm().id;
   const kind = movementKind(player.x, player.y);
+  const locomotion = locomotionKind();
   const bob = Math.sin(player.bob) * 1.6;
+  const now = performance.now();
+  if (!arrivedAt) arrivedAt = now;
+  const arriving = (now - arrivedAt) / 1000 < ARRIVING;
+  const pose = poseForBody({
+    arriving,
+    acting: player.actT > 0,
+    meditating: state.mode === MODE.MEDITATION,
+    resting: isRestful(player.x, player.y),
+    interacting: Boolean(state.interact),
+    moving: player.moving,
+  });
 
   drawFormAura(ctx, formId, player.x, player.y, player.bob);
   drawFormBody(ctx, formId, player.x, player.y, {
     face: player.face,
     bob,
     phase: player.bob,
-    kind,
+    // Broad kind for ground/water, fine kind for the body's own gait.
+    kind: locomotion === 'glide' || locomotion === 'swim' ? kind : locomotion,
+    pose,
     moving: player.moving,
     act: player.actT,
+    t: Math.min(1, (now - arrivedAt) / (ARRIVING * 1000)),
     dawn,
   });
   // The shared chest light marks the player in any form.

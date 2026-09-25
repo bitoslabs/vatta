@@ -15,10 +15,10 @@ import { FORMS, mapsFor } from '../content/forms.js';
  */
 export const CHAPTER_ANIMALS = [
   ['deer', 'dog', 'crane', 'snake', 'tiger', 'cat'], ['turtle', 'dog', 'worm', 'ant', 'bat', 'buffalo', 'boar'],
-  ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko', 'squirrel', 'bee', 'snail', 'boar'], ['fish', 'dog', 'turtle', 'crane', 'frog', 'elephant', 'crab', 'otter'],
+  ['monkey', 'butterfly', 'deer', 'rabbit', 'gecko', 'squirrel', 'bee', 'snail', 'boar', 'spider'], ['fish', 'dog', 'turtle', 'crane', 'frog', 'elephant', 'crab', 'otter'],
   ['butterfly', 'monkey', 'worm', 'snake', 'gecko'], ['crane', 'dog', 'turtle', 'tiger'],
   ['fish', 'turtle', 'deer', 'butterfly', 'frog', 'bat', 'crab', 'cat', 'buffalo', 'boar'], ['dog', 'monkey', 'worm', 'ant', 'owl', 'elephant'],
-  ['deer', 'butterfly', 'turtle', 'rabbit', 'tiger', 'otter', 'bee', 'cat', 'snail', 'boar'], ['monkey', 'crane', 'dog', 'frog', 'owl'],
+  ['deer', 'butterfly', 'turtle', 'rabbit', 'tiger', 'otter', 'bee', 'cat', 'snail', 'boar', 'spider'], ['monkey', 'crane', 'dog', 'frog', 'owl'],
   ['fish', 'crane', 'turtle', 'butterfly', 'ant', 'snake', 'bat', 'otter'], ['butterfly', 'dog', 'deer', 'tiger'],
   ['turtle', 'monkey', 'crane', 'snake', 'gecko'], ['deer', 'dog', 'butterfly', 'rabbit', 'owl', 'elephant'],
 ];

@@ -208,6 +208,55 @@ export const DAMP_APPROACH = Object.freeze([
  * (`game/market.js`), and a life that did is remembered by the market itself: the
  * first curtain does not stand in the next world (`hands-emptied`).
  */
+/**
+ * The spider's web (docs/animal-lives-story.md reserve table "แมงมุม — ขึงใยเชื่อม
+ * จุดยึด · สร้างสะพานให้ตัวเล็กโดยไม่ปิดทางผู้อื่น").
+ *
+ * A fissure runs across the way to a far hollow, and nothing that cannot leap or fly
+ * crosses it. Two anchors stand either side of it, and a life that spins a thread
+ * between them leaves a *bridge for small bodies* — a crossing that did not exist
+ * before, and that takes nothing away from anyone: a leaping or flying body was never
+ * stopped by the fissure, and still is not (`validateSpiderRoute` proves the
+ * no-closure clause as well as the crossing).
+ */
+export const WEB = Object.freeze({
+  /** The point on the plane's road the errand opens from. */
+  road: Object.freeze({ x: 2624, y: 1233 }),
+  /** From the road toward the far hollow: the outside of the ring, then its middle. */
+  dir: Object.freeze({ x: -0.21, y: -0.98 }),
+  /** The hollow beyond the fissure: the middle of the ring, and where the life ends. */
+  hollow: Object.freeze({ x: 2540, y: 852 }),
+  hollowRadius: 96,
+  /** The fissure is a ring, so no one walks around it: leap or fly, or not at all. */
+  ring: 150,
+  segments: 16,
+  fissureRadius: 62,
+  /** Two posts: one outside the ring, one inside it. The thread crosses between. */
+  anchorOut: Object.freeze({ x: 2588, y: 1077 }),
+  anchorIn: Object.freeze({ x: 2555, y: 921 }),
+  anchorRadius: 40,
+  /** The thread: laid as overlapping beads, so it covers the ring where it crosses. */
+  webRadius: 40,
+  webStep: 26,
+  /** The hollow this side of the ring, where the errand starts. */
+  near: Object.freeze({ x: 2615, y: 1204 }),
+});
+
+/** Seeded dressing keeps off the ring, the posts and both hollows. */
+export const WEB_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: WEB.hollow.x, y: WEB.hollow.y, r: WEB.ring + 170 }),
+  Object.freeze({ x: WEB.near.x, y: WEB.near.y, r: 170 }),
+]);
+
+/** The errand's way: the road → the near hollow → the outer post → the hollow. */
+export const WEB_APPROACH = Object.freeze([
+  Object.freeze([WEB.road.x, WEB.road.y]),
+  Object.freeze([WEB.near.x, WEB.near.y]),
+  Object.freeze([WEB.anchorOut.x, WEB.anchorOut.y]),
+  Object.freeze([WEB.anchorIn.x, WEB.anchorIn.y]),
+  Object.freeze([WEB.hollow.x, WEB.hollow.y]),
+]);
+
 export const MARKET = Object.freeze({
   /** The point on the plane's street the alley opens off. */
   anchor: Object.freeze({ x: 2348, y: 1293 }),
@@ -1268,6 +1317,8 @@ function treeAllowed(x, y) {
   if (distToPoly(GARDEN_APPROACH, x, y) < 84) return false;
   if (MARKET_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
   if (distToPoly(MARKET_APPROACH, x, y) < 84) return false;
+  if (WEB_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(WEB_APPROACH, x, y) < 84) return false;
   return true;
 }
 

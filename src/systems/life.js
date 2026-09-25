@@ -11,8 +11,8 @@ import { t } from './i18n.js';
 import { player } from '../entities/player.js';
 import { CHAPTERS, loadChapter } from '../game/chapters.js';
 import {
-  beginLifeEnd, finishTransition, isTransitioning, pendingTransition, reservedNextLife,
-  resetTransition, setTransitionPhase, transitionIdFor,
+  beginLifeEnd, finishTransition, isTransitioning, markChosenBody, pendingTransition,
+  reservedNextLife, resetTransition, setTransitionPhase, transitionIdFor,
 } from './transition.js';
 
 /** The first prototype slice: three connected lives (design §12). */
@@ -67,6 +67,19 @@ export function beginLifeEnding(kind) {
 /** The next life as reserved, for the summary card and for the rebirth itself. */
 export function plannedNextLife() {
   return reservedNextLife() || nextLifePlan();
+}
+
+/**
+ * Choose one of the bodies the draw offered (choice mode). Only a body that is
+ * actually on offer can be chosen, and choosing is not scored: no kamma is recorded
+ * for preferring one form over another (docs/rebirth-modes.md).
+ */
+export function chooseNextBody(formId) {
+  const pending = pendingTransition();
+  if (!pending) return false;
+  const cards = pending.next.candidateIds;
+  if (!Array.isArray(cards) || !cards.includes(formId)) return false;
+  return markChosenBody(formId, pending.next.probabilities ? pending.next.probabilities[formId] : null);
 }
 
 /** What this life did, read from what kamma remembers (design §2 summary). */
@@ -171,6 +184,12 @@ export function recordJourneyComplete() {
  */
 export function advanceLife() {
   if (!isLifeMode() || state.liberated || state.journeyComplete) return false;
+  // In choice mode the player decides: nothing is born, and nothing is decided for
+  // them when a countdown runs out (docs/rebirth-modes.md). A reload keeps waiting.
+  const pendingChoice = pendingTransition();
+  const waitingForPick = pendingChoice && pendingChoice.phase !== 'idle' && pendingChoice.next.chosen !== true
+    && (Array.isArray(pendingChoice.next.candidateIds) || pendingChoice.next.explore === true);
+  if (waitingForPick) return false;
   // A life may only advance once it has actually ended — it is in the log — and
   // only once: the new life is not in the log, so a stray second call (a late
   // timer, a double click, a resumed save) can never invent another life.

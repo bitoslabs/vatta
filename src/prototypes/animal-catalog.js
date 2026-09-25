@@ -7,6 +7,7 @@ export const ANIMALS = [
   { id: 'rabbit', name: 'กระต่าย', group: 'ป่า', speed: 1.15, width: 49, ability: 'กระโดดไกล', duration: 1, description: 'เดินสลับท่าขา · เคลื่อนที่เร็วขึ้นระหว่างกระโดดเพื่อไปได้ไกล' },
   { id: 'elephant', name: 'ช้าง', group: 'ป่า', speed: .65, width: 100, ability: 'ยกงวง', duration: 1.8, description: 'เดินช้าและมีน้ำหนัก · ทดลองยกงวง เตรียมต่อยอดเป็นการย้ายสิ่งกีดขวาง' },
   { id: 'tiger', name: 'เสือ', group: 'ป่า', speed: 1.15, width: 85, ability: 'ย่องเงียบ', duration: 2.8, description: 'ทดลองลดตัวและเดินช้าลงเมื่อย่อง · ยังไม่มีระบบตรวจจับของศัตรูในห้องนี้' },
+  { id: 'spider', name: 'แมงมุม', group: 'ป่า', speed: 1.0, width: 42, ability: 'ขึงใย', duration: 1.6, description: 'ขึงใยเชื่อมจุดยึด · ทดลองสร้างทางให้ตัวเล็กข้าม โดยไม่ปิดทางใคร' },
   { id: 'boar', name: 'หมูป่า', group: 'ป่า', speed: .95, width: 78, ability: 'ดุนดิน', duration: 1.3, description: 'ดุนดินแรง ๆ หาราก · สังเกตชีวิตใต้พื้นก่อนจะทำลายมัน' },
   { id: 'snail', name: 'หอยทาก', group: 'ป่า', speed: .45, width: 46, ability: 'รอให้พื้นชื้น', duration: 2.2, description: 'คลานช้า ๆ และรอเมื่อพื้นแห้ง · ทดลองจังหวะของตัวเอง' },
   { id: 'buffalo', name: 'ควาย', group: 'ป่า', speed: .7, width: 104, ability: 'ลุยและลาก', duration: 1.6, description: 'เดินหนัก ๆ ลุยโคลนได้เต็มฝีเท้า · ทดลองท่าลากของข้ามเหว' },

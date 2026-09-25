@@ -66,6 +66,8 @@ export function initDynamicWorld(chapterId) {
     turned: hasWorldEffect('soil-turned'),
     // Stones a past life laid back over the city's broken gate.
     spans: Array.isArray(state.world.spans) ? state.world.spans : [],
+    // Threads a past life spun across the web's fissure (game/spider.js).
+    webs: Array.isArray(state.world.webs) ? state.world.webs : [],
     // Bloom beds a past life released, and the seeds those beds sent travelling.
     releasedBeds: Array.isArray(state.world.released) ? state.world.released : [],
     releasedSeeds: hasWorldEffect('seeds-released'),

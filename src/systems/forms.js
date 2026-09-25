@@ -60,6 +60,58 @@ export function movementKind(x, y) {
   return 'walk';
 }
 
+/**
+ * How this body *gets about*, read from its own abilities (design §10: "ท่าละเอียด
+ * ต่อร่าง"). The world renderer keeps three broad kinds (walk/swim/fly) because that
+ * is what the ground and water ask; this is the finer one the art asks for:
+ *
+ *   burrow  — it tunnels (worm): half in the soil, working forward
+ *   climb   — it climbs (gecko, squirrel, spider, cat)
+ *   hop     — it leaps as its walk (frog, rabbit)
+ *   slither — it slides (snake)
+ *   glide   — it flies (crane, butterfly, bat, owl, bee, deva)
+ *   swim    — it lives in the water (fish, otter, turtle in the river)
+ *   walk    — everything else
+ */
+export function locomotionKind(form = getForm()) {
+  const abilities = form.abilities || {};
+  if (abilities.burrow === true) return 'burrow';
+  if (abilities.flying === true) return 'glide';
+  if (form.waterBound === true) return 'swim';
+  if (abilities.climbing === true) return 'climb';
+  if (abilities.leap === true) return 'hop';
+  if (abilities.slither === true) return 'slither';
+  return 'walk';
+}
+
+/** The reference size of a body, for shadows, rings and reach (design §10). */
+export function bodyWidth(form = getForm()) {
+  return Number.isFinite(form.width) ? form.width : 64;
+}
+
+/**
+ * Which pose the body is in (design §10: อยู่เฉย · เคลื่อนที่ · ใช้ความสามารถ ·
+ * ปฏิสัมพันธ์ · ตั้งสติ · เปลี่ยนชาติ).
+ *
+ * Precedence matters and is stated here rather than in the renderer: arriving beats
+ * everything (a life is being born), then meditation, then resting, then speaking
+ * with a being, then moving, then standing still.
+ */
+export function poseForBody({
+  arriving = false, meditating = false, resting = false, interacting = false, moving = false, acting = false,
+} = {}) {
+  if (arriving) return 'rebirth';
+  if (acting) return 'act';
+  if (meditating) return 'meditate';
+  if (resting) return 'rest';
+  if (interacting) return 'interact';
+  if (moving) return 'move';
+  return 'idle';
+}
+
+/** Every pose a body can be drawn in. */
+export const POSES = Object.freeze(['idle', 'move', 'act', 'interact', 'rest', 'meditate', 'rebirth']);
+
 export function formVision() {
   return getForm().vision || 0;
 }

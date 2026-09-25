@@ -1,6 +1,7 @@
 'use strict';
 
 import { TAU } from '../core/constants.js';
+import { FORMS } from '../content/forms.js';
 import { ANIMALS as ANIMAL_CATALOG } from '../prototypes/animal-catalog.js';
 import { drawAnimalVector } from './animal-vectors.js';
 
@@ -276,40 +277,120 @@ const SHAPES = {
   },
 };
 
-/** Draw one form's silhouette, feet-anchored, with idle/walk/swim/fly/act. */
+/**
+ * The reference sizes, read from the forms themselves (content/forms.js `width`), so
+ * a shadow, a ring or a lean is the right size for the body it belongs to — the
+ * design's "ขนาดอ้างอิง" without a second table to keep in step.
+ */
+const BODY_WIDTH = Object.fromEntries(FORMS.map((form) => [form.id, form.width || 64]));
+
+function widthOf(formId) {
+  return BODY_WIDTH[formId] || 64;
+}
+
+/**
+ * Draw one form's silhouette, feet-anchored, in one of the six poses (design §10:
+ * อยู่เฉย · เคลื่อนที่ · ใช้ความสามารถ · ปฏิสัมพันธ์ · ตั้งสติ · เปลี่ยนชาติ), with the
+ * locomotion the body actually uses (walk, hop, slither, climb, glide, swim, burrow).
+ *
+ * Every deformation happens about the feet, because the design's other rule is that
+ * the hitbox lives at the feet: wings, auras and flourishes may move, the ground
+ * under the body may not.
+ */
 export function drawFormBody(ctx, formId, x, y, options = {}) {
   const phase = options.phase || 0;
+  const moving = Boolean(options.moving);
+  const kind = options.kind || 'walk';
+  const pose = options.pose || (moving ? 'move' : 'idle');
+  const arriving = pose === 'rebirth' ? Math.max(0, Math.min(1, Number(options.t) || 0)) : 0;
   const o = {
-    face: options.face >= 0 ? 1 : -1,
+    face: options.toward === -1 || options.toward === 1 ? options.toward : (options.face >= 0 ? 1 : -1),
     bob: options.bob || 0,
-    moving: Boolean(options.moving),
-    walking: Boolean(options.moving) && (options.kind || 'walk') === 'walk',
-    acting: (options.act || 0) > 0,
+    moving,
+    walking: moving && kind === 'walk',
+    acting: (options.act || 0) > 0 || pose === 'act',
     act: options.act || 0,
-    kind: options.kind || 'walk',
+    kind,
+    pose,
     phase,
   };
   const palette = PALETTES[formId] || DEFAULT_PALETTE;
+  const scale = widthOf(formId) / 64; // one body's own size, as a factor
 
-  // Flyers lift off the ground and cast a smaller, offset shadow.
-  const lift = (o.kind === 'fly' ? 10 + Math.sin(phase * 2) * 1.6 : 0)
-    + Math.max(0, Number(options.lift) || 0);
-  const sink = o.kind === 'swim' ? 4 : 0;
+  // How this body leaves the ground, by how it moves.
+  let lift = 0;
+  if (kind === 'glide' || kind === 'fly') lift = 10 + Math.sin(phase * 2) * 1.6;
+  else if (kind === 'hop' && moving) lift = Math.abs(Math.sin(phase)) * 9;
+  else if (kind === 'climb') lift = 2 + Math.sin(phase) * 1.2;
+  lift += Math.max(0, Number(options.lift) || 0);
+  if (pose === 'rebirth') lift += 6 * (1 - arriving) + 2;
+  if (pose === 'rest') lift -= 2;
+  const sink = kind === 'swim' ? 4 : 0;
 
   ctx.save();
-  if (o.moving && o.kind === 'walk') {
+  // Deformations about the feet, so nothing moves the ground under the body.
+  if (pose === 'rebirth') {
+    const grow = 0.9 + arriving * 0.18;
+    ctx.translate(x, y);
+    ctx.scale(grow, grow);
+    ctx.translate(-x, -y);
+  } else if (pose === 'meditate') {
+    ctx.translate(x, y);
+    ctx.scale(1, 0.95);
+    ctx.translate(-x, -y);
+  } else if (pose === 'rest') {
+    ctx.translate(x, y);
+    ctx.scale(1.02, 0.92);
+    ctx.translate(-x, -y);
+  } else if (pose === 'interact') {
+    ctx.translate(x, y);
+    ctx.rotate(o.face * 0.05);
+    ctx.translate(-x, -y);
+  } else if (moving && kind === 'walk') {
     const squash = 1 + Math.sin(phase) * 0.03;
     ctx.translate(x, y);
     ctx.scale(1, squash);
     ctx.translate(-x, -y);
+  } else if (pose === 'idle') {
+    const breathe = 1 + Math.sin(phase * 0.6) * 0.012;
+    ctx.translate(x, y);
+    ctx.scale(1, breathe);
+    ctx.translate(-x, -y);
   }
+  if (moving && kind === 'slither') ctx.translate(Math.sin(phase * 1.4) * 2.2 * scale, 0);
+  if (moving && kind === 'burrow') ctx.translate(0, 3);
 
+  // The shadow: its size belongs to the body, not to a fixed number.
   ctx.fillStyle = 'rgba(0,0,0,.4)';
   ctx.beginPath();
-  if (o.kind === 'fly') ctx.ellipse(x, y + 12, 8, 3, 0, 0, TAU);
-  else if (o.kind === 'swim') ctx.ellipse(x, y + 10, 13, 4, 0, 0, TAU);
-  else ctx.ellipse(x, y + 12, 12, 5, 0, 0, TAU);
+  if (kind === 'glide' || kind === 'fly') ctx.ellipse(x, y + 12, 8 * scale, 3 * scale, 0, 0, TAU);
+  else if (kind === 'swim') ctx.ellipse(x, y + 10, 13 * scale, 4 * scale, 0, 0, TAU);
+  else ctx.ellipse(x, y + 12, 12 * scale, 5 * scale, 0, 0, TAU);
   ctx.fill();
+
+  // The poses that settle: a slow ring, as wide as the body is.
+  if (pose === 'meditate') {
+    ctx.strokeStyle = 'rgba(233,217,160,.35)';
+    ctx.lineWidth = 1.6;
+    for (let i = 0; i < 2; i++) {
+      ctx.beginPath();
+      ctx.ellipse(x, y + 2, (14 + i * 9) * scale + Math.sin(phase * 0.7 + i) * 1.4, (5 + i * 3) * scale, 0, 0, TAU);
+      ctx.stroke();
+    }
+  } else if (pose === 'rest') {
+    ctx.strokeStyle = 'rgba(185,207,191,.3)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 2, 15 * scale + Math.sin(phase * 0.5) * 1.2, 5 * scale, 0, 0, TAU);
+    ctx.stroke();
+  } else if (pose === 'interact') {
+    // Speaking with someone: a small arc in front, and no ring around the self.
+    ctx.strokeStyle = 'rgba(233,217,160,.4)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(x + o.face * 14 * scale, y - 6, 7 * scale, -0.9, 0.9);
+    ctx.stroke();
+  }
 
   // Water ripples around a body that is in the river.
   if (o.kind === 'swim') {

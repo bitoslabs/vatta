@@ -6,6 +6,7 @@ import { mulberry32 } from '../core/rng.js';
 import {
   ASURA, ASURA_KEEPOUTS, asuraGate, GARDEN, GARDEN_KEEPOUTS, gardenGate,
   MARKET, MARKET_KEEPOUTS, marketAxis, marketFar, marketGate, marketInside,
+  WEB, WEB_KEEPOUTS,
   BLOOMS, BLOOMS_APPROACH, BLOOMS_KEEPOUTS, BOAR, BOAR_KEEPOUTS, DAMP, DAMP_APPROACH, DAMP_KEEPOUTS,
   FORD, FORD_APPROACH, FORD_KEEPOUTS, fordBridge,
   HOMES, HOMES_APPROACH, HOMES_KEEPOUTS,
@@ -161,9 +162,21 @@ export const GARDEN_FEATURE_TYPES = Object.freeze(['hedge', 'shadow', 'beam', 'b
  */
 export const MARKET_FEATURE_TYPES = Object.freeze(['marketwall', 'narrowgate', 'curtain', 'gift']);
 
+/**
+ * The web's own kinds (reserve table, แมงมุม): `anchor` is a post the thread is spun
+ * between, `fissure` is the ground nothing without legs for it crosses, and
+ * `webline` is the thread itself — a bridge for small bodies, and nothing to anyone
+ * else (`blockedAt` only clears the fissure where the thread lies, and only for a
+ * body that is small or climbing).
+ */
+export const WEB_FEATURE_TYPES = Object.freeze(['anchor', 'fissure', 'webline']);
+
 const SOLID_TYPES = new Set([
   'thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone', 'log', 'wall', 'canopy', 'flood', 'snag',
   'citywall', 'hedge', 'marketwall',
+  // Note: `anchor` is *not* solid. A post is where a thread is tied, not a wall: if
+  // it blocked, it would wall off the very thread it holds (walkers would have to
+  // get past the post to reach the web).
 ]);
 
 function featureRadius(type, rng) {
@@ -200,6 +213,9 @@ function featureRadius(type, rng) {
   if (type === 'narrowgate') return MARKET.gateRadius;
   if (type === 'curtain') return MARKET.curtainRadius;
   if (type === 'gift') return MARKET.giftRadius;
+  if (type === 'anchor') return WEB.anchorRadius;
+  if (type === 'fissure') return WEB.fissureRadius;
+  if (type === 'webline') return WEB.webRadius;
   if (type === 'hedge') return GARDEN.hedgeRadius;
   if (type === 'shadow') return GARDEN.shadowRadius;
   if (type === 'beam') return GARDEN.beamRadius;
@@ -259,6 +275,16 @@ export function blockedAt(features, x, y, abilities = {}) {
     // The market's gate is narrow: it lets a body through only with empty hands, and
     // a curtain opens as the hands get heavier — the only two doors in the game
     // whose key is what the body is *carrying* (game/market.js).
+    // The fissure: leap or fly, or not at all — unless a thread lies across it and
+    // the body is small or climbing enough to walk a thread. Nobody else is affected
+    // either way: the web opens a way, it never closes one.
+    if (feature.type === 'fissure') {
+      const webbed = features.some((other) => other.type === 'webline' && featureAt(other, x, y));
+      const walksThread = webbed && (abilities.small === true || abilities.climbing === true);
+      if (walksThread) return false;
+      return abilities.leap !== true && featureAt(feature, x, y);
+    }
+    if (feature.type === 'webline') return false;
     if (feature.type === 'narrowgate') return (abilities.carryCount || 0) > 0 && featureAt(feature, x, y);
     if (feature.type === 'curtain') return (abilities.carryCount || 0) < (feature.needs || 1) && featureAt(feature, x, y);
     if (feature.type === 'burrow') return abilities.burrow !== true && featureAt(feature, x, y);
@@ -333,6 +359,8 @@ function mayPlace(type, x, y, radius, route) {
   if (GARDEN_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   // Nor the market alley, or a trunk could stand in a stall's curtain.
   if (MARKET_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
+  // Nor the web, or a trunk could stand where a thread is spun or a hollow is.
+  if (WEB_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   void type;
   return true;
 }
@@ -1024,6 +1052,74 @@ export function validateMarketRoute(features, abilities = {}) {
 }
 
 /**
+ * The spider's web (reserve table, แมงมุม).
+ *
+ * Two anchors, a fissure between them plugged across so nothing walks around it, and
+ * the threads lives have spun between them. A thread is laid as overlapping beads
+ * along the line, so it covers the fissure the same way a plank covers a gully.
+ */
+export function assembleWebSite(options = {}) {
+  const { hollow, ring, segments, fissureRadius, anchorOut, anchorIn, webRadius, webStep } = WEB;
+  const features = [];
+  const step = TAU / segments;
+  for (let i = 0; i < segments; i++) {
+    const angle = i * step;
+    features.push({
+      i: 0, site: 'web', type: 'fissure', fixed: true,
+      x: hollow.x + Math.cos(angle) * ring,
+      y: hollow.y + Math.sin(angle) * ring,
+      r: fissureRadius,
+    });
+  }
+  for (const anchor of [anchorOut, anchorIn]) {
+    features.push({ i: 0, site: 'web', type: 'anchor', fixed: true, x: anchor.x, y: anchor.y, r: WEB.anchorRadius });
+  }
+  for (const thread of options.webs || []) {
+    const from = thread.from === 'in' ? anchorIn : anchorOut;
+    const to = thread.from === 'in' ? anchorOut : anchorIn;
+    const line = { x: to.x - from.x, y: to.y - from.y };
+    const span = Math.hypot(line.x, line.y) || 1;
+    const steps = Math.max(1, Math.round(span / webStep));
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      features.push({
+        i: 0, site: 'web', type: 'webline', fixed: true,
+        x: from.x + line.x * t, y: from.y + line.y * t, r: webRadius,
+      });
+    }
+  }
+  return features;
+}
+
+/**
+ * Prove the web is the spider's (reserve table, แมงมุม), including the clause the
+ * table asks for by name:
+ *
+ *   smallBefore  a small body cannot reach the hollow through the fissure
+ *   smallAfter   with a thread spun, a small body can
+ *   walkerOpen   a plain walker is no better off (the web opens nothing for it)
+ *   leaperOpen   and a leaping body crosses before and after: nothing was closed
+ */
+export function validateSpiderRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false, leap: false, small: false, climbing: false };
+  const from = WEB.road;
+  const goal = WEB.hollow;
+  const room = WEB.hollowRadius * 0.5;
+  const threaded = [...features, ...assembleWebSite({ webs: [{ from: 'out' }] })];
+  const smallBefore = reachableBetween(features, from, goal, { ...base, small: true }, room);
+  const smallAfter = reachableBetween(threaded, from, goal, { ...base, small: true }, room);
+  const spiderAfter = reachableBetween(threaded, from, goal, { ...base, small: true, climbing: true }, room);
+  const walkerBefore = reachableBetween(features, from, goal, base, room);
+  const walkerAfter = reachableBetween(threaded, from, goal, base, room);
+  const leapBefore = reachableBetween(features, from, goal, { ...base, leap: true }, room);
+  const leapAfter = reachableBetween(threaded, from, goal, { ...base, leap: true }, room);
+  const ok = smallBefore === false && smallAfter === true && spiderAfter === true
+    && walkerBefore === false && walkerAfter === false
+    && leapBefore === true && leapAfter === true;
+  return { ok, smallBefore, smallAfter, spiderAfter, walkerBefore, walkerAfter, leapBefore, leapAfter };
+}
+
+/**
  * The ford (story table ch.11, ควาย).
  *
  * The mud flat, the fallen log, and the chasm as a leap-wide line: a body with
@@ -1382,6 +1478,10 @@ export function assembleRooms(seed, biomeId = 'memory-forest', options = {}) {
   if (sites.includes('asura')) {
     // The city's plaza, and the spans earlier lives laid over its broken gate.
     for (const f of assembleAsuraRooms(options)) features.push({ ...f, i: features.length });
+  }
+  if (sites.includes('web')) {
+    // The anchors, the fissure, and the threads earlier lives spun across it.
+    for (const f of assembleWebSite(options)) features.push({ ...f, i: features.length });
   }
   if (sites.includes('market')) {
     // The alley off the plane's own street, and the curtains a life loosened.

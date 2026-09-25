@@ -25,11 +25,12 @@ import { catGoal, settleHomes } from '../game/cat.js';
 import { buffaloGoal, settlePasture } from '../game/buffalo.js';
 import { settleGarden, snailGoal } from '../game/snail.js';
 import { boarGoal, settleWallow } from '../game/boar.js';
+import { settleHollow, spiderGoal } from '../game/spider.js';
 
 const WATER_GOAL_RADIUS = 150;
 const LAND_GOAL_RADIUS = 340;
 /** Goal kinds that end a life on their own; 'land', 'seed' and 'inlet' only guide. */
-export const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure', 'dark-roost', 'cache', 'home', 'holt', 'hive', 'warm-stone', 'pasture', 'damp-garden', 'wallow']);
+export const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link', 'storm', 'watch', 'grove', 'range', 'enclosure', 'dark-roost', 'cache', 'home', 'holt', 'hive', 'warm-stone', 'pasture', 'damp-garden', 'wallow', 'web-hollow']);
 
 /**
  * Where this life can actually finish (design §12 acceptance: the route must be
@@ -87,6 +88,9 @@ export const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link',
  *   damp-garden the snail's ridge: cross the dry ground while the ground itself is
  *          damp, then decide whether the crossing stays damp behind you — the only
  *          barrier in the game that exists for one body (game/snail.js)
+ *   web-hollow the spider's hollow: spin a thread between the posts and cross the
+ *          fissure on it — a bridge for small bodies that closes nothing for anyone
+ *          else (game/spider.js)
  *   wallow  the boar's feeding ground: root three of four root patches out of the
  *          sealed ground, seeing which one is alive underneath before breaking it,
  *          then decide what the soil you opened should give (game/boar.js)
@@ -119,6 +123,7 @@ export function goalFor() {
   if (lifeGoal === 'ford') return buffaloGoal();
   if (lifeGoal === 'damp') return snailGoal();
   if (lifeGoal === 'soil') return boarGoal();
+  if (lifeGoal === 'web') return spiderGoal();
   return { x: TEMPLE.x, y: TEMPLE.y, r: LAND_GOAL_RADIUS, kind: 'land' };
 }
 
@@ -154,6 +159,7 @@ export function updateLifeGoal() {
     if (goal.kind === 'pasture') settlePasture();
     if (goal.kind === 'damp-garden') settleGarden();
     if (goal.kind === 'wallow') settleWallow();
+    if (goal.kind === 'web-hollow') settleHollow();
     emit(EVENTS.LIFE_COMPLETE, goal.kind);
   }
 }

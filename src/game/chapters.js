@@ -29,9 +29,11 @@ import { resetCat } from './cat.js';
 import { resetBuffalo } from './buffalo.js';
 import { resetSnail } from './snail.js';
 import { resetBoar } from './boar.js';
+import { resetSpider } from './spider.js';
 import { resetAsuraCity } from './asura-city.js';
 import { resetGarden } from './garden.js';
 import { resetMarket } from './market.js';
+import { resetCompanion } from '../systems/companion.js';
 import { resetMoisture } from '../systems/moisture.js';
 import { resetLight } from '../systems/light.js';
 import { resetDrift } from '../systems/drift.js';
@@ -507,6 +509,7 @@ export function loadChapter(id, { autosave = true } = {}) {
   resetBuffalo();
   resetSnail();
   resetBoar();
+  resetSpider();
   resetAsuraCity();
   resetGarden();
   resetMarket();
@@ -529,6 +532,9 @@ export function loadChapter(id, { autosave = true } = {}) {
   const spawn = chapterSpawn(def);
   player.x = spawn.x;
   player.y = spawn.y;
+  // The dog joins where the life arrives — at the first meeting, or if a past life
+  // kept the friendship (systems/companion.js).
+  resetCompanion();
   player.face = 1;
   player.moving = false;
   player.bob = 0;

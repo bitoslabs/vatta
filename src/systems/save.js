@@ -3,6 +3,7 @@
 import { state } from '../core/state.js';
 import { exportKarma, importKarma } from './karma.js';
 import { exportTransition, importTransition } from './transition.js';
+import { sanitiseLeavings } from './world-effects.js';
 import { exportRebirth, importRebirth } from './rebirth.js';
 import { exportEchoes, importEchoes } from './karma-memory.js';
 import { exportPath, importPath } from './path.js';
@@ -93,6 +94,9 @@ export function snapshot() {
 
 export function saveRun(slot = activeSlot) {
   if (!validSlot(slot)) return false;
+  // Exploring a body writes nothing: the animal book is a separate thing from a
+  // journey (systems/explore.js).
+  if (state.explore?.active === true) return false;
   try {
     localStorage.setItem(slotKey(slot), JSON.stringify(snapshot()));
     return true;
@@ -201,6 +205,7 @@ export function applySaveRuntime(data) {
     ? state.world.planks.filter((plank) => Number.isFinite(plank?.x) && Number.isFinite(plank?.y))
     : [];
   state.world.effects = sanitiseEffects(data.world && data.world.effects);
+  state.world.leavings = sanitiseLeavings(data.world && data.world.leavings);
   state.liberated = Boolean(data.liberated);
   state.journeyComplete = Boolean(data.journeyComplete);
   state.runId = typeof data.runId === 'string' ? data.runId : (state.runId || '');

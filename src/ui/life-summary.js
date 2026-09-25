@@ -8,12 +8,14 @@ import { initAudio, playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { formAbilityKey, formNameKey } from '../content/forms.js';
 import {
-  advanceLife, beginLifeEnding, isJourneyComplete, isPrototypeComplete, plannedNextLife, recordLife,
-  startLifeMode, summariseLife,
+  advanceLife, beginLifeEnding, chooseNextBody, isJourneyComplete, isPrototypeComplete, plannedNextLife,
+  recordLife, startLifeMode, summariseLife,
 } from '../systems/life.js';
 import { isReducedMotion } from '../systems/settings.js';
 import { addLifeLight } from '../systems/effects.js';
-import { pendingTransition } from '../systems/transition.js';
+import { choicePending, pendingTransition } from '../systems/transition.js';
+import { mapsFor } from '../content/forms.js';
+import { drawFormBody } from '../render/forms-sprites.js';
 import { player } from '../entities/player.js';
 import { loadChapter, CHAPTERS } from '../game/chapters.js';
 import { setTeacher } from '../systems/teacher.js';
@@ -23,12 +25,21 @@ import { $ } from './dom.js';
 const overlay = $('#lifeSummary');
 const body = $('#lifeSummaryBody');
 const rebornButton = $('#lifeReborn');
+const choiceBox = $('#lifeChoice');
+const choiceCards = $('#lifeChoiceCards');
+const randomButton = $('#lifeRandom');
 let timer = null;
 let shownLife = null;
 let seconds = 5;
 let paused = false;
 
 function stopTimer() { clearInterval(timer); timer = null; }
+function openBookForRebirth() {
+  // Imported lazily: the book imports the summary's neighbours, and a cycle here
+  // would be worse than a small import at the moment of use.
+  import('./animal-book.js').then((book) => book.openBook());
+}
+
 function continueLife() {
   // The reservation is the contract: a pending transition may be resumed even from
   // a reload, when there is no summary card on screen any more.
@@ -43,7 +54,7 @@ function beginTimer() {
   stopTimer();
   timer = setInterval(() => {
     if (!state.lifeMode || shownLife !== state.lifeId || state.mode !== MODE.END) { stopTimer(); return; }
-    if (document.hidden || paused) return;
+    if (document.hidden || paused || choicePending()) return;
     seconds -= 1;
     if (seconds <= 0) continueLife();
     else renderLifeSummary();
@@ -71,6 +82,70 @@ function group(title) {
   return heading;
 }
 
+/**
+ * Choice mode: the bodies the draw offered, as cards (name, art drawn from code,
+ * one line of ability and one line of where it can go). Reloading shows the same
+ * cards with the same pick, because they live in the reservation
+ * (systems/transition.js), not in the screen.
+ */
+function renderChoice(pending) {
+  if (!choiceBox || !choiceCards) return;
+  const cards = pending && pending.next ? pending.next.candidateIds : null;
+  const showing = Array.isArray(cards) && cards.length > 0;
+  choiceBox.classList.toggle('hidden', !showing);
+  if (randomButton) randomButton.classList.toggle('hidden', !showing);
+  if (!showing) return;
+  choiceCards.innerHTML = '';
+  const probabilities = pending.next.probabilities || {};
+  for (const formId of cards) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'life-choice-card';
+    card.dataset.form = formId;
+    if (pending.next.chosen && pending.next.formId === formId) card.classList.add('is-picked');
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 96;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, 96, 64);
+      try { drawFormBody(ctx, formId, 48, 46, { face: 1, phase: 0.4, moving: false, bob: 0.5, act: 0 }); } catch { /* art is optional here */ }
+    }
+    card.appendChild(canvas);
+
+    const name = document.createElement('div');
+    name.className = 'life-choice-name';
+    name.textContent = t(formNameKey(formId));
+    card.appendChild(name);
+
+    const ability = document.createElement('div');
+    ability.className = 'life-choice-line';
+    ability.textContent = t(formAbilityKey(formId));
+    card.appendChild(ability);
+
+    const where = document.createElement('div');
+    where.className = 'life-choice-line';
+    where.textContent = `${t('life.choice.where')} ${mapsFor(formId).map((map) => t(`map.${map}`)).join(' · ')}`;
+    card.appendChild(where);
+
+    if (Number.isFinite(probabilities[formId])) {
+      const chance = document.createElement('div');
+      chance.className = 'life-choice-line';
+      chance.textContent = `${t('life.choice.chance')} ${Math.round(probabilities[formId] * 1000) / 10}%`;
+      card.appendChild(chance);
+    }
+    card.addEventListener('click', (e) => {
+      e.target.blur?.();
+      if (chooseNextBody(formId)) {
+        card.classList.add('is-picked');
+        renderLifeSummary();
+      }
+    });
+    choiceCards.appendChild(card);
+  }
+}
+
 /** The short end-of-life card: what this life was, did, and left behind. */
 export function renderLifeSummary() {
   if (!body) return;
@@ -92,9 +167,17 @@ export function renderLifeSummary() {
     // never a percentage that is not one (systems/rebirth.js).
     if (Number.isFinite(next.probability)) {
       body.appendChild(row(t('life.odds'), t('life.odds.value', { percent: Math.round(next.probability * 1000) / 10 })));
+      // Said out loud, because it is the design's promise: the draw reads the
+      // chapter and the bodies this run has worn — never the ledger, and never as a
+      // verdict on how the life went (docs/rebirth-modes.md).
+      body.appendChild(row(t('life.draw.note'), t('life.draw.note.value')));
     }
   }
-  body.appendChild(row(t('life.auto'), paused ? t('life.paused') : t('life.countdown', { seconds })));
+  if (choicePending()) {
+    body.appendChild(row(t('life.auto'), t('life.choice.picked')));
+  } else {
+    body.appendChild(row(t('life.auto'), paused ? t('life.paused') : t('life.countdown', { seconds })));
+  }
   $('#lifeClose').textContent = t(paused ? 'life.resume' : 'life.pause');
 
   body.appendChild(group(t('life.group.record')));
@@ -106,6 +189,18 @@ export function renderLifeSummary() {
 
   if (rebornButton) {
     rebornButton.textContent = isPrototypeComplete() ? t('life.finish') : t('life.reborn');
+    // In choice mode nothing is born until a body is picked.
+    const waiting = choicePending();
+    rebornButton.disabled = waiting;
+    rebornButton.classList.toggle('is-disabled', waiting);
+  }
+  renderChoice(pendingTransition());
+  // Explore mode asks the animal book instead of showing cards.
+  const pending = pendingTransition();
+  if (rebornButton && pending && pending.next.explore === true && !pending.next.chosen) {
+    rebornButton.disabled = true;
+    rebornButton.classList.add('is-disabled');
+    rebornButton.textContent = t('life.explore.open');
   }
 }
 
@@ -182,7 +277,27 @@ export function initLifeSummary() {
   if (rebornButton) {
     rebornButton.addEventListener('click', (e) => {
       e.target.blur();
+      const pending = pendingTransition();
+      // Explore mode: the button opens the book, because that is where a body is
+      // chosen (nothing is decided here).
+      if (pending && pending.next.explore === true && pending.next.chosen !== true) {
+        openBookForRebirth();
+        return;
+      }
       continueLife();
+    });
+  }
+
+  if (randomButton) {
+    randomButton.addEventListener('click', (e) => {
+      e.target.blur();
+      const pending = pendingTransition();
+      const cards = pending?.next?.candidateIds;
+      // Only among the cards on screen: the player can always see what they get.
+      if (Array.isArray(cards) && cards.length) {
+        const pick = cards[Math.floor(((typeof performance !== 'undefined' ? performance.now() : 0) / 1000) * 7) % cards.length];
+        if (chooseNextBody(pick)) renderLifeSummary();
+      }
     });
   }
 
@@ -193,6 +308,9 @@ export function initLifeSummary() {
   });
 
   // A water-bound life cannot reach the temple; its river goal ends the life.
+  // A body picked from the book answers the waiting rebirth.
+  on(EVENTS.BOOK_PICKED, () => { continueLife(); });
+
   on(EVENTS.LIFE_COMPLETE, (kind) => {
     if (!overlay.classList.contains('hidden')) return;
     showLifeSummary(kind);

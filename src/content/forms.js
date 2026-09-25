@@ -54,6 +54,7 @@
  *                      log across the chasm for every body that follows
  *              'damp'  the garden a snail ends in, once it has crossed the dry
  *                      ridge in the ground's own rhythm
+ *              'web'   the hollow a spider ends in, past the fissure it bridged
  *              'soil'  the wallow a boar ends in, once it has rooted its food out
  *                      of the ground without crushing what lives under it
  * maps       the maps that can carry this body (see systems/life-route.js):
@@ -77,6 +78,7 @@
 export const FORMS = Object.freeze([
   {
     id: 'human',
+    width: 64,
     speed: 1,
     waterSpeed: 0.85,
     vision: 0,
@@ -88,6 +90,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'deer',
+    width: 78,
     speed: 1.18,
     waterSpeed: 0.6,
     vision: 60,
@@ -99,6 +102,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'dog',
+    width: 60,
     speed: 1.05,
     waterSpeed: 0.8,
     vision: 30,
@@ -111,6 +115,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'crane',
+    width: 84,
     speed: 1.12,
     waterSpeed: 1.05,
     vision: 90,
@@ -122,6 +127,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'turtle',
+    width: 62,
     speed: 0.7,
     waterSpeed: 1,
     vision: -10,
@@ -135,6 +141,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'monkey',
+    width: 52,
     speed: 1.05,
     waterSpeed: 0.85,
     vision: 20,
@@ -146,6 +153,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'butterfly',
+    width: 44,
     speed: 1.25,
     waterSpeed: 0.8,
     vision: -40,
@@ -158,6 +166,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'asura',
+    width: 96,
     speed: 0.85,
     waterSpeed: 0.7,
     vision: -20,
@@ -172,6 +181,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'deva',
+    width: 88,
     speed: 1.22,
     waterSpeed: 1.1,
     vision: 80,
@@ -185,6 +195,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'fish',
+    width: 56,
     speed: 0.4,
     waterSpeed: 1.35,
     vision: -30,
@@ -214,6 +225,7 @@ export const FORMS = Object.freeze([
    */
   {
     id: 'worm',
+    width: 46,
     speed: 0.45,
     waterSpeed: 0.5,
     vision: -35,
@@ -227,6 +239,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'ant',
+    width: 40,
     speed: 0.85,
     waterSpeed: 0.6,
     vision: 10,
@@ -239,6 +252,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'frog',
+    width: 44,
     speed: 0.7,
     waterSpeed: 1.1,
     vision: 20,
@@ -251,6 +265,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'snake',
+    width: 74,
     speed: 0.85,
     waterSpeed: 0.8,
     vision: 0,
@@ -263,6 +278,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'rabbit',
+    width: 48,
     speed: 1.15,
     waterSpeed: 0.7,
     vision: 30,
@@ -276,6 +292,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'elephant',
+    width: 104,
     speed: 0.65,
     waterSpeed: 0.7,
     vision: 40,
@@ -290,6 +307,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'tiger',
+    width: 88,
     speed: 1.15,
     waterSpeed: 0.8,
     vision: 50,
@@ -303,6 +321,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'snail',
+    width: 44,
     speed: 0.45,
     waterSpeed: 0.6,
     vision: -20,
@@ -316,6 +335,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'buffalo',
+    width: 100,
     speed: 0.7,
     waterSpeed: 0.85,
     vision: 10,
@@ -329,7 +349,23 @@ export const FORMS = Object.freeze([
     abilities: { flying: false, climbing: false, small: false, wade: true },
   },
   {
+    id: 'spider',
+    width: 44,
+    speed: 1.0,
+    waterSpeed: 0.7,
+    vision: 40,
+    waterBound: false,
+    canSpeak: false,
+    fearGain: 0.9,
+    rebirth: true,
+    lifeGoal: 'web',
+    maps: ['land'],
+    // Small and climbing: it walks the threads it spins, and only such bodies can.
+    abilities: { flying: false, climbing: true, small: true },
+  },
+  {
     id: 'boar',
+    width: 78,
     speed: 0.95,
     waterSpeed: 0.75,
     vision: 20,
@@ -344,6 +380,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'cat',
+    width: 48,
     speed: 1.25,
     waterSpeed: 0.7,
     vision: 40,
@@ -357,6 +394,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'bee',
+    width: 36,
     speed: 1.2,
     waterSpeed: 0.8,
     vision: 30,
@@ -370,6 +408,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'otter',
+    width: 66,
     speed: 1.05,
     waterSpeed: 1.25,
     vision: 20,
@@ -383,6 +422,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'crab',
+    width: 58,
     speed: 0.9,
     waterSpeed: 1.15,
     vision: -10,
@@ -396,6 +436,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'squirrel',
+    width: 44,
     speed: 1.15,
     waterSpeed: 0.7,
     vision: 30,
@@ -409,6 +450,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'bat',
+    width: 52,
     speed: 1,
     waterSpeed: 0.8,
     vision: -70,
@@ -422,6 +464,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'gecko',
+    width: 46,
     speed: 0.9,
     waterSpeed: 0.7,
     vision: 10,
@@ -435,6 +478,7 @@ export const FORMS = Object.freeze([
   },
   {
     id: 'owl',
+    width: 62,
     speed: 1,
     waterSpeed: 0.9,
     vision: 120,

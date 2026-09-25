@@ -8,6 +8,9 @@ import { on, EVENTS } from '../core/events.js';
 import { t } from '../systems/i18n.js';
 import { isUnlocked } from '../systems/path.js';
 import { getPreceptStatus } from '../systems/precepts.js';
+import { leavingList } from '../systems/world-effects.js';
+import { setWaypoint } from '../systems/waypoint.js';
+import { formNameKey } from '../content/forms.js';
 import { $ } from './dom.js';
 
 const overlay = $('#codexOverlay');
@@ -28,8 +31,44 @@ function row(pali, name, desc) {
   return item;
 }
 
+/**
+ * The world book (docs/player-interactions.md "สมุดความทรงจำ"): what past lives
+ * left, in the order they left it, and a way to walk back to it. No scores and no
+ * verdicts — a leaving is named, placed, and shown as the change it is.
+ */
+function renderLeavings() {
+  const leavings = leavingList();
+  body.appendChild(el('div', 'codex-group', t('book.leavings.title')));
+  if (!leavings.length) {
+    body.appendChild(el('div', 'codex-note', t('book.leavings.empty')));
+    return;
+  }
+  for (const leaving of leavings) {
+    const item = el('div', 'codex-leaving');
+    const who = leaving.lifeId !== null && leaving.formId
+      ? t('book.leavings.who', { life: leaving.lifeId, form: t(formNameKey(leaving.formId)) })
+      : t('book.leavings.whoUnknown');
+    const where = leaving.site ? t(`site.${leaving.site}`) : '';
+    item.appendChild(el('div', 'codex-name', t(leaving.key)));
+    item.appendChild(el('div', 'codex-desc', [who, where].filter(Boolean).join(' · ')));
+    if (leaving.place) {
+      const go = el('button', 'link-btn', t('book.leavings.go'));
+      go.type = 'button';
+      go.addEventListener('click', (e) => {
+        e.target.blur();
+        setWaypoint({ x: leaving.place.x, y: leaving.place.y, key: leaving.key, site: leaving.site });
+      });
+      item.appendChild(go);
+    }
+    body.appendChild(item);
+  }
+}
+
 function render() {
   body.innerHTML = '';
+
+  // ---- What past lives left behind --------------------------------------
+  renderLeavings();
 
   // ---- Kamma: the actions and their roots -------------------------------
   body.appendChild(el('div', 'codex-group', t('karma.title')));
@@ -76,17 +115,27 @@ function render() {
   }
 }
 
-export function initCodex() {
-  $('#codexBtn').addEventListener('click', () => {
-    render();
-    overlay.classList.remove('hidden');
-  });
+/** Open the codex (the world book, kamma and the 31 planes). */
+export function openCodex() {
+  if (!overlay) return false;
+  render();
+  overlay.classList.remove('hidden');
+  return true;
+}
 
-  $('#codexClose').addEventListener('click', () => {
-    overlay.classList.add('hidden');
-  });
+export function closeCodex() {
+  if (overlay) overlay.classList.add('hidden');
+}
+
+export function isCodexOpen() {
+  return Boolean(overlay) && !overlay.classList.contains('hidden');
+}
+
+export function initCodex() {
+  $('#codexBtn').addEventListener('click', () => openCodex());
+  $('#codexClose').addEventListener('click', () => closeCodex());
 
   on(EVENTS.LOCALE_CHANGED, () => {
-    if (!overlay.classList.contains('hidden')) render();
+    if (isCodexOpen()) render();
   });
 }

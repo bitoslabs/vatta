@@ -7,6 +7,7 @@ import { getActiveSlot, getRunName, clearSave, listSaves, readSave } from '../sy
 import {
   isLargeType, isReducedMotion, setLargeType, toggleLargeType, toggleReducedMotion,
 } from '../systems/settings.js';
+import { rebirthMode, setRebirthMode } from '../systems/rebirth.js';
 import { chapterById } from '../game/chapters.js';
 import { askConfirm, initConfirm } from './confirm.js';
 import { renderSaveSlots } from './save-slots.js';
@@ -24,6 +25,7 @@ const overlay = $('#settingsOverlay');
 const muteButton = $('#settingsMute');
 const typeButton = $('#settingsLarge');
 const motionButton = $('#settingsMotion');
+const modeButton = $('#settingsMode');
 const resetButton = $('#settingsReset');
 const runInfo = $('#settingsRun');
 const closeButton = $('#settingsClose');
@@ -35,6 +37,7 @@ const KEYS = [
   ['help.keys.mute', 'help.keys.mute'],
   ['help.keys.dismiss', 'help.keys.dismiss'],
   ['help.keys.echo', 'help.keys.echo'],
+  ['help.keys.companion', 'help.keys.companion'],
   ['help.keys.teacher', 'help.keys.teacher'],
   ['help.keys.projector', 'help.keys.projector'],
   ['help.keys.help', 'help.keys.help'],
@@ -71,6 +74,12 @@ function renderButtons() {
   if (motionButton) {
     motionButton.textContent = t(isReducedMotion() ? 'help.motion.reduced' : 'help.motion.full');
     motionButton.classList.toggle('is-on', isReducedMotion());
+  }
+  if (modeButton) {
+    // Only modes with a screen are offered: "explore" is reserved, not promised.
+    const mode = rebirthMode();
+    modeButton.textContent = t(mode === 'choice' ? 'help.mode.choice' : mode === 'explore' ? 'help.mode.explore' : 'help.mode.flow');
+    modeButton.classList.toggle('is-on', mode !== 'flow');
   }
 }
 
@@ -118,6 +127,16 @@ export function initSettingsScreen() {
   if (muteButton) muteButton.addEventListener('click', (e) => { e.target.blur(); toggleMute(); renderButtons(); });
   if (typeButton) typeButton.addEventListener('click', (e) => { e.target.blur(); toggleLargeType(); renderButtons(); });
   if (motionButton) motionButton.addEventListener('click', (e) => { e.target.blur(); toggleReducedMotion(); renderButtons(); });
+  if (modeButton) {
+    modeButton.addEventListener('click', (e) => {
+      e.target.blur();
+      // Three modes now, all with screens: flow → choice → explore → flow.
+      const order = ['flow', 'choice', 'explore'];
+      const next = order[(order.indexOf(rebirthMode()) + 1) % order.length];
+      setRebirthMode(next);
+      renderButtons();
+    });
+  }
   if (closeButton) closeButton.addEventListener('click', (e) => { e.target.blur(); closeSettings(); });
 
   if (resetButton) {
