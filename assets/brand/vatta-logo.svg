@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <title>Vatta — leaf within the circle of life</title>
+  <rect width="128" height="128" rx="28" fill="#102722"/>
+  <circle cx="64" cy="64" r="44" fill="none" stroke="#d7bb78" stroke-width="8"/>
+  <path d="M43 83 C34 57 52 38 84 35 C90 64 75 88 43 83Z" fill="#d7bb78"/>
+  <path d="M43 86 Q56 64 73 49" fill="none" stroke="#102722" stroke-width="5" stroke-linecap="round"/>
+</svg>

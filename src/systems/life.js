@@ -4,7 +4,9 @@ import { state } from '../core/state.js';
 import { getKarmaMemory } from './karma-memory.js';
 import { getForm, isWaterBound, setForm } from './forms.js';
 import { planNextLife } from './life-route.js';
-import { drawNextLife, resetRebirth } from './rebirth.js';
+import { drawNextLife, eligibleForms, resetRebirth, resolveRebirth } from './rebirth.js';
+import { getKarma } from './karma.js';
+import { saveRun } from './save.js';
 import { addFloater } from './effects.js';
 import { goalFor } from './goals.js';
 import { t } from './i18n.js';
@@ -12,7 +14,7 @@ import { player } from '../entities/player.js';
 import { CHAPTERS, loadChapter } from '../game/chapters.js';
 import {
   beginLifeEnd, finishTransition, isTransitioning, markChosenBody, pendingTransition,
-  reservedNextLife, resetTransition, setTransitionPhase, transitionIdFor,
+  reservedNextLife, resetTransition, setTransitionPhase,
 } from './transition.js';
 
 /** The first prototype slice: three connected lives (design §12). */
@@ -55,8 +57,7 @@ export function beginLifeEnding(kind) {
   // summary must not draw again (that is what makes reloading change nothing).
   const existing = pendingTransition();
   const completionId = typeof kind === 'string' && kind ? kind : 'goal';
-  const id = transitionIdFor(state.lifeId, completionId);
-  if (existing && existing.id === id) return { begun: false, transition: existing };
+  if (existing) return { begun: false, transition: existing };
   return beginLifeEnd({
     lifeId: state.lifeId,
     completionId,
@@ -66,7 +67,7 @@ export function beginLifeEnding(kind) {
 
 /** The next life as reserved, for the summary card and for the rebirth itself. */
 export function plannedNextLife() {
-  return reservedNextLife() || nextLifePlan();
+  return reservedNextLife() || nextLifePlan({ consume: false });
 }
 
 /**
@@ -77,6 +78,10 @@ export function plannedNextLife() {
 export function chooseNextBody(formId) {
   const pending = pendingTransition();
   if (!pending) return false;
+  if (pending.next.explore === true) {
+    if (!eligibleForms(pending.next.chapter).all.includes(formId)) return false;
+    return markChosenBody(formId);
+  }
   const cards = pending.next.candidateIds;
   if (!Array.isArray(cards) || !cards.includes(formId)) return false;
   return markChosenBody(formId, pending.next.probabilities ? pending.next.probabilities[formId] : null);
@@ -138,9 +143,12 @@ export function isPrototypeComplete() {
  * (systems/rebirth.js). The draw consumes one number from the run's stream, and it
  * is made once — when the life is reserved, never when the scene is shown.
  */
-export function nextLifePlan() {
-  return drawNextLife({ chapter: state.chapter, lifeId: state.lifeId,
-    history: state.formHistory, chapterIds: CHAPTERS.map(chapter => chapter.id) });
+export function nextLifePlan({ consume = true } = {}) {
+  return {
+    ...drawNextLife({ chapter: state.chapter, lifeId: state.lifeId,
+      history: state.formHistory, chapterIds: CHAPTERS.map(chapter => chapter.id), consume }),
+    ...resolveRebirth(getKarma()),
+  };
 }
 
 /** The old rotation, kept for callers that must not consume a draw. */
@@ -204,13 +212,15 @@ export function advanceLife() {
   // mid-scene land in the same life instead of repeating one.
   const next = reservedNextLife() || nextLifePlan();
   setTransitionPhase('resolving');
+  const alreadyApplied = state.lifeId === next.lifeId;
   state.lifeId = next.lifeId;
   setForm(next.formId);
-  state.formHistory.push(next.formId);
-  loadChapter(next.chapter);
+  if (!alreadyApplied) state.formHistory.push(next.formId);
+  loadChapter(next.chapter, { autosave: false, realmId: next.realmId });
   // The new life is in the world: nothing is pending any more.
   setTransitionPhase('spawning');
   finishTransition();
+  saveRun();
 
   // A life whose end is not the temple is told where it can go (systems/goals.js).
   const form = getForm();

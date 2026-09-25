@@ -47,7 +47,9 @@ import { isLit, lightLevel } from '../systems/light.js';
 import { waypoint } from '../systems/waypoint.js';
 import { companionState } from '../systems/companion.js';
 import { threads, webSite, webSpun } from '../game/spider.js';
-import { drawFormBody } from './forms-sprites.js';
+import { signalSite, swarmLit } from '../game/firefly.js';
+import { pushSite } from '../game/beetle.js';
+import { drawCompanion as drawCompanionBody, drawFormBody } from './forms-sprites.js';
 import { carriedCount, gatePoint as marketGatePoint, giftTaken, marketSite } from '../game/market.js';
 import { marketAxis } from '../world/world-data.js';
 import { isDamp as isDampNow, moistureLevel } from '../systems/moisture.js';
@@ -130,6 +132,8 @@ export function renderWorld() {
   drawDampGround(dawn);
   drawBoarGround(dawn);
   drawWebSite(dawn);
+  drawSignalSite(dawn);
+  drawPushSite(dawn);
   drawAsuraRooms(dawn);
   drawGardenRooms(dawn);
   drawMarketRooms(dawn);
@@ -1394,6 +1398,119 @@ function drawWebSite(dawn) {
 }
 
 /**
+ * The swarm field (reserve table, หิ่งห้อย): the bramble ring, the thin mist across
+ * its gate — drawn as haze, because what it is to a body is what matters — the
+ * swarm stone, and, once a life has signalled, the lights that answer and guide.
+ */
+function drawSignalSite(dawn) {
+  const { stone, ring } = signalSite();
+  const lit = swarmLit();
+
+  // The field inside the brambles.
+  ctx.fillStyle = dawn ? 'rgba(88,96,72,.32)' : 'rgba(34,40,30,.4)';
+  ctx.beginPath();
+  ctx.ellipse(stone.x, stone.y, ring - 62, (ring - 62) * 0.84, 0, 0, TAU);
+  ctx.fill();
+
+  // The bramble ring.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'bramble') continue;
+    ctx.fillStyle = dawn ? 'rgba(58,72,48,.6)' : 'rgba(26,34,22,.66)';
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.8, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(30,38,26,.5)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(feature.x - feature.r * 0.4, feature.y - 2);
+    ctx.lineTo(feature.x + feature.r * 0.3, feature.y + 3);
+    ctx.stroke();
+  }
+
+  // The mist: pale, and lit from within once the swarm answers.
+  for (const feature of dynamicFeatures()) {
+    if (feature.type !== 'mist') continue;
+    const glow = lit ? 0.3 + Math.sin(performance.now() * 0.002 + feature.x * 0.01) * 0.12 : 0.22;
+    ctx.fillStyle = lit
+      ? `rgba(240,224,168,${glow.toFixed(2)})`
+      : `rgba(214,220,226,${glow.toFixed(2)})`;
+    ctx.beginPath();
+    ctx.ellipse(feature.x, feature.y, feature.r * (lit ? 1.1 : 1), feature.r * 0.8, 0, 0, TAU);
+    ctx.fill();
+  }
+
+  // The stone, and the swarm.
+  ctx.fillStyle = dawn ? 'rgba(140,136,120,.55)' : 'rgba(62,60,52,.6)';
+  ctx.beginPath();
+  ctx.ellipse(stone.x, stone.y, 40, 30, 0, 0, TAU);
+  ctx.fill();
+  if (lit) {
+    for (let i = 0; i < 7; i++) {
+      const angle = (i / 7) * TAU + performance.now() * 0.0006;
+      const distance = 52 + Math.sin(performance.now() * 0.0024 + i) * 8;
+      const x = stone.x + Math.cos(angle) * distance;
+      const y = stone.y + Math.sin(angle) * distance * 0.8;
+      ctx.fillStyle = `rgba(248,236,168,${(0.5 + Math.sin(performance.now() * 0.005 + i * 1.3) * 0.3).toFixed(2)})`;
+      ctx.beginPath();
+      ctx.arc(x, y, 3.4, 0, TAU);
+      ctx.fill();
+    }
+  } else {
+    ctx.fillStyle = `rgba(240,224,168,${(0.3 + Math.sin(performance.now() * 0.004) * 0.15).toFixed(2)})`;
+    ctx.beginPath();
+    ctx.arc(stone.x, stone.y, 5, 0, TAU);
+    ctx.fill();
+  }
+}
+
+/**
+ * The groove and trench (reserve table, ด้วง): the trench ring, the worn groove, the
+ * big seed where the world's pushes left it, and the seated seed filling the socket.
+ */
+function drawPushSite(dawn) {
+  const { hollow, ring } = pushSite();
+
+  // The far hollow.
+  ctx.fillStyle = dawn ? 'rgba(92,100,80,.34)' : 'rgba(36,42,32,.4)';
+  ctx.beginPath();
+  ctx.ellipse(hollow.x, hollow.y, ring - 70, (ring - 70) * 0.86, 0, 0, TAU);
+  ctx.fill();
+
+  for (const feature of dynamicFeatures()) {
+    if (feature.type === 'trench') {
+      ctx.fillStyle = dawn ? 'rgba(56,50,40,.5)' : 'rgba(16,14,10,.62)';
+      ctx.beginPath();
+      ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.72, 0, 0, TAU);
+      ctx.fill();
+      continue;
+    }
+    if (feature.type === 'groove') {
+      ctx.fillStyle = dawn ? 'rgba(126,112,84,.28)' : 'rgba(58,50,34,.32)';
+      ctx.beginPath();
+      ctx.ellipse(feature.x, feature.y, feature.r, feature.r * 0.5, 0, 0, TAU);
+      ctx.fill();
+      continue;
+    }
+    if (feature.type === 'bigseed' || feature.type === 'seat') {
+      // The seed: pale, heavy, and — seated — packed into the gap it fills.
+      const seated = feature.type === 'seat';
+      ctx.fillStyle = seated
+        ? (dawn ? 'rgba(150,132,96,.6)' : 'rgba(84,74,52,.7)')
+        : (dawn ? 'rgba(178,158,116,.7)' : 'rgba(104,92,64,.8)');
+      ctx.beginPath();
+      ctx.ellipse(feature.x, feature.y, seated ? 30 : 20, seated ? 20 : 14, 0, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(226,210,164,.3)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(feature.x - 10, feature.y - 4);
+      ctx.lineTo(feature.x + 8, feature.y + 2);
+      ctx.stroke();
+    }
+  }
+}
+
+/**
  * The ford (story table ch.11, ควาย): the mud flat, the fallen log, the chasm that
  * rings the pasture, and the bridge a dragged log leaves standing. The bridge is
  * the one piece of the map a *life* draws: it is there in later lives because
@@ -1993,24 +2110,13 @@ function drawLifeLights() {
 }
 
 /**
- * The companion (systems/companion.js): the dog, drawn from the same code art as
- * every body, with its own small state — a raised head when it is waiting, a bark
- * mark when it answers, and a step back when it is afraid of the water ahead.
+ * The companion (systems/companion.js): drawn by the sprite layer, which knows the
+ * body art and the mark that keeps a dog findable on dark ground
+ * (render/forms-sprites.js#drawCompanion).
  */
-function drawCompanion() {
+function drawCompanion(dawn) {
   const dog = companionState();
-  if (!dog.active) return;
-  const moving = dog.mode === 'following';
-  try {
-    drawFormBody(ctx, 'dog', dog.x, dog.y, {
-      face: dog.face, phase: performance.now() * 0.004, moving, bob: performance.now() * 0.004, act: 0,
-    });
-  } catch {
-    ctx.fillStyle = 'rgba(120,102,82,.9)';
-    ctx.beginPath();
-    ctx.arc(dog.x, dog.y, 12, 0, TAU);
-    ctx.fill();
-  }
+  if (!drawCompanionBody(ctx, dog, { pose: dog.mode === 'waiting' ? 'rest' : undefined })) return;
   if (dog.mode === 'waiting') {
     ctx.strokeStyle = 'rgba(233,217,160,.5)';
     ctx.lineWidth = 2;
@@ -2024,6 +2130,7 @@ function drawCompanion() {
     ctx.arc(dog.x + 16 * dog.face, dog.y - 26, 4 + dog.bark * 6, 0, TAU);
     ctx.fill();
   }
+  void dawn;
 }
 
 /**

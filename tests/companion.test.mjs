@@ -230,4 +230,62 @@ function startLife({ chapter = 1, effects: preset = {} } = {}) {
   log('cross-life ok');
 }
 
+// ---- 8. a companion can always be found: it carries a mark of its own ----
+{
+  const { drawCompanion } = await import('../src/render/forms-sprites.js');
+  startLife({ chapter: 1 });
+  const dog = companion.companionState();
+  const colours = [];
+  const ctx = new Proxy({}, {
+    get: (target, key) => (key in target ? target[key] : (...args) => {
+      for (const arg of args) if (typeof arg === 'string' && arg.startsWith('rgba')) colours.push(arg);
+      return undefined;
+    }),
+    set: (target, key, value) => {
+      if ((key === 'fillStyle' || key === 'strokeStyle') && typeof value === 'string') colours.push(value);
+      target[key] = value;
+      return true;
+    },
+  });
+  assert.equal(drawCompanion(ctx, dog, { pose: 'idle' }), true, 'the companion draws');
+  // Luminance of an rgba string, so "bright enough to find on dark ground" is a
+  // number rather than an opinion.
+  const luminance = (colour) => {
+    const [r, g, b] = colour.match(/[\d.]+/g).slice(0, 3).map(Number);
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  };
+  const brightest = Math.max(...colours.map(luminance));
+  assert(brightest >= 0.6, `the companion carries a bright mark (brightest ${brightest.toFixed(2)})`);
+  const hasHalo = colours.some((colour) => colour.includes('233,217,160'));
+  assert.equal(hasHalo, true, 'and a soft halo, so it reads as a presence before it reads as a dog');
+  log('the companion is findable ok');
+}
+
+// Animation must stay beside the dog's position even after a long session.
+{
+  const { drawCompanion } = await import('../src/render/forms-sprites.js');
+  const originalNow = performance.now;
+  try {
+    for (const mode of ['following', 'waiting']) {
+      for (const elapsed of [0, 1000, 60000, 3600000]) {
+        performance.now = () => elapsed;
+        const headPositions = [];
+        const ctx = new Proxy({}, {
+          get: (target, key) => key === 'arc'
+            ? (x, y, radius) => { if (radius === 5) headPositions.push(y); }
+            : () => {},
+        });
+        drawCompanion(ctx, { active: true, x: 100, y: 200, face: 1, mode },
+          { pose: mode === 'waiting' ? 'rest' : 'idle' });
+        assert.equal(headPositions.length, 1, 'the dog has one head');
+        assert(Math.abs(headPositions[0] - 185) <= 1.2,
+          `the head stays attached after ${elapsed}ms while ${mode}`);
+      }
+    }
+  } finally {
+    performance.now = originalNow;
+  }
+  log('long-session animation stays attached ok');
+}
+
 console.error('COMPANION TEST OK — a dog that follows at a distance, refuses the water, is never stuck, and remembers being called');

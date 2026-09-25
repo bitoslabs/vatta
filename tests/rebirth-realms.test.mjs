@@ -57,6 +57,13 @@ log(`mapping ok — ${CASES.length} cases`);
   log('dominance ok');
 }
 
+// Equal strengths follow the documented wholesome tie-break, regardless of order.
+for (const tendencies of [{ anger: 3, metta: 3 }, { metta: 3, anger: 3 }]) {
+  assert.equal(resolveRebirth({ tendencies }).realmId, 'tavatimsa');
+}
+assert.equal(resolveRebirth({ tendencies: { delusion: 2, sati: 2 } }).realmId, 'manussa');
+assert.equal(resolveRebirth({ tendencies: { anger: 4, metta: 3 } }).realmId, 'niraya');
+
 // ---- 3. every plane it names is a real plane, and every reason is translated ----
 {
   const planes = rebirthPlanes();

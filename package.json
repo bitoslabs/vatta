@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "วัฏฏะ (Vatta) — ป่าเสียงเรียก · a 2D contemplative game prototype (Thai / Lao / English) · built by https://bitos.space/",
+  "description": "\u0e27\u0e31\u0e0f\u0e0f\u0e30 (Vatta) \u2014 \u0e1b\u0e48\u0e32\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e40\u0e23\u0e35\u0e22\u0e01 \u00b7 a 2D contemplative game prototype (Thai / Lao / English) \u00b7 built by https://bitos.space/",
   "repository": {
     "type": "git",
     "url": "https://github.com/bitoslabs/vatta.git"
@@ -15,7 +15,9 @@
     "check": "node tests/run.mjs --syntax-only",
     "test": "node tests/run.mjs",
     "test:all": "node tests/run.mjs --all",
-    "test:watch": "node tests/run.mjs --watch"
+    "test:watch": "node tests/run.mjs --watch",
+    "deploy:check": "node deploy/check.mjs",
+    "deploy:list": "node deploy/check.mjs --list"
   },
   "keywords": [
     "game",

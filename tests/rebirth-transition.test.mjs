@@ -262,3 +262,55 @@ log('save/load at every stage ok');
 }
 
 console.error('REBIRTH TRANSITION TEST OK — one ending per life, reserved once, and the same life after any skip, close or load');
+
+// The realm is reserved together with the body; previews and duplicate ending
+// signals must not consume another draw or read later changes to the ledger.
+{
+  const { resetKarma, recordKarma } = await import('../src/systems/karma.js');
+  const { drawCount } = await import('../src/systems/rebirth.js');
+  resetKarma();
+  startLifeMode(1);
+  recordKarma('lie', 2);
+  const before = drawCount();
+  assert.deepEqual(plannedNextLife(), plannedNextLife(), 'previews are stable');
+  assert.equal(drawCount(), before, 'previewing does not consume the next draw');
+  const first = beginLifeEnding('water').transition;
+  assert.equal(first.next.realmId, 'tiracchana', 'delusion reserves the animal realm');
+  assert.equal(beginLifeEnding('goal').begun, false, 'a different completion signal cannot end this life again');
+  assert.equal(drawCount(), before + 1, 'one life consumes one draw');
+  const saved = JSON.parse(JSON.stringify(snapshot()));
+  applySaveRuntime(saved);
+  assert.equal(pendingTransition().next.reasonKey, 'rebirth.reason.delusion');
+  recordKarma('meditate', 20);
+  assert.equal(advanceLife(), true);
+  assert.equal(state.realmId, 'tiracchana', 'later changes cannot replace the reserved realm');
+  assert.equal(state.formId, first.next.formId, 'the reserved body is used');
+  assert.equal(readSave().transition, null, 'arrival is saved after the transition completes');
+  assert.equal(readSave().realmId, 'tiracchana', 'the save contains the applied realm');
+  resetKarma();
+}
+
+// Resuming a summary restores the countdown and the paused world.
+{
+  startLifeMode(1);
+  beginLifeEnding('goal');
+  state.mode = MODE.WORLD;
+  assert.equal(resumeLifeIfPending(), true);
+  assert.equal(state.mode, MODE.END, 'the resumed summary pauses the world');
+  assert.equal(timers.size, 1, 'the resumed summary has one active timer');
+  for (let i = 0; i < 5; i++) tick();
+  assert.equal(state.lifeId, 2, 'the restored countdown advances the life');
+  assert.equal(timers.size, 0);
+}
+
+// Older saves could autosave the new life before clearing the transition.
+{
+  resetTransition('legacy-arrival');
+  Object.assign(state, { lifeMode: true, lifeId: 2, chapter: 2,
+    formId: 'dog', formHistory: ['human', 'dog'], liberated: false, journeyComplete: false });
+  beginLifeEnd({ lifeId: 1, plan: { lifeId: 2, chapter: 2, formId: 'dog' } });
+  setTransitionPhase('spawning');
+  assert.equal(advanceLife(), true);
+  assert.deepEqual(state.formHistory, ['human', 'dog'], 'resuming arrival cannot duplicate the body history');
+  assert.equal(readSave().transition, null);
+}

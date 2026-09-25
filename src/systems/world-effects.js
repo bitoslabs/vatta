@@ -5,7 +5,7 @@ import { state } from '../core/state.js';
 import { GATE_OUT } from '../core/constants.js';
 import {
   ASURA, BOAR, BLOOMS, BURROW, CAVE, CREVICE, DAMP, ENCLOSURE, FIELD, FORD, GARDEN, GROVE, MARSH,
-  NEST, OTTER, OWL, SEEDS, TIDE, TRAIL, WARM_STONE, WEB, marketInside,
+  NEST, OTTER, OWL, PUSH, SEEDS, SIGNAL, TIDE, TRAIL, WARM_STONE, WEB, marketInside,
 } from '../world/world-data.js';
 
 /**
@@ -45,6 +45,8 @@ export const WORLD_EFFECTS = Object.freeze({
   'hands-emptied': { key: 'effect.handsEmptied', color: '#e9c46a', site: 'market' },
   'friend-kept': { key: 'effect.friendKept', color: '#e6d8a8', site: 'gate' },
   'web-spun': { key: 'effect.webSpun', color: '#cfd8e6', site: 'web' },
+  'swarm-lit': { key: 'effect.swarmLit', color: '#f0e0a8', site: 'signal' },
+  'trench-bridged': { key: 'effect.trenchBridged', color: '#c9b78f', site: 'push' },
 });
 
 /**
@@ -76,6 +78,8 @@ export function sitePlaces() {
     market: { x: marketInside().x, y: marketInside().y },
     gate: { x: GATE_OUT.x, y: GATE_OUT.y },
     web: { x: WEB.anchorIn.x, y: WEB.anchorIn.y },
+    signal: { x: SIGNAL.stone.x, y: SIGNAL.stone.y },
+    push: { x: PUSH.socket.x, y: PUSH.socket.y },
   };
 }
 

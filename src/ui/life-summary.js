@@ -7,6 +7,7 @@ import { on, EVENTS } from '../core/events.js';
 import { initAudio, playBell } from '../systems/audio.js';
 import { t } from '../systems/i18n.js';
 import { formAbilityKey, formNameKey } from '../content/forms.js';
+import { realmById } from '../content/realms.js';
 import {
   advanceLife, beginLifeEnding, chooseNextBody, isJourneyComplete, isPrototypeComplete, plannedNextLife,
   recordLife, startLifeMode, summariseLife,
@@ -45,6 +46,7 @@ function continueLife() {
   // a reload, when there is no summary card on screen any more.
   const pending = pendingTransition();
   if (!pending && (shownLife !== state.lifeId || overlay.classList.contains('hidden'))) return;
+  if (choicePending()) return;
   stopTimer(); shownLife = null;
   if (isPrototypeComplete()) { finishJourney(); return; }
   overlay.classList.add('hidden');
@@ -138,6 +140,7 @@ function renderChoice(pending) {
     card.addEventListener('click', (e) => {
       e.target.blur?.();
       if (chooseNextBody(formId)) {
+        saveRun();
         card.classList.add('is-picked');
         renderLifeSummary();
       }
@@ -163,6 +166,11 @@ export function renderLifeSummary() {
     // are born into cannot drift apart.
     const next = plannedNextLife();
     body.appendChild(row(t('life.next'), `${t(formNameKey(next.formId))} · ${t(`chapter${next.chapter}.name`)}`));
+    const realm = realmById(next.realmId);
+    if (realm) {
+      body.appendChild(row(t('life.realm'), t(realm.nameKey)));
+      if (next.reasonKey) body.appendChild(row(t('life.realm.reason'), t(next.reasonKey)));
+    }
     // If the draw is what chose the body, the player sees the real chance it had —
     // never a percentage that is not one (systems/rebirth.js).
     if (Number.isFinite(next.probability)) {
@@ -198,8 +206,8 @@ export function renderLifeSummary() {
   // Explore mode asks the animal book instead of showing cards.
   const pending = pendingTransition();
   if (rebornButton && pending && pending.next.explore === true && !pending.next.chosen) {
-    rebornButton.disabled = true;
-    rebornButton.classList.add('is-disabled');
+    rebornButton.disabled = false;
+    rebornButton.classList.remove('is-disabled');
     rebornButton.textContent = t('life.explore.open');
   }
 }
@@ -210,13 +218,7 @@ export function showLifeSummary(endingKind) {
   // Reserve the next life first: the scene may be skipped, hidden or reloaded, and
   // none of that may change which life comes next (systems/transition.js).
   const pending = beginLifeEnding(typeof endingKind === 'string' ? endingKind : 'goal');
-  if (!pending.begun && pending.transition) {
-    // Already ending: show the same card again rather than a second ending.
-    renderLifeSummary();
-    overlay.classList.remove('hidden');
-    return;
-  }
-  addLifeLight(player.x, player.y, isReducedMotion());
+  if (pending.begun) addLifeLight(player.x, player.y, isReducedMotion());
   state.mode = MODE.END;
   state.interact = null;
   shownLife = state.lifeId;
@@ -296,7 +298,7 @@ export function initLifeSummary() {
       // Only among the cards on screen: the player can always see what they get.
       if (Array.isArray(cards) && cards.length) {
         const pick = cards[Math.floor(((typeof performance !== 'undefined' ? performance.now() : 0) / 1000) * 7) % cards.length];
-        if (chooseNextBody(pick)) renderLifeSummary();
+        if (chooseNextBody(pick)) { saveRun(); renderLifeSummary(); }
       }
     });
   }

@@ -123,6 +123,54 @@ export function drawAnimalVector(ctx, animal, actor, moving, options = {}) {
       }
       break;
     }
+    case 'firefly': {
+      // A small dark body with a lamp: the flicker is the whole creature.
+      const flicker = 0.55 + Math.abs(Math.sin(actor.phase * 2.2)) * 0.45;
+      // the body
+      ellipse(0, -14, 5, 7, '#3a3630');
+      // wings, lifted and pale
+      ellipse(-4, -20, 6, 3.4, 'rgba(226,232,238,.5)');
+      ellipse(5, -20, 6, 3.4, 'rgba(226,232,238,.5)');
+      // the lamp, and its halo
+      ctx.fillStyle = `rgba(248,236,168,${(flicker * 0.35).toFixed(2)})`;
+      ctx.beginPath();
+      ctx.arc(0, -9, 7 + flicker * 5, 0, Math.PI * 2);
+      ctx.fill();
+      ellipse(0, -9, 3, 3, `rgba(248,244,196,${flicker.toFixed(2)})`);
+      if (active) {
+        // signalling: the rhythm, written out
+        ctx.fillStyle = 'rgba(248,236,168,.55)';
+        for (let i = 1; i <= 3; i++) {
+          ctx.beginPath();
+          ctx.arc(0, -9, 12 + i * 9, -0.6, 0.6);
+          ctx.fill();
+        }
+      }
+      break;
+    }
+    case 'beetle': {
+      // Low, domed and heavy at the front: this is a body built to push.
+      const shove = moving ? Math.abs(Math.sin(actor.phase * 1.6)) * 2 : 0;
+      // six legs, braced
+      for (const [side, spread] of [[-1, 7], [-1, 12], [1, 12], [1, 7]]) {
+        line([[-2, 0], [side * spread, 3]], '#3a3428', 2.4);
+      }
+      // the shell
+      ellipse(-2, -8, 13, 9, '#4a4132');
+      ellipse(-2, -8, 9, 6, '#5b5140');
+      line([[-12, -8], [4, -12]], '#6d6250', 1.6);
+      // the head and the horn it pushes with
+      ellipse(10, -6 + shove, 6, 5, '#3f382c');
+      line([[14, -6 + shove], [21, -9 + shove]], '#8a7d63', 3);
+      eye(11, -8 + shove);
+      if (active) {
+        // the push itself: dust, and a straight line of effort
+        for (let i = 0; i < 4; i++) {
+          ellipse(-16 - i * 5, 4, 4 - i * 0.5, 1.8, 'rgba(150,132,96,.5)');
+        }
+      }
+      break;
+    }
     case 'spider': {
       // Low and round, eight legs bent high, and a thread trailing behind.
       const drum = moving ? Math.abs(Math.sin(actor.phase * 3)) : 0;

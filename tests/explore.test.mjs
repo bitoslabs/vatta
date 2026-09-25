@@ -157,7 +157,12 @@ const log = (message) => console.error(`[explore] ${message}`);
   assert.equal(choicePending(), true, 'so the rebirth waits');
   assert.equal(advanceLife(), false, 'and nothing is born before a pick');
   // The pick: any body the book offers, including one outside any draw.
-  assert.equal(markChosenBody('spider'), true, 'a body from the book can answer the rebirth');
+  const { chooseNextBody } = await import('../src/systems/life.js');
+  const { exportTransition, importTransition } = await import('../src/systems/transition.js');
+  assert.equal(chooseNextBody('unknown-body'), false, 'unknown bodies cannot answer a rebirth');
+  assert.equal(chooseNextBody('spider'), true, 'the book uses the public life picker');
+  importTransition(JSON.parse(JSON.stringify(exportTransition())));
+  assert.equal(choicePending(), false, 'a reload remembers the book selection');
   assert.equal(plannedNextLife().formId, 'spider', 'the card reads the chosen body');
   assert.equal(advanceLife(), true, 'and the life goes on');
   assert.equal(state.formId, 'spider', 'into the body that was chosen');

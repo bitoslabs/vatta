@@ -7,6 +7,7 @@ import { bodyWidth, locomotionKind, poseForBody } from '../systems/forms.js';
 import { explorableForms, isExploring, startExplore, stopExplore } from '../systems/explore.js';
 import { chooseNextBody, plannedNextLife } from '../systems/life.js';
 import { choicePending, pendingTransition } from '../systems/transition.js';
+import { eligibleForms } from '../systems/rebirth.js';
 import { drawFormBody } from '../render/forms-sprites.js';
 import { $ } from './dom.js';
 
@@ -38,7 +39,9 @@ function render() {
   body.appendChild(el('div', 'codex-note', t(rebirth ? 'book.hint.rebirth' : 'book.hint.explore')));
 
   const grid = el('div', 'book-grid');
+  const eligible = rebirth ? new Set(eligibleForms(pendingTransition().next.chapter).all) : null;
   for (const form of explorableForms()) {
+    if (eligible && !eligible.has(form.id)) continue;
     const card = el('button', 'book-card');
     card.type = 'button';
     card.dataset.form = form.id;

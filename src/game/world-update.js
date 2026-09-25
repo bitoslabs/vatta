@@ -40,6 +40,8 @@ import { updateBuffalo } from './buffalo.js';
 import { updateSnail } from './snail.js';
 import { updateBoar } from './boar.js';
 import { updateSpider } from './spider.js';
+import { updateFirefly } from './firefly.js';
+import { updateBeetle } from './beetle.js';
 import { updateAsuraCity } from './asura-city.js';
 import { updateGarden } from './garden.js';
 import { updateMarket } from './market.js';
@@ -117,6 +119,8 @@ export function updateWorld(dt) {
   updateSnail();
   updateBoar();
   updateSpider();
+  updateFirefly();
+  updateBeetle();
   // A being's word waits for the body's own act — the otter reaching for driftwood
   // the current carries past a weir, a snake at its crevice — the way it already
   // waits for a room's own act above. Generic talk never hides a specific doing.

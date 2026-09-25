@@ -55,6 +55,12 @@ add('web', 'near', wd.WEB.near);
 add('web', 'hollow', wd.WEB.hollow);
 add('web', 'postOut', wd.WEB.anchorOut);
 add('web', 'postIn', wd.WEB.anchorIn);
+add('signal', 'stone', wd.SIGNAL.stone);
+add('signal', 'rest', wd.SIGNAL.rest);
+add('signal', 'gate', wd.signalGate());
+add('push', 'socket', wd.PUSH.socket);
+add('push', 'groove', wd.PUSH.groove);
+add('push', 'hollow', wd.PUSH.hollow);
 
 const STEP = 20;
 const gridFor = (features, abilities) => {

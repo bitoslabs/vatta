@@ -143,8 +143,8 @@ for (const form of FORMS) {
   assert.equal(goalsByLifeGoal.get(form.lifeGoal), goal.kind,
     `${form.id}: one lifeGoal always means one goal kind`);
 }
-assert.equal(FORMS.length, 29, 'the roster is the 29 forms (28 and the spider, reserve table P1)');
-assert.equal(FORMS.length - STORY_ONLY.size, 26, 'and the rest are the 26 animals');
+assert.equal(FORMS.length, 31, 'the roster is the 31 forms (reserve table: spider, firefly, beetle)');
+assert.equal(FORMS.length - STORY_ONLY.size, 28, 'and the rest are the 28 animals');
 // Every ending kind is *declared* in one animal's own module and nowhere else: the
 // collision guard for the whole set (a kind shared by two bodies ends the wrong
 // life — see cat.js's own note about the crab's ending). Comments are stripped

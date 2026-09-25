@@ -214,7 +214,7 @@ const chapters = CHAPTERS.map((chapter) => chapter.id);
   // The stored reservation keeps exactly what the next life needs, and nothing
   // else: the sanitiser drops everything that is not part of the promise.
   assert.deepEqual(Object.keys(restored).sort(),
-    ['candidateIds', 'chapter', 'chosen', 'explore', 'formId', 'lifeId', 'probabilities', 'probability'],
+    ['candidateIds', 'chapter', 'chosen', 'explore', 'formId', 'lifeId', 'probabilities', 'probability', 'realmId', 'reasonKey'],
     'a reload keeps the reserved body, chapter, life, odds, the cards and the mode');
   for (const field of ['formId', 'chapter', 'lifeId', 'probability']) {
     assert.deepEqual(restored[field], first.next[field], `a reload keeps the reserved ${field}`);
@@ -272,3 +272,11 @@ const chapters = CHAPTERS.map((chapter) => chapter.id);
 }
 
 console.error('REBIRTH DRAW TEST OK — a seeded weighted draw, every result a body that can finish, and no re-roll on reload');
+
+// Asking for the entire available pool must not stop halfway as it shrinks.
+{
+  const all = rebirth.eligibleForms(1).all;
+  const { candidates } = rebirth.drawCandidates({ chapterId: 1, history: [], count: all.length });
+  assert.equal(candidates.length, all.length);
+  assert.equal(new Set(candidates.map(entry => entry.formId)).size, all.length);
+}

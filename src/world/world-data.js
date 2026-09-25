@@ -219,6 +219,119 @@ export const DAMP_APPROACH = Object.freeze([
  * stopped by the fissure, and still is not (`validateSpiderRoute` proves the
  * no-closure clause as well as the crossing).
  */
+/**
+ * The swarm field (docs/animal-lives-story.md reserve table "หิ่งห้อย — ส่งแสงเป็น
+ * จังหวะ · สื่อสารกับฝูงและนำทางในหมอก").
+ *
+ * A ring of bramble with a thin mist across its gate, and a swarm stone at the
+ * middle. The mist is nothing to a body that glows — the firefly walks in — and
+ * walls out every body that does not. What the life does at the stone (signal in
+ * rhythm, so the swarm answers) turns that private way into a common one: with
+ * `swarm-lit`, the mist no longer stops anyone, and the field is a way through for
+ * every life after it.
+ */
+/**
+ * The beetle's groove and trench (docs/animal-lives-story.md reserve table "ด้วง —
+ * ผลักวัตถุด้วยแรงและทิศ · ร่วมกับมดขนเมล็ดใหญ่ข้ามร่อง").
+ *
+ * A trench rings a far hollow, and nothing that cannot leap crosses it. Outside the
+ * ring lies a groove with a *big seed* on it, and the seed is pushed — one step at a
+ * time, in the direction the body stands — along the groove to the **socket** at the
+ * ring. Seated there, the seed is a crossing: the trench is bridged for every body
+ * (`trench-bridged`), which is the reserve table's "force and direction" made into
+ * something a life has to do rather than watch.
+ */
+export const PUSH = Object.freeze({
+  /** The point on the plane's road the errand opens from. */
+  road: Object.freeze({ x: 3720, y: 1120 }),
+  /** From the road toward the groove: the outward normal of the street here. */
+  dir: Object.freeze({ x: 0.6, y: 0.8 }),
+  /** The far hollow the trench rings, and where the life ends. */
+  hollow: Object.freeze({ x: 4038, y: 1544 }),
+  hollowRadius: 96,
+  /** The trench: a ring, so nobody walks around it. */
+  ring: 150,
+  segments: 18,
+  trenchRadius: 56,
+  /** The socket on the ring, and the groove running back from it to the road. */
+  socket: Object.freeze({ x: 3948, y: 1424 }),
+  grooveStep: 56,
+  steps: 5,
+  seedRadius: 36,
+  /**
+   * The seated seed reaches wider than it rolls: it fills the gap and packs the
+   * stones either side of the socket, which is what makes a walkable crossing.
+   */
+  seatRadius: 62,
+  /** Where the seed starts: the far end of the groove, a step off the road. */
+  groove: Object.freeze({ x: 3780, y: 1200 }),
+});
+
+export const PUSH_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: PUSH.hollow.x, y: PUSH.hollow.y, r: PUSH.ring + 120 }),
+  Object.freeze({ x: PUSH.road.x, y: PUSH.road.y, r: 150 }),
+]);
+
+/** The errand's way: the road → the groove → the seed → the socket. */
+export const PUSH_APPROACH = Object.freeze([
+  Object.freeze([PUSH.road.x, PUSH.road.y]),
+  Object.freeze([PUSH.groove.x, PUSH.groove.y]),
+  Object.freeze([PUSH.socket.x, PUSH.socket.y]),
+]);
+
+/** Where a push has left the seed: step 0 is the start, `steps` is the socket. */
+export function seedPoint(step = 0) {
+  const clamped = Math.max(0, Math.min(PUSH.steps, Math.round(step)));
+  // Step 0 is the groove's far end by the road; `steps` is the socket itself.
+  return {
+    x: PUSH.socket.x - PUSH.dir.x * PUSH.grooveStep * (PUSH.steps - clamped),
+    y: PUSH.socket.y - PUSH.dir.y * PUSH.grooveStep * (PUSH.steps - clamped),
+  };
+}
+
+export const SIGNAL = Object.freeze({
+  /** The point on the plane's road the errand opens from. */
+  road: Object.freeze({ x: 3331, y: 1078 }),
+  /** From the road toward the stone. */
+  dir: Object.freeze({ x: -0.21, y: -0.98 }),
+  /** The swarm stone, and the field's middle. */
+  stone: Object.freeze({ x: 3235, y: 638 }),
+  stoneRadius: 88,
+  /** The bramble ring, and the gate the mist lies across. */
+  ring: 190,
+  segments: 20,
+  brambleRadius: 58,
+  gateSegments: 2,
+  mistRadius: 62,
+  mistPlugs: 4,
+  /** Where the life rests before it goes in. */
+  rest: Object.freeze({ x: 3290, y: 900 }),
+  restRadius: 96,
+});
+
+/** Seeded dressing keeps off the ring, the stone and the resting place. */
+export const SIGNAL_KEEPOUTS = Object.freeze([
+  Object.freeze({ x: SIGNAL.stone.x, y: SIGNAL.stone.y, r: SIGNAL.ring + 150 }),
+  Object.freeze({ x: SIGNAL.rest.x, y: SIGNAL.rest.y, r: 170 }),
+]);
+
+/** The errand's way: the road → the rest → the gate → the stone. */
+export const SIGNAL_APPROACH = Object.freeze([
+  Object.freeze([SIGNAL.road.x, SIGNAL.road.y]),
+  Object.freeze([SIGNAL.rest.x, SIGNAL.rest.y]),
+  Object.freeze([SIGNAL.stone.x, SIGNAL.stone.y]),
+]);
+
+/** Which way the gate faces: from the stone toward the resting place. */
+export function signalGate() {
+  const angle = Math.atan2(SIGNAL.rest.y - SIGNAL.stone.y, SIGNAL.rest.x - SIGNAL.stone.x);
+  return {
+    angle,
+    x: SIGNAL.stone.x + Math.cos(angle) * SIGNAL.ring,
+    y: SIGNAL.stone.y + Math.sin(angle) * SIGNAL.ring,
+  };
+}
+
 export const WEB = Object.freeze({
   /** The point on the plane's road the errand opens from. */
   road: Object.freeze({ x: 2624, y: 1233 }),
@@ -1319,6 +1432,10 @@ function treeAllowed(x, y) {
   if (distToPoly(MARKET_APPROACH, x, y) < 84) return false;
   if (WEB_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
   if (distToPoly(WEB_APPROACH, x, y) < 84) return false;
+  if (SIGNAL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(SIGNAL_APPROACH, x, y) < 84) return false;
+  if (PUSH_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r)) return false;
+  if (distToPoly(PUSH_APPROACH, x, y) < 84) return false;
   return true;
 }
 

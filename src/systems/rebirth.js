@@ -92,14 +92,13 @@ function ladderPick(ladder, score) {
 export function resolveRebirth(karma = {}) {
   const tendencies = karma.tendencies || {};
   const merit = Number.isFinite(karma.merit) ? karma.merit : 0;
-  const demerit = Number.isFinite(karma.demerit) ? karma.demerit : 0;
   const wholesome = dominantTendencyWholesome(tendencies);
   const akusala = strongestAkusala(tendencies);
 
   // An unwholesome tendency decides only while it is the strongest thing in the
   // mind — and the roots of wholesome conduct are counted with it, so a life of
   // harm with a little greed in it still answers for the harm.
-  if (akusala.key && akusala.score >= Math.max(wholesome.score, 1)) {
+  if (akusala.key && akusala.score >= 1 && akusala.score > wholesome.score) {
     const plane = AKUSALA_PLANES[akusala.key];
     return { realmId: plane.realmId, reasonKey: plane.reasonKey };
   }
@@ -178,9 +177,8 @@ export function rebirthReasonKeys() {
  * else remains they are drawn at ×0.2 rather than excluded. No body is ever chosen
  * because a player did badly: memory changes the story, never the worth of a form.
  *
- * Three modes are named in the design; only "flow" (the seeded draw) is live so
- * far. "choice" and "explore" are reserved in the save shape and clamp to "flow"
- * until their screens exist (items 4–5 of the plan).
+ * All three modes are live: flow draws a body, choice offers three cards, and
+ * explore waits for a compatible body from the animal book.
  */
 export const REBIRTH_MODES = Object.freeze(['flow', 'choice', 'explore']);
 const MODE_DEFAULT = 'flow';
@@ -202,7 +200,7 @@ export function rebirthMode() {
   return memory().mode;
 }
 
-/** Only a mode that has a screen may be used; anything else is the flow draw. */
+/** Unknown modes fall back to the flow draw. */
 export function setRebirthMode(mode) {
   memory().mode = REBIRTH_MODES.includes(mode) ? mode : MODE_DEFAULT;
   return memory().mode;
@@ -325,7 +323,7 @@ export function drawLife({ chapterId, history = [], index = null } = {}) {
  * Plan the next life with the draw (systems/life-route.js plans; this replaces the
  * rotation with the seeded one, and consumes one draw from the run's stream).
  */
-export function drawNextLife({ chapter, lifeId, history = [], chapterIds }) {
+export function drawNextLife({ chapter, lifeId, history = [], chapterIds, consume = true }) {
   const current = chapterIds.indexOf(chapter);
   const nextChapter = chapterIds[(current + 1) % chapterIds.length];
   const data = memory();
@@ -334,7 +332,7 @@ export function drawNextLife({ chapter, lifeId, history = [], chapterIds }) {
   // player picks. The first is only a placeholder until they choose.
   if (data.mode === 'choice') {
     const { candidates, maps, reason } = drawCandidates({ chapterId: nextChapter, history, index });
-    data.draws += 1;
+    if (consume) data.draws += 1;
     return {
       chapter: nextChapter,
       lifeId: lifeId + 1,
@@ -351,7 +349,7 @@ export function drawNextLife({ chapter, lifeId, history = [], chapterIds }) {
   // Explore mode: the body is chosen from the book, so the reservation carries only
   // the chapter — and says so, so the summary offers the book instead of a draw.
   if (data.mode === 'explore') {
-    data.draws += 1;
+    if (consume) data.draws += 1;
     return {
       chapter: nextChapter,
       lifeId: lifeId + 1,
@@ -365,7 +363,7 @@ export function drawNextLife({ chapter, lifeId, history = [], chapterIds }) {
     };
   }
   const draw = drawLife({ chapterId: nextChapter, history, index });
-  data.draws += 1;
+  if (consume) data.draws += 1;
   const formId = draw.formId || history[history.length - 1] || 'human';
   return {
     chapter: nextChapter,
@@ -397,7 +395,8 @@ export function drawCandidates({ chapterId, history = [], index = null, count = 
   const remaining = weights.map((entry) => ({ ...entry, probability: entry.weight / total }));
   const at = Number.isFinite(index) ? index : drawCount();
   const candidates = [];
-  for (let pick = 0; pick < Math.min(count, remaining.length); pick++) {
+  const pickCount = Math.min(count, remaining.length);
+  for (let pick = 0; pick < pickCount; pick++) {
     const sum = remaining.reduce((acc, entry) => acc + entry.weight, 0);
     const roll = hashUnit(runSeed(), at + pick * 977) * sum;
     let cursor = 0;

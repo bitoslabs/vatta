@@ -30,6 +30,13 @@
   padding: 30px 26px 16px;
 }
 
+.title-logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 10px;
+}
+
 .title-head h1 {
   font-size: 54px;
 }
@@ -500,7 +507,14 @@
     padding: 20px 16px 12px;
   }
 
-  .title-head h1 {
+  .title-logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 10px;
+}
+
+.title-head h1 {
     font-size: 40px;
   }
 

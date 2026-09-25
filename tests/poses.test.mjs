@@ -82,14 +82,54 @@ const log = (message) => console.error(`[poses] ${message}`);
   log('poses ok');
 }
 
-// ---- 2. every body has a size, and a gait from its own abilities ----
+/** The body's true drawn width: the art is measured, not trusted. */
+function drawnWidth(formId) {
+  let tx = 0;
+  let ty = 0;
+  let sx = 1;
+  let sy = 1;
+  const stack = [];
+  const points = [];
+  let shadowSeen = false;
+  const push = (x, y) => { if (shadowSeen) points.push([tx + x * sx, ty + y * sy]); };
+  const ctx = new Proxy({}, {
+    get: (target, key) => (...args) => {
+      if (key === 'save') stack.push([tx, ty, sx, sy]);
+      else if (key === 'restore') [tx, ty, sx, sy] = stack.pop() || [0, 0, 1, 1];
+      else if (key === 'translate') { tx += args[0] * sx; ty += args[1] * sy; }
+      else if (key === 'scale') { sx *= args[0]; sy *= args[1]; }
+      else if (key === 'ellipse') {
+        if (!shadowSeen) { shadowSeen = true; return; }
+        push(args[0] - args[2], args[1] - args[3]);
+        push(args[0] + args[2], args[1] + args[3]);
+      } else if (key === 'arc') { push(args[0] - args[2], args[1] - args[2]); push(args[0] + args[2], args[1] + args[2]); }
+      else if (key === 'moveTo' || key === 'lineTo') push(args[0], args[1]);
+      else if (key === 'quadraticCurveTo') { push(args[0], args[1]); push(args[2], args[3]); }
+      return undefined;
+    },
+    set: () => true,
+  });
+  drawFormBody(ctx, formId, 100, 200, { face: 1, phase: 1, pose: 'idle' });
+  const xs = points.map((point) => point[0]);
+  return Math.max(...xs) - Math.min(...xs);
+}
+
+// ---- 2. every body has a size, and it is the size it is drawn ----
 {
   for (const form of FORMS) {
     assert(Number.isFinite(form.width), `${form.id} has a reference size`);
-    assert(form.width >= 36 && form.width <= 120, `${form.id}: the size is in the design's range (${form.width})`);
+    // The sizes the game really uses: the owl and the firefly are the smallest
+    // bodies, the elephant the largest.
+    assert(form.width >= 20 && form.width <= 120, `${form.id}: the size is in the game's range (${form.width})`);
     assert.equal(bodyWidth(form), form.width, `${form.id}: and the render layer reads it`);
     assert(['walk', 'hop', 'slither', 'climb', 'glide', 'swim', 'burrow'].includes(locomotionKind(form)),
       `${form.id} has a real gait`);
+    // And the number is true: a declared size that drifts from the art makes every
+    // shadow and ring the wrong size (the first version of this table declared the
+    // lab's display sizes, about 1.8× the drawn body).
+    const drawn = drawnWidth(form.id);
+    assert(Math.abs(drawn - form.width) / form.width <= 0.25,
+      `${form.id}: the declared size ${form.width} is the drawn size (drawn ${Math.round(drawn)})`);
   }
   const gait = (id) => locomotionKind(FORMS.find((form) => form.id === id));
   assert.equal(gait('worm'), 'burrow', 'a worm tunnels');
@@ -145,13 +185,19 @@ const log = (message) => console.error(`[poses] ${message}`);
     // The first ellipse after the first beginPath is the shadow.
     const at = ops.findIndex(([name]) => name === 'ellipse');
     assert(at >= 0, `${id} draws a shadow`);
-    return ops[at][1][2]; // rx
+    return ops[at][1][2] * 2; // the shadow's width across
   };
-  const ant = shadowWidth('ant');
-  const human = shadowWidth('human');
-  const elephant = shadowWidth('elephant');
-  assert(ant < human, `an ant's shadow is smaller than a human's (${ant} < ${human})`);
-  assert(human < elephant, `and a human's is smaller than an elephant's (${human} < ${elephant})`);
+  // The shadow is proportional to the body's own declared size, for every body: at
+  // most 24 × width/64 across.
+  for (const id of ['firefly', 'dog', 'human', 'elephant']) {
+    const form = FORMS.find((entry) => entry.id === id);
+    const expected = 24 * (form.width / 64);
+    const got = shadowWidth(id);
+    assert(Math.abs(got - expected) / expected < 0.2,
+      `${id}: its shadow matches its size (${got.toFixed(1)} vs ${expected.toFixed(1)})`);
+  }
+  assert(shadowWidth('firefly') < shadowWidth('elephant'),
+    `and the smallest body casts the smallest shadow (${shadowWidth('firefly')} < ${shadowWidth('elephant')})`);
   // The settling poses draw a ring as wide as the body, too.
   const ringWidth = (id) => {
     const { ctx, ops } = recorder();
@@ -159,7 +205,7 @@ const log = (message) => console.error(`[poses] ${message}`);
     const ellipses = ops.filter(([name]) => name === 'ellipse');
     return Math.max(...ellipses.map(([, args]) => args[2]));
   };
-  assert(ringWidth('bee') < ringWidth('tiger'), `a bee's ring is narrower than a tiger's (${ringWidth('bee')} < ${ringWidth('tiger')})`);
+  assert(ringWidth('firefly') < ringWidth('tiger'), `the smallest body's ring is the narrowest (${ringWidth('firefly')} < ${ringWidth('tiger')})`);
   log('reference size ok');
 }
 

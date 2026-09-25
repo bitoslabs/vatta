@@ -41,6 +41,9 @@ export function worldAbilities() {
   // The garden's light: the shadow over its gate is crossable only while the light
   // is on it (systems/light.js) — the fastest of the world's rhythms.
   if (isLit()) abilities.lightLit = true;
+  // The swarm a firefly lit: the mist at the swarm field guides every body through
+  // it from that life on (game/firefly.js).
+  if (hasWorldEffect('swarm-lit')) abilities.swarmGuide = true;
   // What this life is carrying: the market alley's gate lets empty hands through
   // and its curtains open on heavier ones (game/market.js). Read straight from the
   // state so the systems layer keeps no dependency on the game layer.
@@ -68,6 +71,8 @@ export function initDynamicWorld(chapterId) {
     spans: Array.isArray(state.world.spans) ? state.world.spans : [],
     // Threads a past life spun across the web's fissure (game/spider.js).
     webs: Array.isArray(state.world.webs) ? state.world.webs : [],
+    // How far a past life pushed the big seed (game/beetle.js).
+    pushes: Number.isFinite(state.world.pushes) ? state.world.pushes : 0,
     // Bloom beds a past life released, and the seeds those beds sent travelling.
     releasedBeds: Array.isArray(state.world.released) ? state.world.released : [],
     releasedSeeds: hasWorldEffect('seeds-released'),

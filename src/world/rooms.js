@@ -6,6 +6,8 @@ import { mulberry32 } from '../core/rng.js';
 import {
   ASURA, ASURA_KEEPOUTS, asuraGate, GARDEN, GARDEN_KEEPOUTS, gardenGate,
   MARKET, MARKET_KEEPOUTS, marketAxis, marketFar, marketGate, marketInside,
+  PUSH, PUSH_KEEPOUTS, seedPoint,
+  SIGNAL, SIGNAL_KEEPOUTS, signalGate,
   WEB, WEB_KEEPOUTS,
   BLOOMS, BLOOMS_APPROACH, BLOOMS_KEEPOUTS, BOAR, BOAR_KEEPOUTS, DAMP, DAMP_APPROACH, DAMP_KEEPOUTS,
   FORD, FORD_APPROACH, FORD_KEEPOUTS, fordBridge,
@@ -171,9 +173,24 @@ export const MARKET_FEATURE_TYPES = Object.freeze(['marketwall', 'narrowgate', '
  */
 export const WEB_FEATURE_TYPES = Object.freeze(['anchor', 'fissure', 'webline']);
 
+/**
+ * The swarm field's own kinds (reserve table, หิ่งห้อย): `bramble` is the ring,
+ * `mist` is the thin fog across its gate — nothing to a body that glows, a wall to
+ * every body that does not — and `swarmstone` is where the life signals.
+ */
+export const SIGNAL_FEATURE_TYPES = Object.freeze(['bramble', 'mist', 'swarmstone']);
+
+/**
+ * The groove and trench (reserve table, ด้วง): `trench` is ground nothing without
+ * legs for a gap crosses, `groove` is the worn line the seed slides along, `bigseed`
+ * is the thing itself (solid, and moved by pushes), and `seat` is the seed seated in
+ * the socket — a crossing laid across the trench, the way a plank is.
+ */
+export const PUSH_FEATURE_TYPES = Object.freeze(['trench', 'groove', 'bigseed', 'seat']);
+
 const SOLID_TYPES = new Set([
   'thicket', 'boulders', 'tower', 'stall', 'rootwall', 'stone', 'log', 'wall', 'canopy', 'flood', 'snag',
-  'citywall', 'hedge', 'marketwall',
+  'citywall', 'hedge', 'marketwall', 'bramble', 'bigseed',
   // Note: `anchor` is *not* solid. A post is where a thread is tied, not a wall: if
   // it blocked, it would wall off the very thread it holds (walkers would have to
   // get past the post to reach the web).
@@ -213,6 +230,13 @@ function featureRadius(type, rng) {
   if (type === 'narrowgate') return MARKET.gateRadius;
   if (type === 'curtain') return MARKET.curtainRadius;
   if (type === 'gift') return MARKET.giftRadius;
+  if (type === 'trench') return PUSH.trenchRadius;
+  if (type === 'groove') return 26;
+  if (type === 'bigseed') return PUSH.seedRadius;
+  if (type === 'seat') return PUSH.seatRadius;
+  if (type === 'bramble') return SIGNAL.brambleRadius;
+  if (type === 'mist') return SIGNAL.mistRadius;
+  if (type === 'swarmstone') return SIGNAL.stoneRadius;
   if (type === 'anchor') return WEB.anchorRadius;
   if (type === 'fissure') return WEB.fissureRadius;
   if (type === 'webline') return WEB.webRadius;
@@ -285,6 +309,20 @@ export function blockedAt(features, x, y, abilities = {}) {
       return abilities.leap !== true && featureAt(feature, x, y);
     }
     if (feature.type === 'webline') return false;
+    // The trench: leap or fly, or not at all — unless the seed is seated in the
+    // socket, which is ground laid across it for every body (game/beetle.js).
+    if (feature.type === 'trench') {
+      const seated = features.some((other) => other.type === 'seat' && featureAt(other, x, y));
+      if (seated) return false;
+      return abilities.leap !== true && featureAt(feature, x, y);
+    }
+    if (feature.type === 'seat') return false;
+    // The mist: a body that glows walks through it; anyone else is stopped, until a
+    // life signals at the stone and the swarm lights the way for every body
+    // afterwards (game/firefly.js `swarm-lit`).
+    if (feature.type === 'mist') {
+      return abilities.glow !== true && abilities.swarmGuide !== true && featureAt(feature, x, y);
+    }
     if (feature.type === 'narrowgate') return (abilities.carryCount || 0) > 0 && featureAt(feature, x, y);
     if (feature.type === 'curtain') return (abilities.carryCount || 0) < (feature.needs || 1) && featureAt(feature, x, y);
     if (feature.type === 'burrow') return abilities.burrow !== true && featureAt(feature, x, y);
@@ -361,6 +399,10 @@ function mayPlace(type, x, y, radius, route) {
   if (MARKET_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   // Nor the web, or a trunk could stand where a thread is spun or a hollow is.
   if (WEB_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
+  // Nor the swarm field, or a trunk could stand in its gate or on its stone.
+  if (SIGNAL_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
+  // Nor the groove, or a trunk could stand where a seed has to roll.
+  if (PUSH_KEEPOUTS.some((area) => dist(x, y, area.x, area.y) < area.r + radius)) return false;
   void type;
   return true;
 }
@@ -1120,6 +1162,137 @@ export function validateSpiderRoute(features, abilities = {}) {
 }
 
 /**
+ * The swarm field (reserve table, หิ่งห้อย).
+ *
+ * A bramble ring with two segments left out at the gate, and that opening plugged by
+ * the mist — overlapping, the way every gate in this world is plugged. The stone
+ * stands at the middle.
+ */
+export function assembleSignalSite() {
+  const { stone, ring, segments, brambleRadius, gateSegments, mistRadius, mistPlugs } = SIGNAL;
+  const gate = signalGate();
+  const features = [];
+  const step = TAU / segments;
+  const openHalf = step * (gateSegments / 2);
+  for (let i = 0; i < segments; i++) {
+    const angle = i * step;
+    const delta = Math.abs((((angle - gate.angle + Math.PI) % TAU) + TAU) % TAU - Math.PI);
+    if (delta < openHalf) continue;
+    features.push({
+      i: 0, site: 'signal', type: 'bramble', fixed: true,
+      x: stone.x + Math.cos(angle) * ring,
+      y: stone.y + Math.sin(angle) * ring,
+      r: brambleRadius,
+    });
+  }
+  const face = { x: Math.cos(gate.angle), y: Math.sin(gate.angle) };
+  const side = { x: -face.y, y: face.x };
+  for (let i = 0; i < mistPlugs; i++) {
+    const offset = (i - (mistPlugs - 1) / 2) * 36;
+    features.push({
+      i: 0, site: 'signal', type: 'mist', fixed: true,
+      x: gate.x + side.x * offset, y: gate.y + side.y * offset, r: mistRadius,
+    });
+  }
+  features.push({ i: 0, site: 'signal', type: 'swarmstone', fixed: true, x: stone.x, y: stone.y, r: SIGNAL.stoneRadius });
+  return features;
+}
+
+/**
+ * Prove the swarm field is the firefly's (reserve table, หิ่งห้อย), and that what it
+ * does there is *for others*:
+ *
+ *   walkerBefore  a body that does not glow is stopped at the mist
+ *   glowerBefore  a body that glows walks in — the firefly's own, private way
+ *   glowerAfter   and still does
+ *   walkerAfter   with the swarm lit, every body may pass: a private way, shared
+ */
+export function validateFireflyRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false, glow: false, swarmGuide: false };
+  const from = SIGNAL.rest;
+  const goal = SIGNAL.stone;
+  const room = SIGNAL.stoneRadius * 0.5;
+  const walkerBefore = reachableBetween(features, from, goal, base, room);
+  const glowerBefore = reachableBetween(features, from, goal, { ...base, glow: true }, room);
+  const glowerAfter = reachableBetween(features, from, goal, { ...base, glow: true, swarmGuide: true }, room);
+  const walkerAfter = reachableBetween(features, from, goal, { ...base, swarmGuide: true }, room);
+  const ok = walkerBefore === false && glowerBefore === true && glowerAfter === true && walkerAfter === true;
+  return { ok, walkerBefore, glowerBefore, glowerAfter, walkerAfter };
+}
+
+/**
+ * The groove and trench (reserve table, ด้วง).
+ *
+ * A trench ring, plugged across the gate by its own stones so it cannot be walked
+ * around or slipped through; a groove worn along the near side; and the big seed,
+ * wherever this world's pushes have left it. When the seed stands in the socket, the
+ * seat is there too, and the trench stops blocking at that point.
+ */
+export function assemblePushSite(pushes = 0) {
+  const { hollow, ring, segments, trenchRadius, steps, groove, seedRadius, socket } = PUSH;
+  const step = Math.max(0, Math.min(steps, Math.round(pushes)));
+  const seed = seedPoint(step);
+  const features = [];
+  const segment = TAU / segments;
+  for (let i = 0; i < segments; i++) {
+    const angle = i * segment;
+    features.push({
+      i: 0, site: 'push', type: 'trench', fixed: true,
+      x: hollow.x + Math.cos(angle) * ring,
+      y: hollow.y + Math.sin(angle) * ring,
+      r: trenchRadius,
+    });
+  }
+  // The groove, drawn as a worn line of small marks from the road to the socket.
+  const marks = 6;
+  for (let i = 0; i <= marks; i++) {
+    const t = i / marks;
+    features.push({
+      i: 0, site: 'push', type: 'groove', fixed: true,
+      x: groove.x + (socket.x - groove.x) * t,
+      y: groove.y + (socket.y - groove.y) * t,
+      r: 26,
+    });
+  }
+  if (step >= PUSH.steps) {
+    // Seated: the seed *is* the seat. It is the same object seen in its last place,
+    // so it is not also left standing on the socket as a solid.
+    features.push({ i: 0, site: 'push', type: 'seat', fixed: true, x: socket.x, y: socket.y, r: PUSH.seatRadius });
+    return features;
+  }
+  features.push({ i: 0, site: 'push', type: 'bigseed', fixed: true, x: seed.x, y: seed.y, r: seedRadius });
+  return features;
+}
+
+/**
+ * Prove the groove is the beetle's (reserve table, ด้วง), and that the crossing it
+ * makes is for everyone:
+ *
+ *   walkerBefore  a walker cannot reach the far hollow through the trench
+ *   walkerAfter   with the seed pushed into the socket, it can
+ *   leaperOpen    a leaping body crossed before and after: nothing was closed
+ *   seedAtSocket  and the seed is only seated when the pushes are all made
+ */
+export function validatePushRoute(features, abilities = {}) {
+  const base = { ...abilities, flying: false, leap: false };
+  const from = PUSH.groove;
+  const goal = PUSH.hollow;
+  const room = PUSH.hollowRadius * 0.5;
+  // The two states are derived here, not taken from the caller: "before" is the site
+  // with no seated seed, "after" is the same site with one. Asking a caller to say
+  // which world it passed made a seated world answer "a walker could cross before",
+  // which is true and useless.
+  const bare = features.filter((feature) => feature.type !== 'seat');
+  const seated = [...bare, ...assemblePushSite(PUSH.steps).filter((feature) => feature.type === 'seat')];
+  const walkerBefore = reachableBetween(bare, from, goal, base, room);
+  const walkerAfter = reachableBetween(seated, from, goal, base, room);
+  const leapBefore = reachableBetween(bare, from, goal, { ...base, leap: true }, room);
+  const leapAfter = reachableBetween(seated, from, goal, { ...base, leap: true }, room);
+  const ok = walkerBefore === false && walkerAfter === true && leapBefore === true && leapAfter === true;
+  return { ok, walkerBefore, walkerAfter, leapBefore, leapAfter };
+}
+
+/**
  * The ford (story table ch.11, ควาย).
  *
  * The mud flat, the fallen log, and the chasm as a leap-wide line: a body with
@@ -1443,6 +1616,7 @@ export function assembleRooms(seed, biomeId = 'memory-forest', options = {}) {
       ]);
     }
   }
+  const before = features.length;
   for (const anchor of anchors) {
     for (let k = 0; k < 3; k++) {
       if (rng() < 0.3) continue;
@@ -1478,6 +1652,30 @@ export function assembleRooms(seed, biomeId = 'memory-forest', options = {}) {
   if (sites.includes('asura')) {
     // The city's plaza, and the spans earlier lives laid over its broken gate.
     for (const f of assembleAsuraRooms(options)) features.push({ ...f, i: features.length });
+  }
+  // A plane whose road is one line can still end up bare if every sampled spot was
+  // refused (a keepout from another plane's site can reach it). Ground is not
+  // optional: a clearing is laid, and a clearing is not solid, so it can never wall
+  // the route it lies beside.
+  if (features.length === before && route.length <= 2) {
+    const at = route[0];
+    const to = route[1];
+    features.push({
+      i: features.length,
+      type: 'clearing',
+      x: at[0] + (to[0] - at[0]) * 0.4 + 90,
+      y: at[1] + (to[1] - at[1]) * 0.4 + 90,
+      r: 70,
+    });
+  }
+
+  if (sites.includes('push')) {
+    // The trench, the groove and the seed where this world's pushes left it.
+    for (const f of assemblePushSite(options.pushes || 0)) features.push({ ...f, i: features.length });
+  }
+  if (sites.includes('signal')) {
+    // The swarm field: bramble, mist across the gate, and the stone.
+    for (const f of assembleSignalSite()) features.push({ ...f, i: features.length });
   }
   if (sites.includes('web')) {
     // The anchors, the fissure, and the threads earlier lives spun across it.

@@ -409,6 +409,40 @@ export function drawFormBody(ctx, formId, x, y, options = {}) {
   ctx.restore();
 }
 
+/**
+ * The companion (systems/companion.js), drawn as a body *and* a mark: the chest
+ * light belongs to the player alone, so a companion carries a pale collar and a soft
+ * halo instead. On dark ground — brambles, night, the mist at the swarm field — the
+ * dog's own colours all but vanish, and the collar is what keeps it findable.
+ */
+export function drawCompanion(ctx, dog, { pose = 'idle' } = {}) {
+  if (!dog || !dog.active) return false;
+  const moving = dog.mode === 'following';
+  const phase = performance.now() * 0.004;
+  // A soft halo, under the body: presence rather than a lamp.
+  ctx.fillStyle = 'rgba(233,217,160,.10)';
+  ctx.beginPath();
+  ctx.ellipse(dog.x, dog.y - 6, 22, 16, 0, 0, TAU);
+  ctx.fill();
+
+  drawFormBody(ctx, 'dog', dog.x, dog.y, {
+    face: dog.face,
+    phase,
+    bob: Math.sin(phase) * 1.2,
+    moving,
+    pose,
+  });
+
+  // The collar: the one bright thing about a companion, and never brighter than a
+  // person's own light.
+  ctx.strokeStyle = 'rgba(233,217,160,.85)';
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.arc(dog.x + dog.face * 4, dog.y - 12, 4.6, 0, TAU);
+  ctx.stroke();
+  return true;
+}
+
 /** The shared chest light: the one thing that marks the player in any body. */
 export function drawChestLight(ctx, x, y, strength = 1) {
   const pulse = 0.7 + Math.sin(performance.now() * 0.006) * 0.3;

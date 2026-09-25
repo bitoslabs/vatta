@@ -30,6 +30,8 @@ import { resetBuffalo } from './buffalo.js';
 import { resetSnail } from './snail.js';
 import { resetBoar } from './boar.js';
 import { resetSpider } from './spider.js';
+import { resetFirefly } from './firefly.js';
+import { resetBeetle } from './beetle.js';
 import { resetAsuraCity } from './asura-city.js';
 import { resetGarden } from './garden.js';
 import { resetMarket } from './market.js';
@@ -470,7 +472,7 @@ export function chapterSpawn(def, view = { waterBound: isWaterBound(), start: de
   return nearestRiverPoint(view.start);
 }
 
-export function loadChapter(id, { autosave = true } = {}) {
+export function loadChapter(id, { autosave = true, realmId = null } = {}) {
   const def = chapterById(id);
   if (!def) return false;
 
@@ -510,6 +512,8 @@ export function loadChapter(id, { autosave = true } = {}) {
   resetSnail();
   resetBoar();
   resetSpider();
+  resetFirefly();
+  resetBeetle();
   resetAsuraCity();
   resetGarden();
   resetMarket();
@@ -519,7 +523,7 @@ export function loadChapter(id, { autosave = true } = {}) {
   resetDrift();
   resetEcho();
   // You are reborn into this chapter in the plane your kamma has earned.
-  enterRealm(resolveRebirth(getKarma()).realmId);
+  enterRealm(realmId || resolveRebirth(getKarma()).realmId);
   // Conduct so far may have opened further factors of the path.
   evaluatePath();
   evaluatePrecepts();

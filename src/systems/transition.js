@@ -1,6 +1,7 @@
 'use strict';
 
 import { state } from '../core/state.js';
+import { realmById } from '../content/realms.js';
 
 /**
  * Changing lives (docs/rebirth-effects.md, docs/next-production-plan.md item 2).
@@ -90,7 +91,7 @@ export function reservedNextLife() {
 export function beginLifeEnd({ lifeId, completionId = 'goal', plan = null } = {}) {
   const t = transition();
   const id = transitionIdFor(lifeId, completionId);
-  if (t.id === id && t.phase !== 'idle') return { begun: false, transition: pendingTransition() };
+  if (t.phase !== 'idle') return { begun: false, transition: pendingTransition() };
   Object.assign(t, {
     id,
     phase: 'ending',
@@ -212,6 +213,8 @@ export function importTransition(raw) {
       lifeId: next.lifeId,
       chapter: next.chapter,
       formId: next.formId,
+      realmId: typeof next.realmId === 'string' && realmById(next.realmId) ? next.realmId : null,
+      reasonKey: typeof next.reasonKey === 'string' && next.reasonKey.startsWith('rebirth.reason.') ? next.reasonKey : null,
       // The odds the draw gave this body, kept so the summary can show the real
       // number again after a reload (never recomputed — systems/rebirth.js).
       probability: Number.isFinite(next.probability) ? next.probability : null,
@@ -219,7 +222,7 @@ export function importTransition(raw) {
       // Kept so a reload shows the same cards and the same selection.
       candidateIds: candidates,
       probabilities,
-      chosen: next.chosen === true && Boolean(candidates) && candidates.includes(next.formId),
+      chosen: next.chosen === true && (next.explore === true || Boolean(candidates) && candidates.includes(next.formId)),
       explore: next.explore === true,
     },
     runId: typeof raw.runId === 'string' ? raw.runId : '',

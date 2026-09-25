@@ -72,3 +72,15 @@ karma/path/precept/save/teacher/slots/life/render/i18n checks, and a `life-test`
 that drives whole lives — including the animal lives — through the real frame loop.
 They are scratch tools, not part of the project; anything that deserves to last is
 promoted into `tests/` as a suite with an assertion and a sentence.
+
+## The module graph (`tests/imports.test.mjs`)
+
+The game has no build step, so every `import` is a browser request. This suite reads
+the whole graph (`deploy/graph.mjs` — the same code `npm run deploy:check` reports
+with) and fails if a specifier does not resolve, if one is not relative (a bare
+import would need a bundler), if anything `index.html` references is missing, if a
+module is left outside the graph (except the two named dev/legacy files), or if the
+page makes an external request that is not a font stylesheet or the maker's own link.
+
+`tests/sites.test.mjs` guards the map, `tests/poses.test.mjs` the bodies, and this
+one guards the shelf they sit on.
