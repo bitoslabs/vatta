@@ -3,6 +3,9 @@ import { drawFormBody, drawFormAura, drawActFlourish } from '../render/forms-spr
 import { ANIMALS, animalMotion } from './animal-catalog.js';
 import { drawAnimalVector } from '../render/animal-vectors.js';
 import { canvasFont } from '../systems/fonts.js';
+import { registerPwa } from '../systems/pwa.js';
+
+registerPwa();
 
 const names = { human: 'มนุษย์', deer: 'กวาง', dog: 'สุนัข', crane: 'นกกระเรียน', turtle: 'เต่า', monkey: 'ลิง', butterfly: 'ผีเสื้อ', asura: 'อสุร', deva: 'เทวดา', fish: 'ปลา' };
 const descriptions = {

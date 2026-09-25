@@ -19,7 +19,7 @@
     "test:all": "node tests/run.mjs --all",
     "test:watch": "node tests/run.mjs --quick --watch",
     "perf:world": "node scripts/perf/world.mjs",
-    "build": "vite build",
+    "build": "vite build && node scripts/generate-sw.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "build:check": "npm run build && node scripts/check-build.mjs",
     "deploy:check": "node deploy/check.mjs",

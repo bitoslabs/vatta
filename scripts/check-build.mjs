@@ -21,6 +21,7 @@ export function checkBuild() {
     const path = join(dist, page);
     if (!existsSync(path)) { problems.push(`${page} is missing`); continue; }
     const html = readFileSync(path, 'utf8');
+    if (!html.includes('rel="manifest"')) problems.push(`${page} has no PWA manifest link`);
     const links = [...html.matchAll(/\b(?:src|href)=["']([^"']+)["']/g)].map((match) => match[1]);
     const scripts = [...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/g)].map((match) => match[1]);
     if (!scripts.some((url) => /\/assets\/[^/]+-[A-Za-z0-9_-]+\.js$/.test(url))) {
@@ -33,6 +34,34 @@ export function checkBuild() {
       if (/^(?:\.\/)?src\//.test(url)) problems.push(`${page} still points to source: ${url}`);
     }
   }
+  const manifestPath = join(dist, 'manifest.webmanifest');
+  const workerPath = join(dist, 'sw.js');
+  if (!existsSync(manifestPath)) problems.push('PWA manifest is missing');
+  else {
+    try {
+      const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+      if (!manifest.name || !manifest.start_url || !manifest.scope || manifest.display !== 'standalone') {
+        problems.push('PWA manifest is incomplete');
+      }
+      for (const size of ['192x192', '512x512']) {
+        const icon = manifest.icons?.find((entry) => entry.sizes === size);
+        if (!icon || !existsSync(resolve(dist, icon.src))) problems.push(`PWA icon ${size} is missing`);
+      }
+    } catch (error) { problems.push(`PWA manifest is invalid: ${error.message}`); }
+  }
+  if (!existsSync(workerPath)) problems.push('service worker is missing');
+  else {
+    const worker = readFileSync(workerPath, 'utf8');
+    const match = worker.match(/^const PRECACHE = (\[[\s\S]*?\]);/m);
+    if (!match) problems.push('service worker has no precache list');
+    else {
+      const precache = JSON.parse(match[1]);
+      for (const file of filesUnder(dist)) {
+        const name = './' + file.slice(dist.length + 1).replaceAll('\\', '/');
+        if (name !== './sw.js' && !precache.includes(name)) problems.push(`service worker does not precache ${name}`);
+      }
+    }
+  }
   const files = filesUnder(dist);
   for (const file of files) if (file.endsWith('.map')) problems.push(`source map shipped: ${file}`);
   const inputs = [
@@ -40,6 +69,8 @@ export function checkBuild() {
     join(root, 'vite.config.js'), join(root, 'package.json'), join(root, 'package-lock.json'),
     ...filesUnder(join(root, 'src')),
     ...filesUnder(join(root, 'assets')),
+    ...filesUnder(join(root, 'public')),
+    join(root, 'scripts/generate-sw.mjs'),
   ];
   const newestInput = Math.max(...inputs.map((file) => statSync(file).mtimeMs));
   if (existsSync(join(dist, 'index.html')) && statSync(join(dist, 'index.html')).mtimeMs + 1 < newestInput) {

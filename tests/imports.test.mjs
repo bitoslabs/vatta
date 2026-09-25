@@ -4,10 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { scanTree } from '../deploy/graph.mjs';
 
 /*
- * The module graph (a lesson from building the deploy): the game has no build step,
- * so every import is a browser request. A specifier that does not resolve, or one
- * that is not relative (there is no bundler and no npm at runtime), is a blank
- * screen — and a file nothing imports is a file nobody maintains. The reading is
+ * The module graph (a lesson from building the deploy): a missing source import
+ * can break the production build or leave the game blank in development, and a
+ * file nothing imports is a file nobody maintains. The reading is
  * done by deploy/graph.mjs, the same code `npm run deploy:check` reports with.
  */
 
@@ -40,4 +39,4 @@ assert.deepEqual(externalFiles, [],
   'the only external requests are the font stylesheets and the maker\u2019s own links');
 log(`page ok — ${tree.locals.length} local references, ${tree.externals.length} font requests`);
 
-console.error('IMPORTS TEST OK — every module resolves, is reachable from the entry point, and the page is self-contained but for its fonts');
+console.error('IMPORTS TEST OK — modules resolve and are reachable; local page references exist');

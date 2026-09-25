@@ -92,7 +92,10 @@ export function scanTree(root) {
     if (/^(https?:)?\/\//.test(url) || /^(data:|#|mailto:)/.test(url)) { externals.push(url); continue; }
     locals.push(url.replace(/^\.\//, ''));
   }
-  const missingLocals = locals.filter((path) => !existsSync(join(root, path)));
+  // Vite serves public/ from the site root in development and copies it into dist/.
+  const missingLocals = locals.filter((path) =>
+    !existsSync(join(root, path)) && !existsSync(join(root, 'public', path))
+  );
 
   return {
     jsFiles, cssFiles, edges, problems, cssProblems, orphans, reachable, entry, locals, externals, missingLocals,

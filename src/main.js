@@ -35,6 +35,7 @@ import { initTextures } from './world/textures.js';
 import { initMeditation } from './game/meditation.js';
 import { initStory } from './game/story.js';
 import { startLoop } from './game/loop.js';
+import { registerPwa } from './systems/pwa.js';
 
 function bootstrap() {
   initTeacher();
@@ -72,6 +73,7 @@ function bootstrap() {
   initCodex();
   initAnimalBook();
   startLoop();
+  registerPwa();
 }
 
 if (document.readyState === 'loading') {

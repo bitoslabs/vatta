@@ -272,6 +272,8 @@ npm run deploy:check
 
 `vite.config.js` สร้าง `index.html` และ `character-lab.html` เป็นสองหน้า โดยใช้ `base: './'` และชื่อไฟล์ asset แบบมี hash ตรวจด้วย `npm run build:check` ก่อนอัปโหลดเฉพาะเนื้อหา `dist/` ตัวตรวจปฏิเสธ asset ที่ขาด, source map และผล build ที่เก่ากว่า source ดู [คู่มือ Vite สำหรับหลายหน้า](https://vite.dev/guide/build.html#multi-page-app)
 
+PWA ใช้ manifest และไอคอนจาก `public/`; หลัง Vite build สคริปต์ `scripts/generate-sw.mjs` สร้าง service worker จากไฟล์ใน `dist/` จริง ตัวตรวจ build ยืนยันว่า manifest, ไอคอน และรายการ precache ครบ รายละเอียดการติดตั้ง/ทดสอบออฟไลน์อยู่ใน [pwa.md](./pwa.md)
+
 `src/world/rooms.js` กรอง feature ที่ทับจุดก่อนตรวจชน, คำนวณน้ำเฉพาะร่างปลา และใช้ดัชนีหัวคิวใน BFS วิธีวัดและค่าก่อน/หลังอยู่ใน [performance.md](./performance.md)
 
 `.github/workflows/verify.yml` ใช้ Node 24 กับ `npm ci` แล้วรันชุดทดสอบเต็ม, build check และ deploy check ทุก push/pull request โดยไม่ deploy อัตโนมัติ รายละเอียดคำสั่งอยู่ใน [testing.md](./testing.md) และ [deploy/site.md](../deploy/site.md)

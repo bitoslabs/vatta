@@ -13,7 +13,7 @@ npm run build:check    # production build plus asset validation
 npm run preview        # preview dist/ locally
 ```
 
-See [architecture](./docs/architecture.md), [testing](./docs/testing.md), and [performance](./docs/performance.md) for the project layers, the reason tests used to be slow, and measured improvements. Deployment instructions are in [deploy/site.md](./deploy/site.md).
+See [architecture](./docs/architecture.md), [testing](./docs/testing.md), and [performance](./docs/performance.md) for the project layers, the reason tests used to be slow, and measured improvements. [PWA support](./docs/pwa.md) covers installation and offline play. Deployment instructions are in [deploy/site.md](./deploy/site.md).
 
 ## Version · source · maker
 
