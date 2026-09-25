@@ -1,6 +1,6 @@
 # สถาปัตยกรรม / Architecture
 
-> วัฏฏะ (Vatta) — ป่าเสียงเรียก · 2D contemplative game (ES modules, ไม่มี build step)
+> วัฏฏะ (Vatta) — ป่าเสียงเรียก · 2D contemplative game (ES modules + Vite build)
 >
 > ชื่อเกมเดิม "วิมุตติ" เปลี่ยนเป็น "วัฏฏะ / ວັດຕະ / Vatta" · รุ่น แหล่งโค้ด และผู้สร้าง ดู [about.md](./about.md)
 
@@ -10,13 +10,15 @@
 - **Decoupled**: โมดูลคุยกันผ่าน `core/events.js` + `core/state.js` ไม่เรียกข้ามกันตรง ๆ
 - **Data-driven**: บท (chapter) ภูมิ (realm) และกรรม (karma) เป็นข้อมูลใน `content/` ไม่ใช่โค้ด
 - **i18n ครบทุกสตริง**: ไม่มีข้อความฝังในตรรกะ ใช้ `t()`, `tList()`, `tDialogue()` + `data-i18n` ใน HTML
-- **ไม่พึ่ง build tool**: เปิดผ่าน static server เท่านั้น (ES modules ต้องเป็น HTTP)
+- **แยกขั้นพัฒนากับ production**: Vite ให้ dev server และสร้างไฟล์ static ที่ตรวจได้ใน `dist/`
 
 ## 2. โครงสร้าง
 
 ```
 index.html                 markup + data-i18n (ไม่มี logic)
 package.json               type:module + scripts
+package-lock.json          ล็อกเวอร์ชัน dependency สำหรับ npm ci
+vite.config.js             สร้างเกมและ character lab เป็นสองหน้า
 assets/{fonts,audio,images,icons}/
 src/
 ├── main.js                composition root: import → bootstrap → loop
@@ -221,11 +223,15 @@ MEMORY      → renderMemoryScene(dt)
 ## 6. รัน & ตรวจสอบ
 
 ```bash
-npm start          # หรือ npm run serve:py
-# http://localhost:5173
+npm ci
+npm run dev       # http://127.0.0.1:5173
+npm test          # ชุดเร็ว
+npm run test:full # ครบ 41 ชุด
+npm run build:check
+npm run deploy:check
 ```
 
-- `npm test` — รันด้วย **`tests/run.mjs`** ที่ **ค้นหาไฟล์เอง** (`tests/*.test.mjs` ทุกไฟล์ = หนึ่งชุด) จึงไม่มีรายการยาวใน package.json ที่ต้องอัปเดตเมื่อเพิ่มเทสต์ · ตรวจ **syntax ของทุกโมดูลใน `src/` ก่อน** (~1 วินาที) แล้วรันแต่ละชุดในโปรเซสแยก (สถานะไม่รั่ว · ชุดที่ค้างถูกฆ่าและรายงานเป็น fail) · `npm test -- <คำค้น>` เลือกบางชุด · `--list --bail --verbose --watch --no-syntax` · `npm run check` = syntax-only · `npm run test:watch` = เฝ้า `src/` + `tests/` · `npm run test:all` รวม `*.harness.mjs` — ดู `docs/testing.md`
+- `npm test` รัน 23 ชุดเร็ว; `npm run test:full` รันทุก `*.test.mjs` (41 ชุด) รวมพิสูจน์เส้นทางหลาย seed; `npm run check` ตรวจ syntax ทั้ง source; `npm run test:watch` เฝ้าชุดเร็ว; ตัวรันแยก process และรันพร้อมกัน 2 ชุด ดู [testing.md](./testing.md)
 - roads per plane (§7): `ROUTES` ให้แต่ละภพมีถนนของตัวเอง (เริ่มประตูวัด จบศาลา) · ของประดับ/ตัวตรวจ/"อยู่บนทาง"/รอยเท้า/วัสดุถนน ล้วนอ้างถนนของภพนั้น · **`anchoredPoint(biomeId,x,y)`** พา "สิ่งที่อยู่ข้างถนนป่า" (เหยื่อล่อ · ธรรมบาล · ป้ายข้างทาง) ไปยืนบนถนนของภพนั้น (ในป่าเป็น identity) ส่วนจุดประจำภพคงที่ · **เรื่องเล่า/การสอนตามภพ**: `story-chapter2.js#angerSpawn()` · `story-chapter1.js#hasLightGateLesson()` (บทเรียนประตูแสง = ของป่า) · `systems/teacher.js#teacherLandmarks()` แยกสถานที่ที่ยืนทุกภพออกจากจุดที่ผูกกับถนน และตัดหมายเหตุประตูแสงนอกป่า (ทัวร์ 6 จุดในป่า / 5 จุดในภพอื่น) · `tests/routes.test.mjs`
 - help & settings (**H**): ปุ่มทั้งหมด + เสียง + ตัวอักษรใหญ่ + ข้อมูลรอบ + ลบเซฟ (ถามยืนยัน) · `ui/confirm.js` เป็นไดอะล็อกกลางที่กันการกดพลาด และปุ่ม "เริ่มภาวนา" ใช้มันก่อนทับเซฟเดิม · บรรทัด `#runReadout` บน HUD บอกช่อง/บท/ชื่อรอบ (`ui/settings.js`, `systems/settings.js`, `ui/confirm.js`)
 - `tests/helpers/dom.mjs`: DOM ขนาดเล็กที่ใช้ร่วมกันในชุดทดสอบหน้าจอ (class selector, คลิก/คีย์, `documentElement` สำหรับการตั้งค่าการแสดงผล)
@@ -236,7 +242,7 @@ npm start          # หรือ npm run serve:py
 - **หิ่งห้อย / ฝูงและหมอก** (reserve table P1): วงแหวนเถาวัลย์ + `mist` ที่กั้นทุกตัว **ยกเว้นร่างที่ `glow`** (หรือเมื่อมี `swarm-lit`) · กิจหนึ่งของชีวิตคือส่งจังหวะที่ก้อนหิน → `swarm-lit` → `worldAbilities().swarmGuide` ทำให้หมอกเป็นทางของ *ทุกตัว* ตั้งแต่ชาตินั้นเป็นต้นไป · `validateFireflyRoute` พิสูจน์ 4 ข้อ (walkerBefore false · glowerBefore true · glowerAfter true · **walkerAfter true** = แบ่งปันทางส่วนตัว) · เติมเต็ม: ภพเส้นตรงเส้นเดียวมีพื้นแน่นอน (clearing แบบไม่แข็ง ถ้าโดน keepout จนว่าง)
 - **แมงมุม / ใยข้ามรอยแยก** (reserve table P1): รอยแยกเป็นวงแหวน (`fissure`, ข้ามได้เฉพาะ `leap`/`flying`) · `anchor` เป็น **หลักที่ไม่ใช่กำแพง** (ไม่งั้นมันปิดทางไปหาใยของมันเอง) · ใยเป็น beads ตามแนวเส้น (`webline`) และ `blockedAt` เคลียร์ `fissure` ตรงที่มีใย **เฉพาะร่าง `small`/`climbing`** → เปิดทางโดยไม่ปิดทาง (`validateSpiderRoute` พิสูจน์ 4 ข้อ) · ผลข้ามชาติ `web-spun` เปิดทางให้ *ร่างอื่น* · `state.world.webs` + `options.webs` ใน `assembleWebSite`
 - **ขนาดร่างต้องเป็นความจริง**: `forms.js` `width` ตั้งจาก **การวัดภาพจริง** (กวาด ops ของ `drawFormBody` รวม transform แล้ววัดกล่องร่างกาย ไม่รวมเงา) และ `tests/poses.test.mjs` วัดซ้ำทุกครั้งที่รัน โดยยอมให้คลาดได้ ≤25% — ตารางแรกที่ใส่ไว้เป็น *ขนาดของ lab* ซึ่งใหญ่กว่าภาพจริงราว 1.8 เท่า ทำให้เงา/วงแหวน/ตัวเลขในสมุดสัตว์ผิดสัดส่วนทั้งหมด (รวมถึงสุนัขเพื่อนที่ดูเหมือนชิ้นส่วนลอยแยกกัน)
-- **กราฟโมดูลและการปล่อยเว็บ**: ไม่มี build step — ทุก `import` คือคำขอของเบราว์เซอร์ · `deploy/graph.mjs` อ่านกราฟทั้งต้น (ทุกรูปแบบ import รวม side-effect import ของ 14 บท) และทั้ง `tests/imports.test.mjs` และ `npm run deploy:check` ใช้ตัวอ่านตัวเดียวกัน · `deploy/check.mjs` ยังเทียบ `root` ใน nginx กับโฟลเดอร์ใน `deploy/site.md` และรายงานขนาด/โฮสต์ภายนอก
+- **กราฟโมดูลและการปล่อยเว็บ**: Vite bundle ES modules ลง `dist/`; `deploy/graph.mjs` อ่านกราฟ source ทั้งต้น (ทุกรูปแบบ import รวม side-effect import ของ 14 บท) และทั้ง `tests/imports.test.mjs` และ `npm run deploy:check` ใช้ตัวอ่านตัวเดียวกัน · `deploy/check.mjs` ยังเทียบ `root` ใน nginx กับโฟลเดอร์ใน `deploy/site.md` และรายงานขนาด/โฮสต์ภายนอก
 - **เครื่องหมายของเพื่อนร่วมทาง**: `render/forms-sprites.js#drawCompanion` วาดฮาโลจาง + **ปลอกคอสีอ่อน** (คนละอย่างกับแสงที่อกซึ่งเป็นของผู้เล่น) เพื่อให้หาเพื่อนเจอบนพื้นมืด — `tests/companion.test.mjs` วัดความสว่าง (luminance ≥ 0.6) แทนการเดา
 - **ชุดท่าภาพ (§10)**: `systems/forms.js` — `POSES` (idle/move/act/interact/rest/meditate/rebirth) · `poseForBody({arriving,acting,meditating,resting,interacting,moving})` กำหนดลำดับความสำคัญที่เดียว · `locomotionKind(form)` อ่าน gait จากความสามารถ (burrow/glide/swim/climb/hop/slither/walk) · `bodyWidth(form)` · `render/forms-sprites.js` ทำ deformation ทั้งหมด **รอบเท้า** และใช้ `width` กับเงา/วงแหวน/ระยะ · `render/sprites.js#drawPlayer` เลือกท่าจากสถานะเกม (mode/rest/interact/moving) · `tests/poses.test.mjs`
 - **เพื่อนร่วมทาง** (`systems/companion.js`): ไม่ใช่ feature ของโลก (เดินทะลุได้ ไม่กีดทาง) · ปฏิเสธก้าวลงน้ำและน้ำเป็นอุปสรรค (uses `inWater`) · ปฏิเสธก้าวเข้าหิน (uses `blockedAt`) · ถ้าติดเกิน 2.6 วิ → `freeSpotBeside` พากลับมาข้างกาย (ไม่ทำ pathfinding) · เรียก 3 ครั้ง → `friend-kept` (site `gate`) ซึ่งสมุดโลกแสดงและชาติต่อ ๆ ไปมีสุนัขที่จำได้ · ปุ่ม C (และ `prompt.callCompanion` เมื่อยืนข้าง ๆ)
@@ -261,3 +267,11 @@ npm start          # หรือ npm run serve:py
 - `node --check src/**/*.js` — syntax
 - smoke tests: โหลดทุกโมดูลด้วย DOM stub, เดินครบทุกฉาก (title/world/meditation/memory/release/chapter 2)
 - i18n audit: เทียบคีย์ครบทั้ง 3 ภาษา + ตรวจ `data-i18n` ใน HTML และ `t('…')` ใน JS
+
+## 7. Build, performance และ CI
+
+`vite.config.js` สร้าง `index.html` และ `character-lab.html` เป็นสองหน้า โดยใช้ `base: './'` และชื่อไฟล์ asset แบบมี hash ตรวจด้วย `npm run build:check` ก่อนอัปโหลดเฉพาะเนื้อหา `dist/` ตัวตรวจปฏิเสธ asset ที่ขาด, source map และผล build ที่เก่ากว่า source ดู [คู่มือ Vite สำหรับหลายหน้า](https://vite.dev/guide/build.html#multi-page-app)
+
+`src/world/rooms.js` กรอง feature ที่ทับจุดก่อนตรวจชน, คำนวณน้ำเฉพาะร่างปลา และใช้ดัชนีหัวคิวใน BFS วิธีวัดและค่าก่อน/หลังอยู่ใน [performance.md](./performance.md)
+
+`.github/workflows/verify.yml` ใช้ Node 24 กับ `npm ci` แล้วรันชุดทดสอบเต็ม, build check และ deploy check ทุก push/pull request โดยไม่ deploy อัตโนมัติ รายละเอียดคำสั่งอยู่ใน [testing.md](./testing.md) และ [deploy/site.md](../deploy/site.md)

@@ -1,86 +1,37 @@
-# Testing
+# การทดสอบ
 
-No framework, no dependencies, no build step: every suite is a plain ES module that
-imports the game's modules, asserts, and prints one `… TEST OK` line.
+ชุดทดสอบเป็นไฟล์ `tests/*.test.mjs` ใช้ Node โดยตรง ตัวรันค้นหาไฟล์อัตโนมัติและแยก process ต่อชุด เพื่อไม่ให้ global DOM mock และสถานะเกมปนกัน รันพร้อมกัน 2 ชุดตามค่าเริ่มต้น (`--jobs=N`, สูงสุด 8) และแต่ละชุดมี timeout 120 วินาที
 
-## Run
+## คำสั่ง
 
 ```bash
-npm test                # every tests/*.test.mjs
-npm test -- routes      # only suites whose path matches "routes"
-npm test -- --list      # show what would run, run nothing
-npm test -- --bail      # stop at the first failure
-npm test -- --verbose   # also print each suite's own output
-npm test -- --timeout=120000
-npm test -- --no-syntax # skip the parse pass over src/
-
-npm run test:watch      # re-run on changes under src/ and tests/
-npm run test:all        # include tests/*.harness.mjs (slow dev harnesses)
-npm run check           # node --check every module in src/
+npm test                    # ชุดเร็ว 23 ชุด สำหรับแก้โค้ดประจำวัน
+npm test -- cat             # ชุดชื่อ cat แม้อยู่ในกลุ่มช้า
+npm test -- --list          # ดูรายชื่อชุดเร็ว
+npm run test:watch          # รันชุดเร็วซ้ำเมื่อไฟล์เปลี่ยน
+npm run test:full           # ทั้ง 41 ชุด รวมพิสูจน์เส้นทางหลาย seed
+npm run test:all            # รวม *.harness.mjs สำหรับงานทดลองเพิ่มเติม
+npm run check               # ตรวจ syntax ทุกไฟล์ใน src/
+npm run build:check         # สร้าง production และตรวจ asset ที่อ้างอิง
+npm run perf:world          # วัด collision และ route validation แบบ fixed inputs
 ```
 
-`tests/run.mjs` is the runner. It **discovers** the folder, so adding a test means
-adding a file — there is no list to update anywhere. Each suite runs in its own
-process, so module state (and a hung suite) cannot leak into the next one; a suite
-that exceeds the timeout is killed and reported as a failure. The runner exits
-non-zero if anything fails, so it can gate a deploy.
+`npm test` เลือกชุดเร็วจาก `tests/suite-groups.mjs` โดยไม่ตัดความครอบคลุมออกจากชุดเต็ม เมื่อระบุชื่อชุด ตัวรันจะรันชุดนั้นแม้จัดเป็นชุดช้า ชุดเร็วไม่ตรวจ syntax ทุกไฟล์ก่อนเริ่ม เพราะ Node ตรวจไฟล์ที่ import อยู่แล้ว ใช้ `npm run check` หรือ `npm run test:full` เมื่อต้องตรวจทั้ง source `--bail`, `--verbose`, `--timeout=ms`, `--jobs=N` และ `--no-syntax` ใช้กับตัวรันได้
 
-Before any suite runs, the runner checks that **every module under `src/` parses**.
-A stray bracket used to surface as a confusing failure inside whichever suite
-imported the file; now it is named in about a second.
+ชุดช้าเป็นหลักฐานความเล่นได้ของแผนที่และสัตว์จำนวนมาก เช่น การสร้างโลกหลาย seed และค้นหาเส้นทางทุกความสามารถ ต้องเก็บไว้ใน gate เต็มก่อนส่งงาน/เผยแพร่ ไม่ลดจำนวน seed เพียงเพื่อทำให้เวลาทดสอบสั้นลง สำหรับการพัฒนาเฉพาะสัตว์ ให้รันชื่อสัตว์นั้นโดยตรง
 
-## Writing a suite
+ผลล่าสุดบนเครื่องเดียวกับ baseline: **ชุดเร็ว 23 ชุดผ่านใน 2.4 วินาที; ชุดเต็ม 41 ชุดผ่านใน 24.6 วินาที** (ก่อนปรับ ชุดเต็ม 834.9 วินาที)
 
-```js
-import assert from 'node:assert/strict';
+## สาเหตุที่เคยช้า
 
-// A minimal DOM so modules that touch the page can be imported in Node.
-globalThis.document = { querySelector: () => null, querySelectorAll: () => [] };
-globalThis.window = { matchMedia: () => ({ matches: false }) };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+รอบเต็มก่อนปรับใช้เวลา **834.9 วินาทีสำหรับ 41 ชุด** (macOS arm64, Node 24.13.0) ตัวรันเดิมรันทีละชุดและสแกน syntax โดย spawn Node 151 ครั้ง ขณะที่ตัวตรวจเส้นทางถามจุดชนเป็นพัน ๆ จุดต่อโลก แล้ว `blockedAt` สแกน feature ทั้งแผนที่ซ้ำหลายรอบต่อจุด BFS ยังใช้ `Array.shift()` ซึ่งเลื่อนทั้งคิวทุกครั้ง ส่วนชุดทดสอบสัตว์บางชุดมี BFS ซ้ำของตัวเอง
 
-const { state } = await import('../src/core/state.js');
-assert.equal(state.chapter, 1, 'a fresh run starts at the first chapter');
-console.error('EXAMPLE TEST OK — one sentence saying what is now guaranteed');
-```
+ตอนนี้ `blockedAt` กรอง feature ที่ครอบจุดก่อนประเมินชน, ไม่คำนวณน้ำให้ร่างที่ไม่ถูกจำกัดด้วยน้ำ, BFS ใน production ใช้ดัชนีหัวคิว, และตัวรันแบ่งชุดเร็ว/ครบพร้อมรันสอง process ได้ ตารางก่อน/หลังอยู่ใน [performance.md](./performance.md) เวลาทดสอบขึ้นกับเครื่องและจำนวนงานที่รันพร้อมกัน
 
-Conventions the existing suites follow:
+## เมื่อเพิ่มการทดสอบ
 
-- **Name the file `*.test.mjs`** and end with `console.error('<AREA> TEST OK — …')`,
-  one sentence describing the promise, not the mechanics.
-- **Import by path from `../src/…`**; suites are run from the repository root.
-- **Do not assume another suite ran first.** Each one sets up `state` itself.
-- **Test the rule, not the implementation**: the chapter suites assert behaviour
-  through `loadChapter` + frames, the map suites assert that every seed validates,
-  and the UI suites drive real clicks through `tests/helpers/dom.mjs`.
-- **Assets and pure data can be asserted too** — `tests/fonts.test.mjs` compares the
-  canvas font stack against the stylesheet, and `tests/routes.test.mjs` compares the
-  stylesheet, the roads and the story beats for agreement.
+ตั้งชื่อ `*.test.mjs` สำหรับ gate เต็ม ใช้ assertion ที่ยืนยันพฤติกรรมจริง กำหนด state/mock ที่ใช้เอง และอย่าพึ่งลำดับการรันของไฟล์อื่น หากชุดใหม่ทำการสำรวจหลาย seed จนช้า ให้เพิ่มชื่อใน `tests/suite-groups.mjs` เพื่อให้ `npm test` ยังตอบสนองเร็ว ส่วน `npm run test:full` จะค้นหามันอัตโนมัติ ไม่ต้องเพิ่มรายการซ้ำสำหรับชุดเต็ม
 
-## Slow suites
+## CI บน GitHub
 
-The map and life suites run hundreds of validated builds (60 seeds × route search),
-so they take seconds each, not milliseconds. The whole default set is under a
-minute. Anything slower or noisier belongs in a `*.harness.mjs` file, which only
-runs with `npm run test:all`.
-
-## Working notes
-
-While developing, the same modules are also exercised by throwaway harnesses kept
-outside the repository (`/var/folders/…/kilo/*.mjs`): 16 per-chapter smoke walks,
-karma/path/precept/save/teacher/slots/life/render/i18n checks, and a `life-test`
-that drives whole lives — including the animal lives — through the real frame loop.
-They are scratch tools, not part of the project; anything that deserves to last is
-promoted into `tests/` as a suite with an assertion and a sentence.
-
-## The module graph (`tests/imports.test.mjs`)
-
-The game has no build step, so every `import` is a browser request. This suite reads
-the whole graph (`deploy/graph.mjs` — the same code `npm run deploy:check` reports
-with) and fails if a specifier does not resolve, if one is not relative (a bare
-import would need a bundler), if anything `index.html` references is missing, if a
-module is left outside the graph (except the two named dev/legacy files), or if the
-page makes an external request that is not a font stylesheet or the maker's own link.
-
-`tests/sites.test.mjs` guards the map, `tests/poses.test.mjs` the bodies, and this
-one guards the shelf they sit on.
+`.github/workflows/verify.yml` รันเมื่อ push หรือเปิด/อัปเดต pull request โดยติดตั้ง Node 24 จาก lockfile ด้วย `npm ci` จากนั้นรันชุดเต็ม สร้างและตรวจ `dist/` แล้วตรวจรายการ deploy สิทธิ์ของ workflow จำกัดที่อ่าน source; ไม่มีขั้นตอน deploy หรือส่งไฟล์ออกจาก CI

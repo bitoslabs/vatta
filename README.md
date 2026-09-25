@@ -1,31 +1,19 @@
 # วัฏฏะ (Vatta) — ป่าเสียงเรียก
 
-A contemplative 2D game prototype — walk a dark forest, keep your mind, and meet
-what is actually chasing you. Thai · ລາວ · English. No build step: ES modules
-served over plain HTTP.
+A contemplative 2D game prototype — Thai · ລາວ · English. Development uses Vite; production is a static build.
 
-## Run
+## Run and verify
 
 ```bash
-npm start        # npx serve . -l 5173
-# or
-npm run serve:py # python3 -m http.server 5173
+npm ci                 # install the pinned build tool
+npm run dev            # http://127.0.0.1:5173
+npm test               # fast feedback (23 suites)
+npm run test:full      # every suite, including seeded world checks
+npm run build:check    # production build plus asset validation
+npm run preview        # preview dist/ locally
 ```
 
-## Test
-
-```bash
-npm test              # every tests/*.test.mjs (discovered, no list to maintain)
-npm test -- routes    # only suites matching "routes"
-npm run test:watch    # re-run on changes
-npm run check         # node --check every module in src/
-```
-
-The runner (`tests/run.mjs`) parses every module first, then runs each suite in its
-own process and prints a one-line-per-suite summary — see [docs/testing.md](./docs/testing.md).
-
-Open http://localhost:5173 · `npm run check` syntax-checks the entry module ·
-`npm test` runs the node test suite.
+See [architecture](./docs/architecture.md), [testing](./docs/testing.md), and [performance](./docs/performance.md) for the project layers, the reason tests used to be slow, and measured improvements. Deployment instructions are in [deploy/site.md](./deploy/site.md).
 
 ## Version · source · maker
 

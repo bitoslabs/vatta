@@ -21,6 +21,7 @@ import { player } from '../entities/player.js';
 import { loadChapter, CHAPTERS } from '../game/chapters.js';
 import { setTeacher } from '../systems/teacher.js';
 import { openMirrorCourt } from './mirror-court.js';
+import { openBook } from './animal-book.js';
 import { $ } from './dom.js';
 
 const overlay = $('#lifeSummary');
@@ -35,11 +36,6 @@ let seconds = 5;
 let paused = false;
 
 function stopTimer() { clearInterval(timer); timer = null; }
-function openBookForRebirth() {
-  // Imported lazily: the book imports the summary's neighbours, and a cycle here
-  // would be worse than a small import at the moment of use.
-  import('./animal-book.js').then((book) => book.openBook());
-}
 
 function continueLife() {
   // The reservation is the contract: a pending transition may be resumed even from
@@ -205,7 +201,7 @@ export function renderLifeSummary() {
   renderChoice(pendingTransition());
   // Explore mode asks the animal book instead of showing cards.
   const pending = pendingTransition();
-  if (rebornButton && pending && pending.next.explore === true && !pending.next.chosen) {
+    if (rebornButton && pending && pending.next.explore === true && !pending.next.chosen) {
     rebornButton.disabled = false;
     rebornButton.classList.remove('is-disabled');
     rebornButton.textContent = t('life.explore.open');
@@ -283,7 +279,7 @@ export function initLifeSummary() {
       // Explore mode: the button opens the book, because that is where a body is
       // chosen (nothing is decided here).
       if (pending && pending.next.explore === true && pending.next.chosen !== true) {
-        openBookForRebirth();
+        openBook();
         return;
       }
       continueLife();

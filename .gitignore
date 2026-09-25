@@ -11,4 +11,5 @@ coverage/
 .kilo/
 .zcode/
 
-deploy/
+deploy/*.zip
+reports/

@@ -6,6 +6,7 @@ import { readdir, watch } from 'node:fs';
 import { readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
+import { SLOW_SUITES } from './suite-groups.mjs';
 
 /*
  * The suite runner.
@@ -17,13 +18,14 @@ import { dirname, join, relative } from 'node:path';
  * what passed in what time. `*.harness.mjs` files are for the slow, noisy dev
  * harnesses: they only run with `--all`.
  *
- *   npm test                  everything in tests/*.test.mjs
+ *   npm test                  quick feedback (broad seed proofs are in test:full)
+ *   npm run test:full         everything in tests/*.test.mjs
  *   npm test -- routes        only suites whose path matches "routes"
  *   npm test -- --all         include *.harness.mjs
  *   npm test -- --list        show what would run, run nothing
  *   npm test -- --bail        stop at the first failure
  *   npm test -- --verbose     show each suite's own output
- *   npm test -- --watch       re-run on changes under src/ and tests/
+ *   npm run test:watch       re-run the quick set on changes
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -36,13 +38,17 @@ const filters = argv.filter((arg) => !arg.startsWith('--'));
 
 function numberFlag(name, fallback) {
   const found = argv.find((arg) => arg.startsWith(`--${name}=`));
-  return found ? Number(found.split('=')[1]) : fallback;
+  if (!found) return fallback;
+  const parsed = Number(found.split('=')[1]);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
 }
 
 const OPTIONS = {
-  syntax: !flags.has('--no-syntax'),
+  syntax: !flags.has('--no-syntax') && !flags.has('--quick'),
   syntaxOnly: flags.has('--syntax-only'),
   all: flags.has('--all'),
+  quick: flags.has('--quick'),
+  jobs: Math.max(1, Math.min(8, numberFlag('jobs', 2))),
   list: flags.has('--list'),
   bail: flags.has('--bail'),
   verbose: flags.has('--verbose'),
@@ -61,10 +67,12 @@ const bold = (text) => paint('1', text);
 function usage() {
   process.stdout.write(`${bold('vatta test runner')}
 
-  node tests/run.mjs [filter…] [--all] [--list] [--bail] [--verbose] [--watch]
+  node tests/run.mjs [filter…] [--quick] [--all] [--jobs=N] [--list] [--bail] [--verbose] [--watch]
 
   filter       substring match against the suite's path (e.g. "bat", "tests/fonts")
+  --quick      omit broad seeded route suites unless a filter is supplied
   --all        also run *.harness.mjs (slow dev harnesses)
+  --jobs=N     run N isolated suites concurrently (default 2, max 8)
   --no-syntax  skip the node --check pass over src/ that runs first
   --syntax-only just check that every module parses, run no suites (npm run check)
   --list       list what would run, then exit
@@ -111,6 +119,10 @@ function scanSyntax() {
   return { checked: files.length, broken };
 }
 
+function nameOf(file) {
+  return relative(testsDir, file).replace(/\.(test|harness)\.mjs$/, '');
+}
+
 function discover() {
   let names = [];
   try {
@@ -124,7 +136,8 @@ function discover() {
     .sort()
     .map((name) => join(testsDir, name))
     .filter((file) => {
-      if (!filters.length) return true;
+      const suite = nameOf(file);
+      if (!filters.length) return !OPTIONS.quick || !SLOW_SUITES.has(suite);
       const rel = relative(root, file);
       return filters.some((needle) => rel.includes(needle));
     });
@@ -192,29 +205,32 @@ async function runAll() {
   let passed = 0;
   const startedAll = Date.now();
 
-  for (const file of files) {
-    const name = relative(testsDir, file).replace(/\.(test|harness)\.mjs$/, '');
-    const result = await runSuite(file);
-    const ok = result.code === 0;
-    const time = `${(result.ms / 1000).toFixed(2)}s`;
-    if (ok) {
-      passed++;
-      process.stdout.write(`  ${green('✓')} ${pad(name, width)}  ${dim(time)}\n`);
-    } else {
-      failed++;
-      process.stdout.write(`  ${red('✗')} ${pad(name, width)}  ${dim(time)}\n`);
-      process.stdout.write(`${red('  ── output (tail) ──')}\n`);
-      process.stdout.write(`${tail(result.output).split('\n').map((line) => `    ${line}`).join('\n')}\n`);
-      if (result.code === null) process.stdout.write(`    ${dim('(killed)')}\n`);
-    }
-    if (OPTIONS.verbose && ok) {
-      process.stdout.write(`${tail(result.output, 40).split('\n').map((line) => `    ${dim(line)}`).join('\n')}\n`);
-    }
-    if (!ok && OPTIONS.bail) {
-      process.stdout.write(`\n${red('stopped at the first failure')} (--bail)\n`);
-      break;
+  let next = 0;
+  let stop = false;
+  async function worker() {
+    while (next < files.length && !stop) {
+      const file = files[next++];
+      const name = nameOf(file);
+      const result = await runSuite(file);
+      const ok = result.code === 0;
+      const time = `${(result.ms / 1000).toFixed(2)}s`;
+      if (ok) {
+        passed++;
+        process.stdout.write(`  ${green('✓')} ${pad(name, width)}  ${dim(time)}\n`);
+      } else {
+        failed++;
+        process.stdout.write(`  ${red('✗')} ${pad(name, width)}  ${dim(time)}\n`);
+        process.stdout.write(`${red('  ── output (tail) ──')}\n`);
+        process.stdout.write(`${tail(result.output).split('\n').map((line) => `    ${line}`).join('\n')}\n`);
+        if (result.code === null) process.stdout.write(`    ${dim('(killed)')}\n`);
+        if (OPTIONS.bail) stop = true;
+      }
+      if (OPTIONS.verbose && ok) {
+        process.stdout.write(`${tail(result.output, 40).split('\n').map((line) => `    ${dim(line)}`).join('\n')}\n`);
+      }
     }
   }
+  await Promise.all(Array.from({ length: Math.min(OPTIONS.jobs, files.length) }, worker));
 
   const seconds = ((Date.now() - startedAll) / 1000).toFixed(1);
   const summary = `${passed} passed · ${failed ? red(`${failed} failed`) : '0 failed'} · ${seconds}s`;

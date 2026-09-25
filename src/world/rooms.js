@@ -271,7 +271,11 @@ export function isOnRoute(x, y, biomeId = 'memory-forest') {
 }
 
 function featureAt(feature, x, y) {
-  return dist(x, y, feature.x, feature.y) < feature.r;
+  const dx = x - feature.x;
+  const dy = y - feature.y;
+  const r = feature.r;
+  // Most grid cells are far from each feature. Reject them before the square root.
+  return Math.abs(dx) < r && Math.abs(dy) < r && Math.hypot(dx, dy) < r;
 }
 
 export function waterAt(features, x, y) {
@@ -281,12 +285,16 @@ export function waterAt(features, x, y) {
 
 export function blockedAt(features, x, y, abilities = {}) {
   if (abilities.flying === true) return false;
+  // Work only with features covering this point. Route validation calls this for
+  // thousands of cells; scanning the whole world again inside each branch was
+  // the dominant cost of the map and animal suites.
+  const touching = features.filter((feature) => featureAt(feature, x, y));
   // A plank is not a door of its own: it is ground laid over a chasm, so it clears
   // whatever is under it before anything gets a chance to block.
-  const bridged = features.some((feature) => feature.type === 'plank' && featureAt(feature, x, y));
+  const bridged = touching.some((feature) => feature.type === 'plank');
   // The same idea in stone: a span laid over the city's broken gate is ground.
-  const spanned = features.some((feature) => feature.type === 'span' && featureAt(feature, x, y));
-  return features.some((feature) => {
+  const spanned = touching.some((feature) => feature.type === 'span');
+  return touching.some((feature) => {
     if (bridged && (feature.type === 'gully' || feature.type === 'plank')) return false;
     if (spanned && (feature.type === 'drop' || feature.type === 'span')) return false;
     // The city's broken gate: a gap, not a wall — a leaping body clears it, and
@@ -303,7 +311,7 @@ export function blockedAt(features, x, y, abilities = {}) {
     // the body is small or climbing enough to walk a thread. Nobody else is affected
     // either way: the web opens a way, it never closes one.
     if (feature.type === 'fissure') {
-      const webbed = features.some((other) => other.type === 'webline' && featureAt(other, x, y));
+      const webbed = touching.some((other) => other.type === 'webline');
       const walksThread = webbed && (abilities.small === true || abilities.climbing === true);
       if (walksThread) return false;
       return abilities.leap !== true && featureAt(feature, x, y);
@@ -312,7 +320,7 @@ export function blockedAt(features, x, y, abilities = {}) {
     // The trench: leap or fly, or not at all — unless the seed is seated in the
     // socket, which is ground laid across it for every body (game/beetle.js).
     if (feature.type === 'trench') {
-      const seated = features.some((other) => other.type === 'seat' && featureAt(other, x, y));
+      const seated = touching.some((other) => other.type === 'seat');
       if (seated) return false;
       return abilities.leap !== true && featureAt(feature, x, y);
     }
@@ -1765,7 +1773,7 @@ export function validateRoute(features, formId, abilities = {}, biomeId = 'memor
       const x = minX + c * GRID_CELL + GRID_CELL / 2;
       const y = minY + r * GRID_CELL + GRID_CELL / 2;
       const solid = blockedAt(features, x, y, abilities);
-      const water = waterAt(features, x, y);
+      const water = waterBound && waterAt(features, x, y);
       blocked[index(c, r)] = (solid || (waterBound && !water)) ? 1 : 0;
     }
   }
@@ -1784,8 +1792,8 @@ export function validateRoute(features, formId, abilities = {}, biomeId = 'memor
   seen[index(from.c, from.r)] = 1;
   let visited = 0;
 
-  while (queue.length) {
-    const cell = queue.shift();
+  for (let head = 0; head < queue.length; head++) {
+    const cell = queue[head];
     visited++;
     if (cell.c === to.c && cell.r === to.r) {
       return { ok: true, reachable: visited, cells: cols * rows };
@@ -1860,8 +1868,8 @@ export function reachableBetween(features, from, to, abilities, goalRadius = 0) 
   const seen = new Uint8Array(cols * rows);
   const queue = [start];
   seen[index(start.c, start.r)] = 1;
-  while (queue.length) {
-    const cell = queue.shift();
+  for (let head = 0; head < queue.length; head++) {
+    const cell = queue[head];
     if (goals.has(index(cell.c, cell.r))) return true;
     for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
       const c = cell.c + dc;
