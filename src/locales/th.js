@@ -87,7 +87,7 @@ export default {
     'meditation.label': 'ส ม า ธ ิ',
     'meditation.quote': 'รู้ว่ากำลังหายใจเข้า · รู้ว่ากำลังหายใจออก',
     'meditation.start': 'กดค้าง — หายใจเข้า',
-    'meditation.disturbHint': 'กด X — ไล่มันออกไป',
+    'meditation.disturbHint': 'แตะหรือกด X — ไล่มันออกไป',
     'meditation.inhale': 'หายใจเข้า — กดค้าง… ปล่อยเมื่อวงแตะวงเส้นประวงใหญ่',
     'meditation.exhale': 'หายใจออก… เมื่อวงหดถึงวงเส้นประ วงเล็ก กดค้างอีกครั้ง',
     'meditation.chaseAway': 'ยิ่งไล่… มันยิ่งกลับมา',
@@ -103,8 +103,13 @@ export default {
     'end.stats': 'จิตสั่นถูกกลืนกิน {caught} ครั้ง · หลงประตูแสง {lost} ครั้ง<br>เวลาภาวนา {time}',
 
     'touch.run': 'วิ่ง',
+    'touch.move': 'เดิน',
     'touch.sati': 'สติ<br>(ค้าง)',
-    'touch.act': 'E',
+    'touch.act': 'โต้ตอบ',
+    'touch.echo': 'สะท้อน',
+    'touch.menu': 'เมนู',
+    'touch.help': 'ลากวงซ้ายเพื่อเดิน · กดวิ่งเพื่อเร่ง · กดสติค้าง · แตะโต้ตอบ',
+    'touch.note': 'ปรับเสียงได้ในเมนูเครื่องมือ',
 
     'prompt.talkMonk': 'คุยกับพระเถระ',
     'prompt.meditate': 'นั่งสมาธิ',

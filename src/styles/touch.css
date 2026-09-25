@@ -1,4 +1,7 @@
 /* ---------- Touch controls ---------- */
+.touch-help,
+.touch-note { display: none; }
+
 #touchUI {
   position: fixed;
   inset: 0;
@@ -10,13 +13,43 @@
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 46%;
+  width: min(44vw, 240px);
   height: 60%;
   pointer-events: auto;
+  touch-action: none;
+}
+
+#joyZone::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  bottom: calc(42px + env(safe-area-inset-bottom));
+  width: 96px;
+  height: 96px;
+  border: 1px solid rgba(232, 226, 208, 0.3);
+  border-radius: 50%;
+  background: rgba(8, 12, 10, 0.18);
+  pointer-events: none;
+}
+
+#joyZone.is-active::before,
+#joyZone.is-active #joyHint {
+  opacity: 0;
+}
+
+#joyHint {
+  position: absolute;
+  left: 24px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  width: 96px;
+  text-align: center;
+  color: var(--ink-soft);
+  font: 12px var(--font-body);
+  pointer-events: none;
 }
 
 #joyBase {
-  position: absolute;
+  position: fixed;
   width: 96px;
   height: 96px;
   border: 1px solid rgba(232, 226, 208, 0.25);
@@ -25,7 +58,7 @@
 }
 
 #joyKnob {
-  position: absolute;
+  position: fixed;
   width: 40px;
   height: 40px;
   background: rgba(232, 226, 208, 0.3);
@@ -36,8 +69,8 @@
 .tbtn {
   position: absolute;
   pointer-events: auto;
-  width: 62px;
-  height: 62px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   border: 1px solid rgba(232, 226, 208, 0.35);
   background: rgba(8, 12, 10, 0.55);
@@ -45,6 +78,9 @@
   font-family: var(--font-body);
   font-size: 12px;
   letter-spacing: 0.05em;
+  line-height: 1.2;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tbtn:active {
@@ -52,17 +88,68 @@
 }
 
 #btnRun {
-  right: 104px;
-  bottom: 120px;
+  right: 108px;
+  bottom: calc(120px + env(safe-area-inset-bottom));
 }
 
 #btnSati {
-  right: 26px;
-  bottom: 170px;
+  right: 20px;
+  bottom: calc(170px + env(safe-area-inset-bottom));
 }
 
 #btnAct {
-  right: 26px;
-  bottom: 80px;
+  right: 20px;
+  bottom: calc(80px + env(safe-area-inset-bottom));
   border-color: var(--line-strong);
+}
+
+#btnEcho {
+  right: 108px;
+  bottom: calc(218px + env(safe-area-inset-bottom));
+}
+
+#btnMenu {
+  top: calc(58px + env(safe-area-inset-top));
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  font-size: 23px;
+}
+
+.tbtn[aria-pressed='true'] {
+  background: rgba(214, 180, 120, 0.4);
+  border-color: var(--gold-bright);
+}
+
+@media (pointer: coarse) {
+  #ctrlHint { display: none; }
+  .panel--title .keys,
+  .panel--title .keyboard-note { display: none; }
+  .panel--title .touch-help,
+  .panel--title .touch-note { display: block; }
+  .panel--title .touch-help {
+    margin-top: 14px;
+    color: var(--ink-soft);
+    font-size: 12px;
+    line-height: 1.65;
+  }
+}
+
+@media (max-width: 540px) {
+  #hud {
+    top: 58px;
+    left: 12px;
+    max-width: min(250px, calc(100vw - 24px));
+  }
+
+  #hud #karmaReadout,
+  #hud #realmReadout,
+  #hud #pathReadout,
+  #hud #preceptReadout,
+  #hud #formReadout,
+  #hud #runReadout {
+    margin-top: 4px;
+    font-size: 10px;
+    line-height: 1.3;
+  }
 }

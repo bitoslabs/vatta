@@ -9,13 +9,15 @@ The first visit opens in Lao (`lo`). A player's saved Thai or English selection 
 ```bash
 npm ci                 # install the pinned build tool
 npm run dev            # http://127.0.0.1:5173
-npm test               # fast feedback (23 suites)
+npm test               # fast feedback (24 suites)
 npm run test:full      # every suite, including seeded world checks
 npm run build:check    # production build plus asset validation
 npm run preview        # preview dist/ locally
 ```
 
 See [architecture](./docs/architecture.md), [testing](./docs/testing.md), and [performance](./docs/performance.md) for the project layers, the reason tests used to be slow, and measured improvements. [PWA support](./docs/pwa.md) covers installation and offline play. Deployment instructions are in [deploy/site.md](./deploy/site.md).
+
+For phone controls and movement speed, see [mobile controls](./docs/mobile-controls.md).
 
 ## Version · source · maker
 

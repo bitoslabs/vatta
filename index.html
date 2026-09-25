@@ -91,7 +91,9 @@
             <span><b>SPACE</b><span data-i18n="title.keys.mind">ค้าง = ตั้งสติ</span></span>
             <span><b>E</b><span data-i18n="title.keys.act">โต้ตอบ</span></span>
           </div>
-          <div class="small" data-i18n="title.note">หูฟังแนะนำ · กด M เพื่อเปิด/ปิดเสียง</div>
+          <div class="touch-help" data-i18n="touch.help">ລາກວົງຊ້າຍເພື່ອຍ່າງ · ກົດແລ່ນເພື່ອເລັ່ງ · ກົດສະຕິຄ້າງ · ແຕະໂຕ້ຕອບ</div>
+          <div class="small keyboard-note" data-i18n="title.note">ຫູຟັງແນະນຳ · ກົດ M ເພື່ອເປີດ/ປິດສຽງ</div>
+          <div class="small touch-note" data-i18n="touch.note">ຕັ້ງຄ່າສຽງໄດ້ໃນເມນູເຄື່ອງມື</div>
         </section>
 
         <section class="tab-pane" role="tabpanel" data-pane="chapters" hidden>
@@ -185,10 +187,10 @@
       <div id="medQuote" data-i18n="meditation.quote">รู้ว่ากำลังหายใจเข้า · รู้ว่ากำลังหายใจออก</div>
     </div>
     <button id="breathBtn" data-i18n="meditation.start">กดค้าง — หายใจเข้า</button>
-    <div id="disturbCard" class="hidden">
+    <button id="disturbCard" class="hidden" type="button">
       <div id="disturbText"></div>
       <div id="disturbHint" data-i18n="meditation.disturbHint">กด X — ไล่มันออกไป</div>
-    </div>
+    </button>
   </div>
 
   <!-- ============ Memory scene ============ -->
@@ -392,10 +394,12 @@
 
   <!-- ============ Touch controls ============ -->
   <div id="touchUI" class="hidden">
-    <div id="joyZone"><div id="joyBase"></div><div id="joyKnob"></div></div>
+    <div id="joyZone" role="group" data-i18n-attr="aria-label|touch.move"><span id="joyHint" data-i18n="touch.move">ຍ່າງ</span><div id="joyBase"></div><div id="joyKnob"></div></div>
     <button class="tbtn" id="btnRun" data-i18n="touch.run">วิ่ง</button>
     <button class="tbtn" id="btnSati" data-i18n-html="touch.sati">สติ<br>(ค้าง)</button>
-    <button class="tbtn" id="btnAct" data-i18n="touch.act">E</button>
+    <button class="tbtn" id="btnAct" data-i18n="touch.act">ໂຕ້ຕອບ</button>
+    <button class="tbtn hidden" id="btnEcho" type="button" data-i18n="touch.echo">ສະທ້ອນ</button>
+    <button class="tbtn" id="btnMenu" type="button" data-i18n-attr="aria-label|touch.menu" aria-label="ເມນູ">☰</button>
   </div>
 
   <script type="module" src="./src/main.js"></script>

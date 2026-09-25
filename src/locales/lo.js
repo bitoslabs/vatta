@@ -87,7 +87,7 @@ export default {
     'meditation.label': 'ສ ມ າ ທິ',
     'meditation.quote': 'ຮູ້ວ່າກຳລັງຫາຍໃຈເຂົ້າ · ຮູ້ວ່າກຳລັງຫາຍໃຈອອກ',
     'meditation.start': 'ກົດຄ້າງ — ຫາຍໃຈເຂົ້າ',
-    'meditation.disturbHint': 'ກົດ X — ໄລ່ມັນອອກໄປ',
+    'meditation.disturbHint': 'ແຕະ ຫຼື ກົດ X — ໄລ່ມັນອອກໄປ',
     'meditation.inhale': 'ຫາຍໃຈເຂົ້າ — ກົດຄ້າງ… ປ່ອຍເມື່ອວົງແຕະວົງເສັ້ນປະວົງໃຫຍ່',
     'meditation.exhale': 'ຫາຍໃຈອອກ… ເມື່ອວົງຫົດຮອດວົງເສັ້ນປະວົງນ້ອຍ ກົດຄ້າງອີກຄັ້ງ',
     'meditation.chaseAway': 'ຍິ່ງໄລ່… ມັນຍິ່ງກັບມາ',
@@ -103,8 +103,13 @@ export default {
     'end.stats': 'ຈິດສັ່ນຖືກກືນກິນ {caught} ຄັ້ງ · ຫຼົງປະຕູແສງ {lost} ຄັ້ງ<br>ເວລາພາວະນາ {time}',
 
     'touch.run': 'ແລ່ນ',
+    'touch.move': 'ຍ່າງ',
     'touch.sati': 'ສະຕິ<br>(ຄ້າງ)',
-    'touch.act': 'E',
+    'touch.act': 'ໂຕ້ຕອບ',
+    'touch.echo': 'ສະທ້ອນ',
+    'touch.menu': 'ເມນູ',
+    'touch.help': 'ລາກວົງຊ້າຍເພື່ອຍ່າງ · ກົດແລ່ນເພື່ອເລັ່ງ · ກົດສະຕິຄ້າງ · ແຕະໂຕ້ຕອບ',
+    'touch.note': 'ຕັ້ງຄ່າສຽງໄດ້ໃນເມນູເຄື່ອງມື',
 
     'prompt.talkMonk': 'ລົມກັບພະເຖລະ',
     'prompt.meditate': 'ນັ່ງສະມາທິ',

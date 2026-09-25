@@ -87,7 +87,7 @@ export default {
     'meditation.label': 'M E D I T A T I O N',
     'meditation.quote': 'Know that you are breathing in · Know that you are breathing out',
     'meditation.start': 'Hold — breathe in',
-    'meditation.disturbHint': 'Press X — push it away',
+    'meditation.disturbHint': 'Tap or press X — push it away',
     'meditation.inhale': 'Breathe in — hold… release when the circle touches the outer ring',
     'meditation.exhale': 'Breathe out… when the circle shrinks to the inner ring, hold again',
     'meditation.chaseAway': 'The more you push… the more it returns',
@@ -103,8 +103,13 @@ export default {
     'end.stats': 'Swallowed by fear {caught} times · Lost to light gates {lost} times<br>Practice time {time}',
 
     'touch.run': 'Run',
+    'touch.move': 'Move',
     'touch.sati': 'Mind<br>(hold)',
-    'touch.act': 'E',
+    'touch.act': 'Act',
+    'touch.echo': 'Echo',
+    'touch.menu': 'Menu',
+    'touch.help': 'Drag the left circle to move · Hold Run to sprint · Hold Mind · Tap Act',
+    'touch.note': 'Sound settings are in Tools',
 
     'prompt.talkMonk': 'Talk to the elder monk',
     'prompt.meditate': 'Sit in meditation',

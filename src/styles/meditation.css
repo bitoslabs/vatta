@@ -124,10 +124,13 @@
   font-size: 14px;
   letter-spacing: 0.18em;
   cursor: pointer;
+  touch-action: none;
 }
 
-#breathBtn:hover {
+#breathBtn:hover,
+#breathBtn[aria-pressed='true'] {
   border-color: #c9b684;
+  background: rgba(214, 180, 120, 0.18);
 }
 
 #disturbCard {
@@ -140,6 +143,26 @@
   border: 1px solid rgba(160, 90, 90, 0.4);
   border-left: 3px solid #8a4a42;
   transition: opacity 0.8s;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (max-height: 500px) {
+  #medStage { max-height: 46vh; }
+  #tgtOut { max-width: 46vh; max-height: 46vh; }
+  #tgtIn { max-width: 30vh; max-height: 30vh; }
+  #bRing { max-width: 46vh; max-height: 46vh; }
+  #medMsg { bottom: -34px; }
+  #medQuote { bottom: -58px; }
+  #breathBtn { margin-top: 66px; }
+}
+
+@media (max-width: 540px) {
+  #tgtOut,
+  #bRing { max-width: min(92vw, 46vh); max-height: min(92vw, 46vh); }
+  #disturbCard { right: 5%; max-width: 90vw; }
 }
 
 #disturbText {
