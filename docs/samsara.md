@@ -18,16 +18,17 @@
 ## 2. กลไกในเกม
 
 ```
-ถูกความกลัว/โทสะกลืนกิน (onCaught)
+จบเป้าหมายชีวิตในบท (life:complete)
         │
-        ├─ recordKarma('panic')            ← กรรมใหม่ถูกบันทึก
-        ├─ rebirth() = resolveRebirth(karma) → enterRealm(realmId)
-        ├─ toast: "จุติ–ปฏิสนธิ · <ชื่อภูมิ>"
-        └─ เกิดใหม่ที่ checkpoint พร้อม "modifier ของภูมินั้น"
+        ├─ resolveRebirth(karma) → ภพและเหตุผล
+        ├─ drawNextLife(realmId) → ร่างที่ภพและด่านรองรับ
+        ├─ จองผลไว้ในเซฟก่อนแสดงสรุปชีวิต
+        └─ advanceLife() → บทใหม่ ร่างใหม่ และ modifier ของภพ
 ```
 
 - ภูมิปัจจุบันเก็บที่ `state.realmId` (ค่าเริ่มต้น `manussa`)
-- ทุกครั้งที่ขึ้นบทใหม่ `loadChapter()` จะ **เกิดใหม่ตามกรรมสะสม** — จบบท 1 ด้วยบุญมาก บท 2 จะเริ่มในสวรรค์
+- การถูกผีจับระหว่างบทคือการกลับจุดพัก ไม่ใช่การตายหรือเพิ่มบาป; การเกิดใหม่เกิดเมื่อจบชีวิตตามบท
+- เมื่อจบชีวิต ระบบจองผลตามกรรมสะสมก่อนแสดงหน้าสรุป แล้ว `loadChapter()` โหลดภพและร่างที่จองไว้
 - `systems/samsara.js`: `getRealm()`, `getRealmModifier()`, `enterRealm(id)`, `rebirth()`
 
 ## 3. Modifier ของแต่ละภูมิ (เปลี่ยนวิธีเล่นจริง)
@@ -52,7 +53,7 @@
 
 ## 4. จุดที่ระบบแตะอยู่ (implemented)
 
-- `entities/ghost.js` — จุติ–ปฏิสนธิเมื่อถูกจับ + `mindDissolve` ตามภูมิ
+- `entities/ghost.js` — กลับจุดพักเมื่อถูกจับ + `mindDissolve` ตามภูมิ
 - `entities/player.js` — ความเร็วตามภูมิ
 - `game/world-update.js` — fear gain / safe relief ตามภูมิ
 - `render/lighting.js` — รัศมีการมองเห็นตามภูมิ

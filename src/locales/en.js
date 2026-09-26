@@ -346,7 +346,7 @@ export default {
     'precept.adinnadana.name': 'Not taking',
     'precept.adinnadana.desc': 'Abstaining from what has not been given.',
     'precept.kamesu.name': 'Not violating others',
-    'precept.kamesu.desc': 'Not overstepping another — not owning anyone.',
+    'precept.kamesu.desc': 'Abstaining from sexual misconduct; ordinary attachment is not a violation of this precept.',
     'precept.musavada.name': 'Truthful speech',
     'precept.musavada.desc': 'Abstaining from false speech that deceives self and others.',
     'precept.surameraya.name': 'Sobriety',

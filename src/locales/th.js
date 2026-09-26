@@ -346,7 +346,7 @@ export default {
     'precept.adinnadana.name': 'อทินนาทาน',
     'precept.adinnadana.desc': 'งดเว้นจากการถือเอาของที่เขาไม่ได้ให้',
     'precept.kamesu.name': 'กาเมสุมิจฉาจาร',
-    'precept.kamesu.desc': 'ไม่ล่วงเกินผู้อื่น — ไม่ยึดใครไว้เป็นของเรา',
+    'precept.kamesu.desc': 'งดเว้นจากการล่วงละเมิดทางเพศ; ความยึดติดทั่วไปไม่ใช่การผิดศีลข้อนี้',
     'precept.musavada.name': 'มุสาวาท',
     'precept.musavada.desc': 'งดเว้นจากการกล่าวเท็จ หลอกตนและผู้อื่น',
     'precept.surameraya.name': 'สุราเมรัย',

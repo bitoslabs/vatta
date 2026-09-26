@@ -346,7 +346,7 @@ export default {
     'precept.adinnadana.name': 'ອະທິນນາທານ',
     'precept.adinnadana.desc': 'ງົດເວັ້ນຈາກການຖືເອົາຂອງທີ່ເຂົາບໍ່ໄດ້ໃຫ້',
     'precept.kamesu.name': 'ກາເມສຸມິຈຉາຈານ',
-    'precept.kamesu.desc': 'ບໍ່ລ່ວງເກີນຜູ້ອື່ນ — ບໍ່ຍຶດໃຜໄວ້ເປັນຂອງເຮົາ',
+    'precept.kamesu.desc': 'ງົດເວັ້ນຈາກການລ່ວງລະເມີດທາງເພດ; ຄວາມຍຶດຕິດທົ່ວໄປບໍ່ແມ່ນການຜິດສິນຂໍ້ນີ້',
     'precept.musavada.name': 'ມຸສາວາດ',
     'precept.musavada.desc': 'ງົດເວັ້ນຈາກການກ່າວເທັດ ຫຼອກຕົນແລະຜູ້ອື່ນ',
     'precept.surameraya.name': 'ສຸຣາເມຣັຍ',

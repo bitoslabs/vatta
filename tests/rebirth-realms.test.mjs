@@ -61,6 +61,10 @@ log(`mapping ok — ${CASES.length} cases`);
 for (const tendencies of [{ anger: 3, metta: 3 }, { metta: 3, anger: 3 }]) {
   assert.equal(resolveRebirth({ tendencies }).realmId, 'tavatimsa');
 }
+assert.equal(resolveRebirth({ tendencies: { anger: 3, metta: 3 }, merit: 9, demerit: 12 }).realmId,
+  'niraya', 'when roots tie, heavier harmful fruit decides');
+assert.equal(resolveRebirth({ tendencies: { anger: 3, metta: 3 }, merit: 12, demerit: 9 }).realmId,
+  'tavatimsa', 'when roots tie, heavier wholesome fruit protects the higher rebirth');
 assert.equal(resolveRebirth({ tendencies: { delusion: 2, sati: 2 } }).realmId, 'manussa');
 assert.equal(resolveRebirth({ tendencies: { anger: 4, metta: 3 } }).realmId, 'niraya');
 

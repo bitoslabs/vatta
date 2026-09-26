@@ -78,6 +78,7 @@ export function activeRoots() {
 /** Serialise / restore the whole ledger (used by systems/save.js). */
 export function exportKarma() {
   return {
+    version: 2,
     merit: ledger.merit,
     demerit: ledger.demerit,
     kusala: ledger.kusala,
@@ -113,6 +114,19 @@ export function importKarma(data) {
       at: Number(entry.at) || 0,
     }))
     : [];
+
+  // Older saves treated being frightened as a harmful intention. Preserve the
+  // memory of the event while removing that mistaken moral weight once.
+  if ((Number(data.version) || 1) < 2) {
+    const panicCount = ledger.actions.reduce((sum, entry) => entry.actionId === 'panic'
+      ? sum + Math.max(0, entry.times) : sum, 0);
+    if (panicCount) {
+      ledger.demerit = Math.max(0, ledger.demerit - 3 * panicCount);
+      ledger.akusala = Math.max(0, ledger.akusala - panicCount);
+      ledger.roots.moha = Math.max(0, ledger.roots.moha - panicCount);
+      ledger.tendencies.delusion = Math.max(0, ledger.tendencies.delusion - panicCount);
+    }
+  }
 
   emit(EVENTS.KARMA_CHANGED, 'import');
   return true;

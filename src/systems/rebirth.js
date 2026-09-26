@@ -13,8 +13,8 @@ import { CHAPTER_ANIMALS } from './life-route.js';
  * ripened (วิบาก), and the tendencies (อนุสัย) each intention reinforced. A mind
  * whose strongest tendency is unwholesome falls to the plane that tendency ripens
  * into — anger to the hells, greed to the petas, delusion to the animals, clinging
- * to the asuras — *unless* a wholesome tendency is at least as strong, in which
- * case the wholesome path decides: concentration lifts the mind up the jhāna ladder
+ * to the asuras — *unless* a wholesome tendency is stronger, or equal with no
+ * heavier unwholesome fruit. Then concentration lifts the mind up the jhāna ladder
  * through the form and formless planes, metta opens the deva planes, and any lesser
  * merit simply returns a human birth.
  *
@@ -91,13 +91,16 @@ function ladderPick(ladder, score) {
 export function resolveRebirth(karma = {}) {
   const tendencies = karma.tendencies || {};
   const merit = Number.isFinite(karma.merit) ? karma.merit : 0;
+  const demerit = Number.isFinite(karma.demerit) ? karma.demerit : 0;
   const wholesome = dominantTendencyWholesome(tendencies);
   const akusala = strongestAkusala(tendencies);
 
   // An unwholesome tendency decides only while it is the strongest thing in the
   // mind — and the roots of wholesome conduct are counted with it, so a life of
   // harm with a little greed in it still answers for the harm.
-  if (akusala.key && akusala.score >= 1 && akusala.score > wholesome.score) {
+  if (akusala.key && akusala.score >= 1
+    && (akusala.score > wholesome.score
+      || (akusala.score === wholesome.score && demerit > merit))) {
     const plane = AKUSALA_PLANES[akusala.key];
     return { realmId: plane.realmId, reasonKey: plane.reasonKey };
   }

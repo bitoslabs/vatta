@@ -27,7 +27,6 @@ export const KARMA_ACTIONS = Object.freeze({
   steal: { root: 'akusala', rootId: 'lobha', demerit: 10, tendencies: { greed: 3 } },
   lie: { root: 'akusala', rootId: 'moha', demerit: 8, tendencies: { delusion: 2 } },
   cling: { root: 'akusala', rootId: 'lobha', demerit: 7, tendencies: { clinging: 3 } },
-  panic: { root: 'akusala', rootId: 'moha', demerit: 3, tendencies: { delusion: 1 } },
 });
 
 /** The six roots (มูล), in canonical order: unwholesome first, then wholesome. */
