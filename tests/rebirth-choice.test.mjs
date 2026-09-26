@@ -43,7 +43,7 @@ const { state } = await import('../src/core/state.js');
 const { MODE } = await import('../src/core/constants.js');
 const { CHAPTERS, loadChapter } = await import('../src/game/chapters.js');
 const { FORMS } = await import('../src/content/forms.js');
-const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { getKarma, resetKarma, recordKarma } = await import('../src/systems/karma.js');
 const rebirth = await import('../src/systems/rebirth.js');
 const { snapshot, applySaveRuntime } = await import('../src/systems/save.js');
 const {
@@ -58,6 +58,8 @@ const log = (message) => console.error(`[choice] ${message}`);
 const chapters = CHAPTERS.map((chapter) => chapter.id);
 
 function beginChoiceLife({ seed = 5150, history = ['human', 'deer'], lifeId = 3, chapter = 2 } = {}) {
+  resetKarma();
+  recordKarma('lie', 2); // animal realm offers several compatible species
   resetTransition('choice-run');
   state.runId = 'choice-run';
   rebirth.resetRebirth('choice-run');

@@ -2098,13 +2098,17 @@ function drawLifeLights() {
   for (const light of lifeLights) {
     const k = light.t / light.life;
     const alpha = clamp(1 - k, 0, 1) * 0.7;
-    const radius = 12 + k * 74;
-    ctx.strokeStyle = `rgba(246,232,186,${(alpha * 0.7).toFixed(3)})`;
+    const arriving = light.kind !== 'ending';
+    const radius = arriving ? 74 - k * 62 : 12 + k * 74;
+    const color = light.kind === 'water' ? '161,216,237'
+      : light.kind === 'heaven' ? '255,244,197'
+        : light.kind === 'lower' ? '207,151,143' : '246,232,186';
+    ctx.strokeStyle = `rgba(${color},${(alpha * 0.7).toFixed(3)})`;
     ctx.lineWidth = 3 - k * 2;
     ctx.beginPath();
     ctx.arc(light.x, light.y - 14, radius, 0, TAU);
     ctx.stroke();
-    ctx.fillStyle = `rgba(255,240,200,${(alpha * 0.25).toFixed(3)})`;
+    ctx.fillStyle = `rgba(${color},${(alpha * 0.25).toFixed(3)})`;
     ctx.beginPath();
     ctx.arc(light.x, light.y - 14, radius * 0.5, 0, TAU);
     ctx.fill();

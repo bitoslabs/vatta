@@ -30,7 +30,7 @@ export function addSpark(spark) {
  * particles, because the event must read the same either way.
  */
 export function addLifeLight(x, y, reduced = false) {
-  lifeLights.push({ x, y, t: 0, life: reduced ? 0.9 : 1.6 });
+  lifeLights.push({ x, y, t: 0, life: reduced ? 0.9 : 1.6, kind: 'ending' });
   if (reduced) return lifeLights.length;
   for (let i = 0; i < 16; i++) {
     const angle = (i / 16) * Math.PI * 2;
@@ -43,6 +43,21 @@ export function addLifeLight(x, y, reduced = false) {
       t: 0,
       life: 1.1 + (i % 3) * 0.3,
     });
+  }
+  return lifeLights.length;
+}
+
+/** A small inward ring at the safe spawn, coloured by the arriving body. */
+export function addBirthLight(x, y, formId, reduced = false) {
+  const kind = formId === 'fish' ? 'water' : formId === 'deva' ? 'heaven'
+    : ['niraya', 'peta', 'asura'].includes(formId) ? 'lower' : 'birth';
+  lifeLights.push({ x, y, t: 0, life: reduced ? 0.65 : 1.2, kind });
+  if (reduced) return lifeLights.length;
+  for (let i = 0; i < 12; i++) {
+    const angle = i * Math.PI / 6;
+    sparks.push({ x: x + Math.cos(angle) * 34, y: y - 14 + Math.sin(angle) * 18,
+      vx: -Math.cos(angle) * 22, vy: -Math.sin(angle) * 12,
+      t: 0, life: 0.8 });
   }
   return lifeLights.length;
 }

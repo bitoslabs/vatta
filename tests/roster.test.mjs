@@ -55,8 +55,10 @@ const log = (message) => console.error(`[roster] ${message}`);
 /** Forms that are not born by the life cycle, with the reason they are here. */
 const STORY_ONLY = new Map([
   ['human', 'the journey starts as a human (systems/life.js#startLifeMode)'],
-  ['asura', 'met as a being / lab body, not yet a rebirth form (docs/animal-roster-audit.md)'],
-  ['deva', 'met as a being / lab body, not yet a rebirth form (docs/animal-roster-audit.md)'],
+  ['asura', 'realm-specific being with the shared story goal'],
+  ['deva', 'realm-specific being with the shared story goal'],
+  ['niraya', 'realm-specific being with the shared story goal'],
+  ['peta', 'realm-specific being with the shared story goal'],
 ]);
 
 /**
@@ -143,7 +145,7 @@ for (const form of FORMS) {
   assert.equal(goalsByLifeGoal.get(form.lifeGoal), goal.kind,
     `${form.id}: one lifeGoal always means one goal kind`);
 }
-assert.equal(FORMS.length, 31, 'the roster is the 31 forms (reserve table: spider, firefly, beetle)');
+assert.equal(FORMS.length, 33, 'the roster includes the two new lower-realm beings');
 assert.equal(FORMS.length - STORY_ONLY.size, 28, 'and the rest are the 28 animals');
 // Every ending kind is *declared* in one animal's own module and nowhere else: the
 // collision guard for the whole set (a kind shared by two bodies ends the wrong

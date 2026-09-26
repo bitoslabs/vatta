@@ -166,12 +166,14 @@ assert(dist(before.x, before.y, start[0], start[1]) < 1, 'a point beyond the sta
 // the lures of a greedy life walk the plane's own road
 state.formId = 'asura';
 state.realmId = 'manussa';
+const { currentMapId } = await import('../src/systems/biome.js');
+const cityLifeRoute = routeForPlane(currentMapId());
 const { getLures, resetLures, takeLure } = await import('../src/game/lures.js');
 resetLures();
 const asuraLures = getLures();
 assert.equal(asuraLures.length, 5, 'five lures');
 for (const lure of asuraLures) {
-  assert(distToPoly(ROUTES['asura-city'], lure.x, lure.y) < 1, 'every lure is on the city road');
+  assert(distToPoly(cityLifeRoute, lure.x, lure.y) < 1, 'every lure is on this life’s city road');
 }
 // and taking one still works: the plane sync keeps the lure identity
 takeLure(asuraLures[0]);
@@ -182,7 +184,7 @@ resetLures();
 const { guardianSpot, GUARDIAN } = await import('../src/game/npc.js');
 const { encountersHere } = await import('../src/game/npc-encounters.js');
 const asuraGuardian = guardianSpot();
-assert(distToPoly(ROUTES['asura-city'], asuraGuardian.x, asuraGuardian.y) < 1, 'the guardian stands on the city road');
+assert(distToPoly(cityLifeRoute, asuraGuardian.x, asuraGuardian.y) < 1, 'the guardian stands on this life’s city road');
 state.formId = 'human';
 const forestGuardian = guardianSpot();
 assert.deepEqual(
@@ -193,7 +195,7 @@ assert.deepEqual(
 state.formId = 'asura';
 const siteIds = new Set(['asura-bridge', 'garden-bloom', 'market-stall', 'river-weir']);
 for (const being of encountersHere()) {
-  const onRoad = distToPoly(ROUTES['asura-city'], being.x, being.y) < 1;
+  const onRoad = distToPoly(cityLifeRoute, being.x, being.y) < 1;
   assert(onRoad || siteIds.has(being.id), `${being.id} stands on the road (or at a place of its own)`);
 }
 log('anchored points ok');
@@ -238,13 +240,13 @@ for (const key of ['teacher.note.temple', 'teacher.note.bodhi', 'teacher.note.sa
 }
 for (const key of ['teacher.note.guardian', 'teacher.note.path']) {
   const note = asuraNotes.find((entry) => entry.key === key);
-  assert(distToPoly(ROUTES['asura-city'], note.x, note.y) < 1, `${key} stands on the city road`);
+  assert(distToPoly(cityLifeRoute, note.x, note.y) < 1, `${key} stands on the city road`);
 }
 assert.equal(teacher.tourProgress().total, 5, 'and the tour counts five stops');
 assert.equal(teacher.tourTarget().key, 'teacher.note.temple', 'the tour still begins at the temple');
 assert.equal(chapter1.hasLightGateLesson(), false, 'and chapter one does not look for forest gates elsewhere');
 const asuraAnger = chapter2.angerSpawn();
-assert(distToPoly(ROUTES['asura-city'], asuraAnger.x, asuraAnger.y) < 1, 'anger waits on the city road');
+assert(distToPoly(cityLifeRoute, asuraAnger.x, asuraAnger.y) < 1, 'anger waits on the city road');
 assert(dist(asuraAnger.x, asuraAnger.y, 2500, 1450) > 30, 'not on the forest spot it used to hold');
 state.formId = 'human';
 log('story and tour per plane ok');

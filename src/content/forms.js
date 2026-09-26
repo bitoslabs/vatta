@@ -182,6 +182,20 @@ export const FORMS = Object.freeze([
     abilities: { flying: false, climbing: false, small: false },
   },
   {
+    id: 'niraya',
+    width: 29, speed: 0.78, waterSpeed: 0.65, vision: -45,
+    waterBound: false, canSpeak: false, fearGain: 1.4,
+    rebirth: true, maps: ['land'],
+    abilities: { flying: false, climbing: false, small: false },
+  },
+  {
+    id: 'peta',
+    width: 25, speed: 0.9, waterSpeed: 0.7, vision: -25,
+    waterBound: false, canSpeak: false, fearGain: 1.2,
+    rebirth: true, maps: ['land'],
+    abilities: { flying: false, climbing: false, small: false },
+  },
+  {
     id: 'deva',
     width: 25,
     speed: 1.22,

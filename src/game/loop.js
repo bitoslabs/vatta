@@ -6,6 +6,7 @@ import { renderMemoryScene } from '../render/memory-renderer.js';
 import { renderWorld } from '../render/world-renderer.js';
 import { updateMeditation } from './meditation.js';
 import { updateWorld } from './world-update.js';
+import { updateEffects } from '../systems/effects.js';
 
 let last = performance.now();
 
@@ -21,6 +22,9 @@ function frame(now) {
     updateMeditation(dt);
   } else if (state.mode === MODE.MEMORY) {
     renderMemoryScene(dt);
+  } else if (state.mode === MODE.END && state.lifeMode) {
+    updateEffects(dt);
+    renderWorld();
   }
 
   requestAnimationFrame(frame);

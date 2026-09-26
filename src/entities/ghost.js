@@ -4,11 +4,9 @@ import { GHOST, WORLD } from '../core/constants.js';
 import { clamp, dist, lerp } from '../core/math.js';
 import { state } from '../core/state.js';
 import { emit, EVENTS } from '../core/events.js';
-import { recordKarma } from '../systems/karma.js';
 import { getPathModifiers } from '../systems/path.js';
-import { getRealmModifier, rebirth } from '../systems/samsara.js';
+import { getRealmModifier } from '../systems/samsara.js';
 import { fade } from '../ui/feedback.js';
-import { hideRebirthInterlude, showRebirthInterlude } from '../ui/rebirth-interlude.js';
 import { TREES } from '../world/world-data.js';
 import { cam } from '../game/camera.js';
 import { STATUS } from './ghost-status.js';
@@ -248,13 +246,9 @@ function pushTrail(g) {
 
 function onCaught(g) {
   state.stats.caught++;
-  recordKarma('panic');
-
-  // จุติ–ปฏิสนธิ: this life ends, kamma chooses the next plane.
-  const { realm, reasonKey } = rebirth();
-
+  // A catch is a checkpoint setback. Only a completed life resolves kamma and
+  // changes realm/body; a missed dodge must not silently rebirth the player.
   fade(true, () => {
-    showRebirthInterlude(realm, reasonKey);
     const checkpoint = state.checkpoint;
     player.x = checkpoint.x;
     player.y = checkpoint.y;
@@ -266,7 +260,6 @@ function onCaught(g) {
     g.stun = 1.6;
     g.enraged = 0;
     setTimeout(() => {
-      hideRebirthInterlude();
       fade(false);
     }, 2400);
   });

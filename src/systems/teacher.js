@@ -86,7 +86,7 @@ export function currentNote() {
 /** The landmarks this plane has, with the road-bound ones standing on its road. */
 export function teacherLandmarks() {
   const plane = currentMapId();
-  const forest = plane === 'memory-forest';
+  const forest = plane === 'memory-forest' || plane === 'manussa@memory-forest';
   return NOTES
     .filter((note) => forest || !FOREST_NOTES.has(note.key))
     .map((note) => {

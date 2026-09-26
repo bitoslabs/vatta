@@ -228,6 +228,7 @@ const chapters = CHAPTERS.map((chapter) => chapter.id);
   const odds = rebirth.oddsFor(pending.next.formId, {
     chapterId: pending.next.chapter,
     history: ['human'],
+    realmId: pending.next.realmId,
   });
   assert(odds > 0 && odds <= 1, `the shown chance is a real probability (${odds})`);
   assert(Math.abs(odds - pending.next.probability) < 1e-9,
@@ -235,40 +236,25 @@ const chapters = CHAPTERS.map((chapter) => chapter.id);
   log(`odds on the card: ${(pending.next.probability * 100).toFixed(1)}%`);
 }
 
-// ---- 10. karma cannot choose a body ----
-// The design's rule (docs/rebirth-modes.md): a life is never handed a body because
-// the player did badly. Kamma decides the *plane* a mind is at home in
-// (systems/rebirth.js#resolveRebirth) — never the species, and never the draw.
+// ---- 10. karma chooses a realm and body kind; animal species still draw fairly ----
 {
-  const history = ['human', 'deer'];
-  const sequence = () => {
-    rebirth.resetRebirth('karma-run');
-    rebirth.setRunSeed(97531);
-    return Array.from({ length: 24 }, (_, index) => {
-      const draw = rebirth.drawLife({ chapterId: (index % 14) + 1, history, index });
-      return `${draw.formId}:${draw.probability.toFixed(6)}`;
-    });
-  };
-  // Whatever the ledger holds when the draw runs, the sequence is the same: the
-  // ledger is simply not an input.
   const { resetKarma, recordKarma } = await import('../src/systems/karma.js');
+  for (const [action, count, realmId, formId] of [
+    ['harm', 3, 'niraya', 'niraya'], ['steal', 2, 'peta', 'peta'],
+    ['cling', 2, 'asurakaya', 'asura'], ['give', 2, 'yama', 'deva'],
+  ]) {
+    resetKarma(); recordKarma(action, count);
+    const plan = nextLifePlan({ consume: false });
+    assert.equal(plan.realmId, realmId);
+    assert.equal(plan.formId, formId);
+  }
+  resetKarma(); recordKarma('lie', 2);
+  const animal = nextLifePlan({ consume: false });
+  assert.equal(animal.realmId, 'tiracchana');
+  assert(rebirth.realmFormIds('tiracchana', animal.chapter).includes(animal.formId));
+  assert(!['human', 'asura', 'deva', 'niraya', 'peta'].includes(animal.formId));
   resetKarma();
-  const spotless = sequence();
-  resetKarma();
-  recordKarma('harm', 40);
-  recordKarma('steal', 30);
-  const wicked = sequence();
-  resetKarma();
-  recordKarma('meditate', 40);
-  recordKarma('letgo', 30);
-  const saintly = sequence();
-  assert.deepEqual(wicked, spotless, 'a life full of demerit draws exactly the same bodies as a spotless one');
-  assert.deepEqual(saintly, spotless, 'and so does a life full of merit');
-  // The draw only ever reads the chapter and the history: there is no karma here.
-  assert.equal(rebirth.drawLife.length >= 0, true, 'the draw takes a chapter and a history');
-  assert.equal(JSON.stringify(rebirth.drawLife({ chapterId: 3, history })).includes('merit'), false,
-    'and its result says nothing about merit');
-  log('karma cannot choose a body ok');
+  log('karma chooses a compatible body kind ok');
 }
 
 console.error('REBIRTH DRAW TEST OK — a seeded weighted draw, every result a body that can finish, and no re-roll on reload');

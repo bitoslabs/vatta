@@ -39,6 +39,8 @@ const PALETTES = {
   },
   fish: { robe: 'rgba(150,170,190,1)', skin: 'rgba(230,240,250,1)', trim: 'rgba(233,217,160,.6)' },
   asura: { robe: 'rgba(70,86,140,1)', skin: 'rgba(120,142,180,1)', trim: 'rgba(226,196,120,.85)' },
+  niraya: { robe: 'rgba(78,48,55,1)', skin: 'rgba(178,111,99,1)', trim: 'rgba(232,145,108,.8)' },
+  peta: { robe: 'rgba(65,75,82,1)', skin: 'rgba(156,169,160,1)', trim: 'rgba(195,210,190,.6)' },
   deva: { robe: 'rgba(226,214,164,1)', skin: 'rgba(240,226,190,1)', trim: 'rgba(255,244,200,.8)' },
 };
 
@@ -256,6 +258,24 @@ const SHAPES = {
     ctx.fill();
   },
 
+  niraya(ctx, x, y, o, C) {
+    SHAPES.human(ctx, x, y, o, C);
+    ctx.strokeStyle = C.trim;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y - 8, 17, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.stroke();
+  },
+
+  peta(ctx, x, y, o, C) {
+    SHAPES.human(ctx, x, y, o, C);
+    ctx.strokeStyle = C.trim;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(x, y - 18, 14, 23, 0, 0, TAU);
+    ctx.stroke();
+  },
+
   deva(ctx, x, y, o, C) {
     const sway = o.walking ? Math.sin(o.phase) * 2.4 : Math.sin(o.phase * 0.6) * 0.8;
     ctx.fillStyle = C.robe;
@@ -468,19 +488,72 @@ export function drawActFlourish(ctx, x, y, t) {
   ctx.stroke();
 }
 
-/** Form-specific aura: a deva's light, an asura's weight, a fish's wake. */
-export function drawFormAura(ctx, formId, x, y, phase) {
+/**
+ * Form-specific signature effects (design §10: "เอฟเฟกต์เฉพาะร่างเพิ่ม (ฝุ่นอสุร,
+ * พายุครุฑ)"). Drawn behind the body, feet-anchored like everything else, so a
+ * signature never moves the ground the hitbox stands on.
+ *
+ * Each form's own mark:
+ *   asura    — a gold ring and dust kicked up at the feet: power that carries weight
+ *   deva     — a soft halo and light motes drifting up: a body that walks on light
+ *   firefly  — a warm pulse: the one body the mist is nothing to (game/firefly.js)
+ *
+ * `phase` drives every mote, so the same body and phase draw the same thing (the
+ * lab and the game share it, and tests can compare one pose to another). The
+ * "ลดการเคลื่อนไหว" setting keeps the still part of each mark — the ring, the
+ * halo, the pulse — and drops only the moving motes, so the story reads the same.
+ */
+export function drawFormAura(ctx, formId, x, y, phase = 0, options = {}) {
+  const reduced = options.reduced === true;
+  const moving = options.moving === true;
+  const acting = options.acting === true;
+
   if (formId === 'deva') {
     ctx.fillStyle = `rgba(255,246,205,${0.1 + Math.sin(phase) * 0.03})`;
     ctx.beginPath();
     ctx.arc(x, y - 18, 22, 0, TAU);
     ctx.fill();
+    if (!reduced) {
+      // Light motes rising off the halo.
+      for (let i = 0; i < 3; i++) {
+        const t = (phase * 0.4 + i * 0.33) % 1;
+        const angle = i * 2.1 + phase * 0.5;
+        const radius = 13 + t * 9;
+        ctx.fillStyle = `rgba(255,246,205,${(1 - t) * 0.28})`;
+        ctx.beginPath();
+        ctx.arc(x + Math.cos(angle) * radius, y - 18 - t * 16, 1.6, 0, TAU);
+        ctx.fill();
+      }
+    }
   } else if (formId === 'asura') {
     ctx.strokeStyle = 'rgba(226,196,120,.28)';
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.arc(x, y - 12, 20 + Math.sin(phase * 0.8) * 1.4, 0, TAU);
     ctx.stroke();
+    if (!reduced) {
+      // Dust at the feet, raised hardest when lifting or heaving forward.
+      const strength = (moving ? 1 : 0.5) + (acting ? 0.6 : 0);
+      for (let i = 0; i < 4; i++) {
+        const t = (phase * 0.35 + i * 0.25) % 1;
+        const dx = Math.sin(i * 2.1 + phase) * (8 + i * 3);
+        const alpha = (1 - t) * (0.16 + 0.1 * strength);
+        ctx.fillStyle = `rgba(180,158,120,${alpha})`;
+        ctx.beginPath();
+        ctx.arc(x + dx, y + 10 - t * (12 + strength * 8), 1.4 + i * 0.3, 0, TAU);
+        ctx.fill();
+      }
+    }
+  } else if (formId === 'firefly') {
+    const pulse = 0.5 + Math.sin(phase * 3) * 0.5;
+    ctx.fillStyle = `rgba(240,224,168,${0.1 + pulse * 0.16})`;
+    ctx.beginPath();
+    ctx.arc(x, y - 10, 10 + pulse * 5, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = `rgba(255,240,190,${0.5 + pulse * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(x, y - 10, 1.8, 0, TAU);
+    ctx.fill();
   }
 }
 

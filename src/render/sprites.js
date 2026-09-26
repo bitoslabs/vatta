@@ -9,6 +9,7 @@ import { ghost } from '../entities/ghost.js';
 import { player } from '../entities/player.js';
 import { state } from '../core/state.js';
 import { isRestful } from '../systems/rest.js';
+import { isReducedMotion } from '../systems/settings.js';
 import { MODE } from '../core/constants.js';
 import { getForm, inWater, locomotionKind, movementKind, poseForBody } from '../systems/forms.js';
 import { drawActFlourish, drawChestLight, drawFormAura, drawFormBody } from './forms-sprites.js';
@@ -66,7 +67,11 @@ export function drawPlayer(dawn) {
     moving: player.moving,
   });
 
-  drawFormAura(ctx, formId, player.x, player.y, player.bob);
+  drawFormAura(ctx, formId, player.x, player.y, player.bob, {
+    moving: player.moving,
+    acting: player.actT > 0,
+    reduced: isReducedMotion(),
+  });
   drawFormBody(ctx, formId, player.x, player.y, {
     face: player.face,
     bob,
@@ -305,6 +310,15 @@ export function drawEncounter(x, y, kind) {
     ctx.quadraticCurveTo(x + 26, y - 2, x + 8, y - 6);
     ctx.closePath();
     ctx.fill();
+    // พายุครุฑ — gusts circling the wings (design §10: "เอฟเฟกต์เฉพาะร่างเพิ่ม").
+    ctx.strokeStyle = `rgba(232,188,130,${0.2 + Math.abs(flap) * 0.015})`;
+    ctx.lineWidth = 1.2;
+    for (let i = 0; i < 3; i++) {
+      const radius = 24 + i * 11 + Math.sin(now * 1.6 + i) * 2.5;
+      ctx.beginPath();
+      ctx.arc(x, y - 20, radius, -0.7 + i * 0.5, 0.7 + i * 0.5);
+      ctx.stroke();
+    }
     ctx.fillStyle = palette.head;
     ctx.beginPath();
     ctx.arc(x, y - 38, 8, 0, TAU);

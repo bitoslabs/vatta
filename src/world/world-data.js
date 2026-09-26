@@ -124,7 +124,7 @@ export function nearestOnRoute(biomeId, x, y) {
  * path that does not exist there.
  */
 export function anchoredPoint(biomeId, x, y) {
-  if (!biomeId || biomeId === 'memory-forest') return { x, y };
+  if (!biomeId || biomeId === 'memory-forest' || biomeId === 'manussa@memory-forest') return { x, y };
   return nearestOnRoute(biomeId, x, y);
 }
 

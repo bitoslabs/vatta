@@ -22,6 +22,7 @@ import { loadChapter, CHAPTERS } from '../game/chapters.js';
 import { setTeacher } from '../systems/teacher.js';
 import { openMirrorCourt } from './mirror-court.js';
 import { openBook } from './animal-book.js';
+import { hideRebirthInterlude, showRebirthInterlude } from './rebirth-interlude.js';
 import { $ } from './dom.js';
 
 const overlay = $('#lifeSummary');
@@ -46,7 +47,11 @@ function continueLife() {
   stopTimer(); shownLife = null;
   if (isPrototypeComplete()) { finishJourney(); return; }
   overlay.classList.add('hidden');
-  advanceLife();
+  const destination = pending?.next;
+  if (advanceLife() && destination) {
+    showRebirthInterlude(realmById(destination.realmId), destination.reasonKey);
+    setTimeout(hideRebirthInterlude, isReducedMotion() ? 700 : 1400);
+  }
 }
 function beginTimer() {
   stopTimer();

@@ -3,6 +3,7 @@ import { drawFormBody, drawFormAura, drawActFlourish } from '../render/forms-spr
 import { ANIMALS, animalMotion } from './animal-catalog.js';
 import { drawAnimalVector } from '../render/animal-vectors.js';
 import { canvasFont } from '../systems/fonts.js';
+import { isReducedMotion } from '../systems/settings.js';
 import { registerPwa } from '../systems/pwa.js';
 
 registerPwa();
@@ -133,7 +134,7 @@ function frame(now) {
   if (form.ability) {
     drawAnimalVector(ctx, form, actor, moving);
   } else {
-  drawFormAura(ctx, form.id, 0, 0, actor.phase);
+  drawFormAura(ctx, form.id, 0, 0, actor.phase, { moving, acting: actor.action > 0, reduced: isReducedMotion() });
   drawFormBody(ctx, form.id, 0, 0, { face: actor.face, phase: actor.phase, bob: Math.sin(actor.phase) * 1.2, moving, kind, act: actor.action, lift: jump });
   if (actor.action > 0) drawActFlourish(ctx, 0, -6 - jump, actor.action);
   }

@@ -3,6 +3,7 @@
 import { state } from '../core/state.js';
 import { hashUnit, seedFrom } from '../core/rng.js';
 import { FORMS, mapsFor } from '../content/forms.js';
+import { realmById } from '../content/realms.js';
 import { CHAPTER_ANIMALS } from './life-route.js';
 
 /**
@@ -17,10 +18,8 @@ import { CHAPTER_ANIMALS } from './life-route.js';
  * through the form and formless planes, metta opens the deva planes, and any lesser
  * merit simply returns a human birth.
  *
- * Nothing here ranks one birth as a punishment and another as a prize: the planes
- * are where a mind is *at home*, and the reason is named for the player
- * (`reasonKey`) rather than scored. The same file also holds the seeded draw for
- * choosing the next *body* (see the second half, and systems/transition.js).
+ * The selected plane limits the kind of body available at the next life. Animal
+ * species still use a seeded draw among compatible forms.
  */
 const AKUSALA_PLANES = Object.freeze({
   anger: { realmId: 'niraya', reasonKey: 'rebirth.reason.anger' },
@@ -178,8 +177,8 @@ export function rebirthReasonKeys() {
  *                        by that body — every offered body passes tests/roster)
  *
  * The last two bodies are held out while other options remain, and when nothing
- * else remains they are drawn at ×0.2 rather than excluded. No body is ever chosen
- * because a player did badly: memory changes the story, never the worth of a form.
+ * else remains they are drawn at ×0.2 rather than excluded. The realm determines
+ * the kind of being, while the draw never assigns moral worth to an animal species.
  *
  * All three modes are live: flow draws a body, choice offers three cards, and
  * explore waits for a compatible body from the animal book.
@@ -274,6 +273,23 @@ export function eligibleForms(chapterId) {
   return { maps, pool: [...inPool], others, all: [...inPool, ...others] };
 }
 
+/** A destination determines the kind of body; animal lives still draw among
+ * chapter-compatible species. A missing realm keeps the legacy free draw. */
+export function realmFormIds(realmId, chapterId) {
+  const all = eligibleForms(chapterId).all;
+  if (!realmId) return all;
+  const fixed = {
+    niraya: 'niraya', peta: 'peta', asurakaya: 'asura', manussa: 'human',
+  }[realmId];
+  if (fixed) return all.includes(fixed) ? [fixed] : [];
+  if (realmId === 'tiracchana') return all.filter((id) => !['human', 'niraya', 'peta', 'asura', 'deva'].includes(id));
+  const realm = realmById(realmId);
+  if (realm && ['kamasugati', 'rupa', 'arupa'].includes(realm.group)) {
+    return all.includes('deva') ? ['deva'] : [];
+  }
+  return all;
+}
+
 /**
  * The weight of one body, and why. Returned rather than hidden so the summary can
  * show real odds and the tests can reason about the formula.
@@ -293,8 +309,9 @@ export function weighForm(formId, { chapterId, history = [] } = {}) {
  * weight it was drawn with, and the normalised odds of every option — the odds the
  * UI is allowed to show because they are the real ones.
  */
-export function drawLife({ chapterId, history = [], index = null } = {}) {
-  const { maps, all } = eligibleForms(chapterId);
+export function drawLife({ chapterId, history = [], index = null, realmId = null } = {}) {
+  const { maps } = eligibleForms(chapterId);
+  const all = realmFormIds(realmId, chapterId);
   if (!all.length) {
     return { formId: null, maps, reason: 'no-eligible-form', weights: [], odds: [] };
   }
@@ -327,7 +344,7 @@ export function drawLife({ chapterId, history = [], index = null } = {}) {
  * Plan the next life with the draw (systems/life-route.js plans; this replaces the
  * rotation with the seeded one, and consumes one draw from the run's stream).
  */
-export function drawNextLife({ chapter, lifeId, history = [], chapterIds, consume = true }) {
+export function drawNextLife({ chapter, lifeId, history = [], chapterIds, consume = true, realmId = null }) {
   const current = chapterIds.indexOf(chapter);
   const nextChapter = chapterIds[(current + 1) % chapterIds.length];
   const data = memory();
@@ -335,7 +352,7 @@ export function drawNextLife({ chapter, lifeId, history = [], chapterIds, consum
   // In choice mode the life is reserved as a *set*: three bodies, and whichever the
   // player picks. The first is only a placeholder until they choose.
   if (data.mode === 'choice') {
-    const { candidates, maps, reason } = drawCandidates({ chapterId: nextChapter, history, index });
+    const { candidates, maps, reason } = drawCandidates({ chapterId: nextChapter, history, index, realmId });
     if (consume) data.draws += 1;
     return {
       chapter: nextChapter,
@@ -366,7 +383,7 @@ export function drawNextLife({ chapter, lifeId, history = [], chapterIds, consum
       maps: null,
     };
   }
-  const draw = drawLife({ chapterId: nextChapter, history, index });
+  const draw = drawLife({ chapterId: nextChapter, history, index, realmId });
   if (consume) data.draws += 1;
   const formId = draw.formId || history[history.length - 1] || 'human';
   return {
@@ -388,8 +405,9 @@ export function drawNextLife({ chapter, lifeId, history = [], chapterIds, consum
  * Each card carries the chance that body had in the whole draw (not renormalised
  * among the three): the player is shown a real number or none.
  */
-export function drawCandidates({ chapterId, history = [], index = null, count = 3 } = {}) {
-  const { maps, all } = eligibleForms(chapterId);
+export function drawCandidates({ chapterId, history = [], index = null, count = 3, realmId = null } = {}) {
+  const { maps } = eligibleForms(chapterId);
+  const all = realmFormIds(realmId, chapterId);
   if (!all.length) return { candidates: [], maps, reason: 'no-eligible-form' };
   const recent = history.slice(-2);
   let pool = all.filter((id) => !recent.includes(id));
@@ -416,8 +434,8 @@ export function drawCandidates({ chapterId, history = [], index = null, count = 
 }
 
 /** The odds of one body in one chapter, for the summary and for tests. */
-export function oddsFor(formId, { chapterId, history = [] } = {}) {
-  const { all } = eligibleForms(chapterId);
+export function oddsFor(formId, { chapterId, history = [], realmId = null } = {}) {
+  const all = realmFormIds(realmId, chapterId);
   const recent = history.slice(-2);
   let candidates = all.filter((id) => !recent.includes(id));
   if (!candidates.length) candidates = all;

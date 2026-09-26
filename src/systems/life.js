@@ -6,9 +6,11 @@ import { getKarmaMemory } from './karma-memory.js';
 import { getForm, isWaterBound, setForm } from './forms.js';
 import { planNextLife } from './life-route.js';
 import { drawNextLife, eligibleForms, resetRebirth, resolveRebirth } from './rebirth.js';
-import { getKarma } from './karma.js';
+import { getKarma, resetKarma } from './karma.js';
 import { saveRun } from './save.js';
 import { addFloater } from './effects.js';
+import { addBirthLight } from './effects.js';
+import { isReducedMotion } from './settings.js';
 import { goalFor } from './goals.js';
 import { t } from './i18n.js';
 import { player } from '../entities/player.js';
@@ -34,6 +36,7 @@ export function lifeForm() {
 /** Begin the multi-life prototype with a human life in chapter one. */
 export function startLifeMode(chapterId = CHAPTERS[0].id) {
   resetReflections();
+  resetKarma();
   state.lifeMode = true;
   state.lifeId = 1;
   state.formHistory = ['human'];
@@ -47,6 +50,18 @@ export function startLifeMode(chapterId = CHAPTERS[0].id) {
   resetRebirth(state.runId);
   setForm('human');
   loadChapter(chapterId);
+}
+
+/** Adopt an older story save without discarding its chapter, form or karma. */
+export function upgradeLegacyLifeMode() {
+  if (state.lifeMode || state.liberated || state.journeyComplete) return false;
+  state.lifeMode = true;
+  state.lifeId = Math.max(1, Number.isFinite(state.lifeId) ? state.lifeId : 1);
+  if (!Array.isArray(state.formHistory) || !state.formHistory.length) state.formHistory = [state.formId || 'human'];
+  if (!state.runId) state.runId = `legacy-${Date.now().toString(36)}`;
+  resetTransition(state.runId);
+  saveRun();
+  return true;
 }
 
 /**
@@ -146,10 +161,12 @@ export function isPrototypeComplete() {
  * is made once — when the life is reserved, never when the scene is shown.
  */
 export function nextLifePlan({ consume = true } = {}) {
+  const destination = resolveRebirth(getKarma());
   return {
     ...drawNextLife({ chapter: state.chapter, lifeId: state.lifeId,
-      history: state.formHistory, chapterIds: CHAPTERS.map(chapter => chapter.id), consume }),
-    ...resolveRebirth(getKarma()),
+      history: state.formHistory, chapterIds: CHAPTERS.map(chapter => chapter.id),
+      consume, realmId: destination.realmId }),
+    ...destination,
   };
 }
 
@@ -219,6 +236,7 @@ export function advanceLife() {
   setForm(next.formId);
   if (!alreadyApplied) state.formHistory.push(next.formId);
   loadChapter(next.chapter, { autosave: false, realmId: next.realmId });
+  addBirthLight(player.x, player.y, next.formId, isReducedMotion());
   // The new life is in the world: nothing is pending any more.
   setTransitionPhase('spawning');
   finishTransition();

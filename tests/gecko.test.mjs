@@ -142,6 +142,10 @@ assert.equal(gecko.settleRefuge(), true, 'and the world remembers the gate was o
 // ---- 6. a new life arrives at a barred gate again (the world keeps the opening) ----
 loadChapter(1, { autosave: false });
 assert.equal(gecko.isOpened(), false, 'a new chapter (and a new life) starts at a barred gate');
+// Keep the route proof in the gecko's forest; opening the gate earned merit and
+// would otherwise move the next life to a heavenly map.
+resetKarma();
+state.realmId = 'manussa';
 
 // ---- 7. the gecko can really walk its errand ----
 for (const tree of TREES) {
