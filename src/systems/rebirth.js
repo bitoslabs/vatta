@@ -373,11 +373,12 @@ export function drawNextLife({ chapter, lifeId, history = [], chapterIds, consum
   // Explore mode: the body is chosen from the book, so the reservation carries only
   // the chapter — and says so, so the summary offers the book instead of a draw.
   if (data.mode === 'explore') {
+    const compatible = realmFormIds(realmId, nextChapter);
     if (consume) data.draws += 1;
     return {
       chapter: nextChapter,
       lifeId: lifeId + 1,
-      formId: history[history.length - 1] || 'human',
+      formId: compatible[0] || history[history.length - 1] || 'human',
       explore: true,
       chosen: false,
       drawn: false,

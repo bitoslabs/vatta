@@ -8,6 +8,7 @@ import { currentBiomeId } from '../systems/biome.js';
 import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { digFeature, dynamicFeatures, nextFeatureIndex } from '../systems/worldgen.js';
 import { GARDEN, gardenGate } from '../world/world-data.js';
@@ -87,6 +88,7 @@ export function releaseBloom(feature) {
   state.garden.released = true;
   recordEffect('seeds-released');
   recordKarma('letgo');
+  saveRun();
   if (state.dynamic && Array.isArray(state.dynamic.features)) {
     state.dynamic.features.push({
       i: nextFeatureIndex(), site: 'garden', type: 'seedfall', fixed: true, x: where.x, y: where.y, r: 26,

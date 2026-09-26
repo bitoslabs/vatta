@@ -13,8 +13,11 @@ import { player } from '../entities/player.js';
 import { perspectiveFor } from '../systems/perspective.js';
 import { cam } from './camera.js';
 import { resetRelease } from './release.js';
-import { resetAnt } from './ant.js';
-import { resetFrog } from './frog.js';
+import { resetAnt, resetRain } from './ant.js';
+import { resetChicken } from './burrow.js';
+import { resetFish, resetFishBird } from './fish.js';
+import { resetDryMarsh, resetFrog } from './frog.js';
+import { resetDeer, resetDeerHazard } from './deer.js';
 import { resetSnake } from './snake.js';
 import { resetRabbit } from './rabbit.js';
 import { resetOwl } from './owl.js';
@@ -484,6 +487,7 @@ export function loadChapter(id, { autosave = true, realmId = null } = {}) {
   state.interact = null;
   state.luresVisible = false;
   state.liberated = false;
+  state.finalChoice = null;
   state.dialogueOpen = false;
   state.choiceOpen = false;
   state.checkpoint = { ...(def.checkpoint || def.start) };
@@ -496,7 +500,14 @@ export function loadChapter(id, { autosave = true, realmId = null } = {}) {
   // A new life starts empty-handed, and with its own questions unanswered
   // (game/ant.js, game/frog.js).
   resetAnt();
+  resetRain();
+  resetChicken();
+  resetFishBird();
+  resetFish();
   resetFrog();
+  resetDryMarsh();
+  resetDeer();
+  resetDeerHazard();
   resetSnake();
   resetRabbit();
   resetOwl();

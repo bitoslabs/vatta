@@ -42,11 +42,12 @@ globalThis.performance = { now: () => 0 };
 const { state } = await import('../src/core/state.js');
 const wd = await import('../src/world/world-data.js');
 const {
-  WORLD_EFFECTS, leavingList, leavings, recordEffect, sanitiseLeavings, sitePlaces, worldEffects,
+  WORLD_EFFECTS, inheritedEffect, leavingList, leavings, recordEffect, sanitiseLeavings, sitePlaces, worldEffects,
 } = await import('../src/systems/world-effects.js');
 const { setWaypoint, waypoint, clearWaypoint, reachedWaypoint, WAYPOINT_RANGE } = await import('../src/systems/waypoint.js');
 const { snapshot, applySaveRuntime } = await import('../src/systems/save.js');
 const { openCodex, initCodex } = await import('../src/ui/codex.js');
+const { t } = await import('../src/systems/i18n.js');
 
 const log = (message) => console.error(`[memory] ${message}`);
 const reset = () => { state.world = { effects: {}, leavings: [] }; state.lifeId = 1; state.formId = 'worm'; state.chapter = 1; };
@@ -84,9 +85,34 @@ const reset = () => { state.world = { effects: {}, leavings: [] }; state.lifeId 
   assert.equal(list[0].lifeId, 2, 'the life that left the first one is named');
   assert.equal(list[0].formId, 'worm', 'with the body it wore');
   assert.equal(list[0].site, 'burrow', 'and the place it stands');
+  assert.equal(list[0].consequenceKey, 'effect.rootWatered.consequence',
+    'the world book can explain the concrete shelter left for a later worm');
   assert.equal(list[1].lifeId, 5, 'and the second leaving names its own life');
+  assert.equal(list[1].consequenceKey, 'effect.seedCarried.consequence',
+    'the ant leaving explains the shoots visible to later lives');
   assert.equal(worldEffects()['root-watered'], true, 'the effect itself is still recorded once');
   log('attribution ok');
+}
+
+// Existing animal choices show their actual inherited results in the world book.
+{
+  reset();
+  for (const [code, key] of [
+    ['nest-sheltered', 'effect.nestSheltered.consequence'],
+    ['channel-kept', 'effect.channelKept.consequence'],
+    ['damp-trail', 'effect.dampTrail.consequence'],
+  ]) {
+    recordEffect(code);
+    const leaving = leavingList().find((entry) => entry.code === code);
+    assert.equal(leaving.consequenceKey, key, `${code} names its inherited result`);
+    assert.notEqual(t(key), key, `${code} has translated consequence text`);
+  }
+  openCodex();
+  const flatten = (node) => [node, ...node.children.flatMap((child) => flatten(child))];
+  const bookText = flatten(query('#codexBody')).map((node) => node.textContent).join(' ');
+  for (const leaving of leavingList()) {
+    assert(bookText.includes(t(leaving.consequenceKey)), `${leaving.code} result appears in the world book`);
+  }
 }
 
 // ---- 3. a life inherits what it did not do (the shared world) ----
@@ -125,6 +151,14 @@ const reset = () => { state.world = { effects: {}, leavings: [] }; state.lifeId 
   assert.deepEqual(dirty.map((entry) => entry.code), ['ford-bridged', 'root-watered'],
     'unknown effects are dropped and each effect is remembered once');
   assert.equal(dirty[1].lifeId, null, 'and impossible numbers become "unknown" rather than wrong');
+  const legacy = structuredClone(saved);
+  delete legacy.world.leavings;
+  legacy.world.effects = { 'root-watered': true };
+  reset();
+  applySaveRuntime(legacy);
+  assert.equal(leavingList()[0].code, 'root-watered', 'an old effect still appears in the book');
+  assert.equal(leavingList()[0].lifeId, null, 'an old save does not invent a source life');
+  assert.equal(inheritedEffect('root-watered'), true, 'an old effect with unknown source remains usable');
   log('save round trip ok');
 }
 
@@ -179,6 +213,21 @@ const reset = () => { state.world = { effects: {}, leavings: [] }; state.lifeId 
   assert.equal(mark.x, place.x, 'the mark stands at the place the effect names');
   assert.equal(mark.site, 'blooms', 'and knows the place by name');
   log('world book ok');
+}
+
+// A saved leaving names both its source life and its consequence in the book.
+{
+  reset();
+  state.lifeId = 7;
+  recordEffect('root-watered');
+  const saved = JSON.parse(JSON.stringify(snapshot()));
+  reset();
+  applySaveRuntime(saved);
+  openCodex();
+  const flatten = (node) => [node, ...node.children.flatMap((child) => flatten(child))];
+  const text = flatten(query('#codexBody')).map((node) => node.textContent).join(' ');
+  assert(text.includes(t('effect.rootWatered.consequence')), 'the concrete result is visible after reload');
+  assert.equal(leavingList()[0].lifeId, 7, 'the source life remains the original one');
 }
 
 console.error('MEMORY TEST OK — leavings named, placed and followable, and no verdict anywhere in the book');

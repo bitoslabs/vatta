@@ -1,6 +1,7 @@
 'use strict';
 
 import { on, EVENTS } from '../core/events.js';
+import { state } from '../core/state.js';
 import { t } from '../systems/i18n.js';
 import {
   applySaveMeta, applySaveRuntime, getActiveSlot, getRunName, listSaves, readSave,
@@ -10,6 +11,7 @@ import { chapterById, CHAPTERS, loadChapter } from '../game/chapters.js';
 import { initAudio, playBell } from '../systems/audio.js';
 import { $ } from './dom.js';
 import { resumeLifeIfPending, showLifeSummary } from './life-summary.js';
+import { showEndScreen } from './end-screen.js';
 import { startLifeMode, upgradeLegacyLifeMode } from '../systems/life.js';
 
 const container = $('#saveSlots');
@@ -33,9 +35,13 @@ function openSlot(slot) {
   }
   applySaveMeta(data);
   applySaveRuntime(data);
-  loadChapter(data.chapter, { autosave: false });
+  loadChapter(data.chapter, { autosave: false, realmId: data.realmId });
   applySaveRuntime(data);
   if (!data.lifeMode) upgradeLegacyLifeMode();
+  if (state.liberated || state.journeyComplete) {
+    showEndScreen();
+    return;
+  }
   // An interrupted ending resumes from its reservation; a save from before the
   // reservation existed falls back to the old rule (its life is in the log).
   if (data.lifeMode && !data.liberated) {

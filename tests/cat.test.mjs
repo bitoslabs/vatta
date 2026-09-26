@@ -25,7 +25,8 @@ function element() {
 const query = () => element();
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: query, createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -40,6 +41,7 @@ const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld } = await import('../src/systems/worldgen.js');
 const { isRestful, restingPlaceAt } = await import('../src/systems/rest.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects } = await import('../src/systems/world-effects.js');
 const { planNextLife, candidatesFor } = await import('../src/systems/life-route.js');
 const { loadChapter } = await import('../src/game/chapters.js');
@@ -120,6 +122,13 @@ for (const home of HOMES) {
   emit(EVENTS.CHOICE_PICK, 0); // look from above
   assert(state.cat.visited.includes(home.id), `the ${home.id} is now visited`);
   assert.equal(cat.peekedAt(home.id), true, `and looked at from above`);
+  assert.equal(readSave().cat.visited.includes(home.id), true, `the answer at ${home.id} is saved`);
+  if (home === HOMES[0]) {
+    cat.resetCat();
+    applySaveRuntime(readSave());
+    assert.equal(cat.visitedCount(), 1, 'the first home survives a reload');
+    assert.equal(goalFor().kind, 'home-wall', 'the resumed cat seeks another home');
+  }
 }
 assert.equal(cat.allHomesVisited(), true, 'all three homes are seen');
 assert.equal(goalFor().kind, 'warm-stone', 'and the warm stone becomes the ending');
@@ -139,6 +148,10 @@ assert.equal(completions, 1, 'the warm stone ends the life');
 assert.equal(cat.hasDecided(), true, 'and settles the round on the way out');
 assert.equal(hasEffect('hearths-respected'), true, 'the forest records that its homes were respected');
 assert(getKarma().merit > 0, 'looking mindfully is remembered as such');
+const respectedMerit = getKarma().merit;
+assert.equal(readSave().cat.decided, true, 'the final judgment is saved');
+assert.equal(cat.settleHomes(), true, 'settling again reports the same result');
+assert.equal(getKarma().merit, respectedMerit, 'settling again adds no merit');
 log('respected ok');
 
 // ---- 4. a respected forest keeps its hearths open to everyone ----

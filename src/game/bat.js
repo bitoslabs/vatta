@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { canEcho, isEchoing, perceivesPoint } from '../systems/echo.js';
 import { visionRadius } from '../systems/vision.js';
@@ -89,6 +90,7 @@ export function updateBat() {
 
 function findPup() {
   state.bat.found = true;
+  saveRun();
   animatePlayer();
   playChime();
   addFloater(player.x, player.y - 110, t('bat.foundPup'), '#cbd6ea', 15);
@@ -108,6 +110,7 @@ function teachPup() {
         recordEffect('echo-shared');
         recordKarma('give');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

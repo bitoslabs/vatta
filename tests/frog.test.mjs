@@ -46,6 +46,7 @@ const { planNextLife } = await import('../src/systems/life-route.js');
 const { loadChapter } = await import('../src/game/chapters.js');
 const { player } = await import('../src/entities/player.js');
 const frog = await import('../src/game/frog.js');
+const { snapshot, applySaveRuntime } = await import('../src/systems/save.js');
 
 const log = (message) => console.error(`[frog] ${message}`);
 const marsh = assembleMarsh();
@@ -116,6 +117,11 @@ emit(EVENTS.CHOICE_PICK, 0); // open it
 assert.equal(frog.didOpen(), true, 'the frog opened the channel');
 assert.equal(hasEffect('water-opened'), true, 'the waterway is opened in the world');
 assert(getKarma().merit > 0, 'sharing the water is remembered as giving');
+const afterOpeningSave = snapshot();
+frog.resetFrog();
+applySaveRuntime(afterOpeningSave);
+assert.equal(frog.hasDecided(), true, 'loading this life keeps the channel decision');
+assert.equal(frog.didOpen(), true, 'loading also keeps how the frog answered');
 
 const after = goalFor();
 assert.equal(after.kind, 'spawn', 'with the question answered, the bank becomes the ending');
@@ -126,8 +132,12 @@ assert(after.r < 1e3, 'and it is a place, not everywhere');
 player.x = MARSH.bank.x;
 player.y = MARSH.bank.y;
 updateLifeGoal();
-assert.equal(completions, 1, 'laying the eggs on the bank completes the life');
-assert.equal(frog.spawnAtBank(), true, 'and the marsh remembers that it was opened');
+assert.equal(completions, 0, 'the bank asks where to lay the eggs before ending');
+assert.equal(state.choiceOpen, true);
+emit(EVENTS.CHOICE_PICK, 0); // move them into shade
+assert.equal(completions, 1, 'choosing the shaded bank completes the life');
+assert.equal(hasEffect('eggs-shaded'), true, 'the shaded bank remains for a later frog');
+assert.equal(frog.spawnAtBank(), false, 'the ending cannot repeat');
 log('spawn ok');
 
 // ---- 5. leaving the channel shut is also a life, and a different world ----
@@ -145,6 +155,12 @@ assert.equal(frog.didOpen(), false, 'this frog left the channel shut');
 assert.equal(hasEffect('water-opened'), false, 'so the waterway stays closed');
 assert.equal(getKarma().merit, 0, 'and nothing is recorded as giving');
 assert.equal(goalFor().kind, 'spawn', 'the bank still becomes the ending — the choice is not a punishment');
+player.x = MARSH.bank.x;
+player.y = MARSH.bank.y;
+updateLifeGoal();
+emit(EVENTS.CHOICE_PICK, 1); // leave them on the bank
+assert.equal(completions, 2, 'leaving the eggs also completes this life');
+assert.equal(hasEffect('eggs-shaded'), false, 'leaving them records no shaded bank');
 log('choice recorded ok');
 
 // ---- 6. a new life arrives with the channel blocked again ----

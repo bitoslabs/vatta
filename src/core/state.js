@@ -16,6 +16,8 @@ export const state = {
   luresVisible: false,
   /** Set on the final chapter when the run leaves the cycle (nibbāna). */
   liberated: false,
+  /** Chapter 14's explicit answer; a partial release keeps the wheel turning. */
+  finalChoice: null,
   /** Classroom mode: no spirits, free-roam commentary. */
   teacher: false,
   /** Projector mode: larger type and labels for a classroom screen. */

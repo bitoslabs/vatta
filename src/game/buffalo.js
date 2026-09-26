@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { dynamicFeatures, removeFeature } from '../systems/worldgen.js';
 import { choose } from '../ui/choices.js';
@@ -99,6 +100,7 @@ export function haulLog() {
   state.world.planks = [{ x: bridge.x, y: bridge.y }];
   recordEffect('ford-bridged');
   recordKarma('give');
+  saveRun();
   animatePlayer();
   playThud();
   addFloater(player.x, player.y - 120, t('buffalo.answer.hauled'), '#c9a97a', 15);
@@ -118,6 +120,7 @@ function decideHerd() {
       // Coming back across a bridge you built is the cooperation the doc asks for:
       // the world already has the bridge either way; what differs is the life.
       recordKarma(fetch ? 'compassion' : 'cling');
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

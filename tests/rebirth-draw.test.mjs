@@ -266,3 +266,16 @@ console.error('REBIRTH DRAW TEST OK — a seeded weighted draw, every result a b
   assert.equal(candidates.length, all.length);
   assert.equal(new Set(candidates.map(entry => entry.formId)).size, all.length);
 }
+
+// Every realm the karma resolver can return has a body in every destination
+// chapter, so the legacy fallback cannot silently change a human or deva birth.
+{
+  const planes = rebirth.rebirthPlanes();
+  const realms = [...planes.akusala, ...planes.jhana, ...planes.devas, planes.human];
+  for (const chapterId of chapters) {
+    for (const realmId of realms) {
+      assert(rebirth.realmFormIds(realmId, chapterId).length > 0,
+        `${realmId} has a playable body in chapter ${chapterId}`);
+    }
+  }
+}

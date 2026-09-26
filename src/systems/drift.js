@@ -34,6 +34,22 @@ export function resetDrift() {
   state.drift = { items: NAMES.map((id, i) => ({ id, t: STARTS[i], caught: false })) };
 }
 
+export function exportDrift() {
+  return { items: drift().items.map((item) => ({ id: item.id, t: item.t, caught: item.caught === true })) };
+}
+
+export function importDrift(saved) {
+  const items = Array.isArray(saved?.items) ? saved.items : [];
+  state.drift = { items: NAMES.map((id, index) => {
+    const item = items.find((entry) => entry?.id === id);
+    return {
+      id,
+      t: Number.isFinite(item?.t) && item.t >= 0 && item.t < 1 ? item.t : STARTS[index],
+      caught: item?.caught === true,
+    };
+  }) };
+}
+
 export function drifterCount() {
   return drift().items.length;
 }

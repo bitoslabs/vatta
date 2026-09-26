@@ -26,7 +26,8 @@ function element() {
 const query = () => element();
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: query, createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -43,6 +44,7 @@ const { BIOMES } = await import('../src/content/biomes.js');
 const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld, digFeature, dynamicFeatures } = await import('../src/systems/worldgen.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, recordEffect } = await import('../src/systems/world-effects.js');
 const { candidatesFor, planNextLife } = await import('../src/systems/life-route.js');
 const { loadChapter } = await import('../src/game/chapters.js');
@@ -186,6 +188,7 @@ assert.equal(tells.every((tell) => tell.colony === true), false,
 state.interact = null;
 boar.updateBoar();
 assert.equal(state.boar.aware, true, 'noticing the life under the ground is remembered');
+assert.equal(readSave().boar.aware, true, 'noticing is saved immediately');
 assert(getKarma().merit > 0, 'and recorded as mindfulness, not as a score');
 log('the tell ok');
 
@@ -199,6 +202,10 @@ for (const patch of freePatches()) {
   state.interact.fn();
 }
 assert.equal(boar.eatenCount(), 3, 'three roots eaten');
+assert.equal(readSave().boar.eaten, 3, 'eating is saved before the wallow');
+boar.resetBoar();
+applySaveRuntime(readSave());
+assert.equal(boar.eatenCount(), 3, 'the meal survives a reload');
 assert.equal(boar.hasEaten(), true, 'and the meal is done');
 assert.equal(boar.coloniesLost().length, 0, 'with nothing crushed under the ground');
 assert.equal(getKarma().demerit, 0, 'and nothing recorded as harm');
@@ -215,6 +222,7 @@ assert(state.interact && state.interact.labelKey === 'prompt.turnSoil', 'the ope
 state.interact.fn();
 emit(EVENTS.CHOICE_PICK, 0); // turn it, so new roots and small lives can live in it
 assert.equal(boar.didTend(), true, 'this boar turned the soil');
+assert.equal(readSave().boar.tended, true, 'the soil choice is saved before going home');
 assert.equal(hasEffect('soil-turned'), true, 'and the world records it');
 assert.equal(goalFor().kind, 'wallow', 'the life now points home');
 assert.equal(completions, 0, 'and is not over yet');

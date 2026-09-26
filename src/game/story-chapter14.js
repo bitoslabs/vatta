@@ -257,14 +257,19 @@ function askFinale() {
     const choice = keys[index];
     if (choice === 'free') {
       recordKarma('letgo');
+      state.finalChoice = 'free';
       state.liberated = true;
       say('ch14.answerFree', finish);
     } else if (choice === 'release') {
       recordKarma('letgo');
-      state.liberated = getKarma().merit >= getKarma().demerit;
+      state.finalChoice = 'continue';
+      // Partial release is progress, not the final exit promised by the
+      // complete-path option. Its dialogue says the wheel still turns.
+      state.liberated = false;
       say('ch14.answerRelease', finish);
     } else {
       recordKarma('cling');
+      state.finalChoice = 'continue';
       state.liberated = false;
       say('ch14.answerBound', finish);
     }

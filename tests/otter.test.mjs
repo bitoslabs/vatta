@@ -26,7 +26,8 @@ function element() {
 const query = () => element();
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: query, createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -39,6 +40,7 @@ const {
 const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld, worldSnags } = await import('../src/systems/worldgen.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects } = await import('../src/systems/world-effects.js');
 const tide = await import('../src/systems/tide.js');
 const drift = await import('../src/systems/drift.js');
@@ -128,6 +130,14 @@ for (let i = 1; i <= 3; i++) {
   assert(state.interact && state.interact.labelKey === 'prompt.catchDrift', `piece ${i} can be caught`);
   state.interact.fn();
   assert.equal(otter.caughtCount(), i, `piece ${i} is brought in`);
+  assert.equal(readSave().drift.items.filter((item) => item.caught).length, i, `piece ${i} is saved`);
+  if (i === 1) {
+    const remaining = drift.drifterPositions();
+    drift.resetDrift();
+    applySaveRuntime(readSave());
+    assert.equal(otter.caughtCount(), 1, 'the first caught piece survives a reload');
+    assert.deepEqual(drift.drifterPositions(), remaining, 'the remaining wood resumes at its saved positions');
+  }
 }
 assert.equal(drift.allDriftersCaught(), true, 'all three are out of the current');
 assert.equal(goalFor().kind, 'holt-guide', 'now the holt is where the question is');
@@ -144,6 +154,17 @@ assert.equal(otter.didTend(), true, 'the otter tended the river');
 assert.equal(hasEffect('river-tended'), true, 'and the world records it');
 assert.deepEqual(state.world.snags, [], 'with nothing left to float back in');
 assert(getKarma().merit > 0, 'tending the water is remembered as giving');
+const tendedMerit = getKarma().merit;
+assert.deepEqual(readSave().otter, { decided: true, tended: true }, 'tending is saved before the life ends');
+otter.resetOtter();
+drift.resetDrift();
+applySaveRuntime(readSave());
+assert.equal(otter.didTend(), true, 'tending survives a reload');
+assert.equal(otter.caughtCount(), 3, 'all caught pieces survive a reload');
+state.interact = null;
+otter.updateOtter();
+assert.equal(state.interact, null, 'the holt does not ask again');
+assert.equal(getKarma().merit, tendedMerit, 'resuming gives no extra merit');
 assert.equal(goalFor().kind, 'holt', 'and only now does the holt end the life');
 updateLifeGoal();
 assert.equal(completions, 1, 'standing at the holt after deciding completes the life');
@@ -191,6 +212,18 @@ assert.equal(hasEffect('river-tended'), false, 'so the river was not tended');
 assert.equal(state.world.snags.length, 3, 'and the wood will float back in');
 assert.equal(worldSnags(), 3, 'the next life finds the river carrying it');
 assert(getKarma().tendencies.clinging > 0, 'the piling is what it leaves in itself');
+const piledClinging = getKarma().tendencies.clinging;
+assert.deepEqual(readSave().otter, { decided: true, tended: false }, 'piling up wood is saved too');
+otter.resetOtter();
+drift.resetDrift();
+applySaveRuntime(readSave());
+assert.equal(otter.hasDecided(), true, 'piling survives a reload');
+assert.equal(otter.didTend(), false, 'the restored choice still leaves a pile');
+assert.equal(state.world.snags.length, 3, 'the snags survive a reload');
+state.interact = null;
+otter.updateOtter();
+assert.equal(state.interact, null, 'the piling choice is not asked again');
+assert.equal(getKarma().tendencies.clinging, piledClinging, 'resuming adds no clinging');
 assert.equal(goalFor().kind, 'holt', 'the holt still ends the life — the choice is not a punishment');
 log('piling ok');
 

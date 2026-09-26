@@ -98,6 +98,7 @@ export const ENCOUNTERS = Object.freeze([
     promptKey: 'prompt.talkGardenBloom',
     choices: [
       { key: 'garden.choice.release', karma: 'letgo', answer: 'garden.answer.release', color: '#bfd9cd' },
+      { key: 'garden.choice.guide', karma: 'give', answer: 'garden.answer.guide', effect: 'visitor-guided', color: '#e6d8a8' },
       { key: 'garden.choice.hold', karma: 'cling', answer: 'garden.answer.hold', color: '#c8a2c8' },
     ],
   },

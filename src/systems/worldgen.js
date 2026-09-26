@@ -4,10 +4,10 @@ import { state } from '../core/state.js';
 import { assembleRooms, buildDynamicWorld, blockedAt, waterAt } from '../world/rooms.js';
 import { getForm } from './forms.js';
 import { currentBiomeId, currentMapId } from './biome.js';
-import { hasEffect } from './world-effects.js';
+import { hasEffect, inheritedEffect } from './world-effects.js';
 import { isLowTide } from './tide.js';
 import { isDamp } from './moisture.js';
-import { isLit } from './light.js';
+import { isGardenGateLit } from './light.js';
 import { hasEffect as hasWorldEffect } from './world-effects.js';
 
 /**
@@ -40,7 +40,7 @@ export function worldAbilities() {
   if (isDamp() || hasEffect('damp-trail')) abilities.dampGround = true;
   // The garden's light: the shadow over its gate is crossable only while the light
   // is on it (systems/light.js) — the fastest of the world's rhythms.
-  if (isLit()) abilities.lightLit = true;
+  if (isGardenGateLit()) abilities.lightLit = true;
   // The swarm a firefly lit: the mist at the swarm field guides every body through
   // it from that life on (game/firefly.js).
   if (hasWorldEffect('swarm-lit')) abilities.swarmGuide = true;
@@ -79,10 +79,22 @@ export function initDynamicWorld(chapterId) {
     // The market does not put its first curtain across the way once a life has
     // passed its gate with empty hands.
     loosed: hasWorldEffect('hands-emptied'),
+    shared: inheritedEffect('offer-shared'),
   });
-  // Anything lifted away in an earlier life stays away.
+  // Persist by identity and position, not a generated array index: the latter
+  // can point at an unrelated feature after a new chapter changes the seed.
   const removed = new Set(state.world.removed || []);
-  built.features = built.features.filter((feature) => !removed.has(feature.i));
+  built.features = built.features.filter((feature) => {
+    if (removed.has(persistentFeatureKey(feature))) return false;
+    // Legacy numeric removals cannot be mapped safely across seeds. The fixed
+    // sites still have their recorded consequences in the world state.
+    if (feature.site === 'grove' && feature.type === 'log'
+      && (hasWorldEffect('ways-joined') || state.world.crushed?.length > 0 || state.elephant?.lifted === true)) return false;
+    if (feature.site === 'ford' && feature.type === 'log'
+      && (hasWorldEffect('ford-bridged') || state.world.planks?.length > 0)) return false;
+    if (feature.site === 'enclosure' && feature.gate === true && hasWorldEffect('gate-opened')) return false;
+    return true;
+  });
   state.dynamic = { ...built, seed, mapId: currentMapId() };
   return state.dynamic;
 }
@@ -97,9 +109,14 @@ export function removeFeature(index) {
   if (!Number.isInteger(index)) return false;
   const target = dynamicFeatures().find((feature) => feature.i === index);
   if (!target || (target.fixed === true && target.liftable !== true)) return false;
-  if (!state.world.removed.includes(index)) state.world.removed.push(index);
+  const key = persistentFeatureKey(target);
+  if (!state.world.removed.includes(key)) state.world.removed.push(key);
   state.dynamic.features = dynamicFeatures().filter((feature) => feature.i !== index);
   return true;
+}
+
+function persistentFeatureKey(feature) {
+  return `${feature.site || 'world'}:${feature.type}:${Math.round(feature.x)},${Math.round(feature.y)}`;
 }
 
 /**

@@ -31,7 +31,9 @@ function element() {
 const query = (id) => { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); };
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: (id) => query(`#${id}`), createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null,
+  setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 let nextTimer = 0;
 const timers = new Map();
@@ -42,17 +44,18 @@ const tick = () => [...timers.values()].forEach((fn) => fn());
 const { state } = await import('../src/core/state.js');
 const { MODE } = await import('../src/core/constants.js');
 const { CHAPTERS, loadChapter } = await import('../src/game/chapters.js');
-const { FORMS } = await import('../src/content/forms.js');
+const { FORMS, formNameKey } = await import('../src/content/forms.js');
 const { getKarma, resetKarma, recordKarma } = await import('../src/systems/karma.js');
 const rebirth = await import('../src/systems/rebirth.js');
-const { snapshot, applySaveRuntime } = await import('../src/systems/save.js');
+const { snapshot, applySaveRuntime, readSave } = await import('../src/systems/save.js');
 const {
   advanceLife, beginLifeEnding, chooseNextBody, nextLifePlan, plannedNextLife,
 } = await import('../src/systems/life.js');
 const {
   choicePending, exportTransition, importTransition, pendingTransition, resetTransition,
 } = await import('../src/systems/transition.js');
-const { initLifeSummary, showLifeSummary } = await import('../src/ui/life-summary.js');
+const { initLifeSummary, renderLifeSummary, showLifeSummary } = await import('../src/ui/life-summary.js');
+const { t } = await import('../src/systems/i18n.js');
 
 const log = (message) => console.error(`[choice] ${message}`);
 const chapters = CHAPTERS.map((chapter) => chapter.id);
@@ -141,6 +144,13 @@ function beginChoiceLife({ seed = 5150, history = ['human', 'deer'], lifeId = 3,
   assert.equal(after.next.formId, pick, 'the choice is written into the reservation');
   assert.equal(after.next.chosen, true, 'and marked chosen');
   assert.equal(after.next.probability, pending.next.probabilities[pick], 'with the odds of the chosen body');
+  assert.equal(readSave().transition.next.formId, pick, 'the system saves a valid choice immediately');
+  assert.equal(readSave().transition.next.chosen, true, 'the saved transition remembers the choice');
+  assert.equal(chooseNextBody(offered[0]), false, 'a second click cannot replace the committed choice');
+  assert.equal(pendingTransition().next.formId, pick, 'the first accepted body remains reserved');
+  renderLifeSummary();
+  assert(query('#lifeChoiceCards').children.slice(-offered.length).every((card) => card.disabled),
+    'all cards become unavailable after the choice');
   log('choosing ok');
 }
 
@@ -233,6 +243,55 @@ function beginChoiceLife({ seed = 5150, history = ['human', 'deer'], lifeId = 3,
   rebirth.setRebirthMode('flow');
   loadChapter(CHAPTERS[0].id);
   log('mode setting ok');
+}
+
+// ---- 10. choosing from the rebirth book cannot cross the karmic realm ----
+{
+  resetKarma();
+  resetTransition('explore-realm');
+  state.runId = 'explore-realm';
+  rebirth.resetRebirth('explore-realm');
+  rebirth.setRebirthMode('explore');
+  state.lifeMode = true;
+  state.liberated = false;
+  state.journeyComplete = false;
+  state.chapter = 2;
+  state.lifeId = 4;
+  state.formId = 'deer';
+  state.formHistory = ['deer'];
+  state.lifeLog = [{ lifeId: 4, formId: 'deer' }];
+  const pending = beginLifeEnding('land').transition;
+  assert.equal(pending.next.realmId, 'manussa');
+  assert.equal(pending.next.formId, 'human', 'the summary previews a body from the reserved realm');
+  assert.equal(pending.next.chosen, false, 'the preview does not make the choice');
+  const summaryBody = query('#lifeSummaryBody');
+  summaryBody.children = [];
+  renderLifeSummary();
+  const nextRow = summaryBody.children.find((row) => row.children?.[0]?.textContent === t('life.next'));
+  assert(nextRow.children[1].textContent.includes(t('life.choice.waiting')),
+    'the summary does not present the preview as a chosen body');
+  assert.equal(chooseNextBody('deer'), false, 'an animal cannot be selected for a human rebirth');
+  assert.equal(chooseNextBody('human'), true, 'the human body can be selected');
+  assert.equal(pendingTransition().next.formId, 'human');
+  assert.equal(chooseNextBody('human'), false, 'the book cannot answer the same rebirth twice');
+  summaryBody.children = [];
+  renderLifeSummary();
+  const chosenRow = summaryBody.children.find((row) => row.children?.[0]?.textContent === t('life.next'));
+  assert(chosenRow.children[1].textContent.includes(t(formNameKey('human'))),
+    'the summary names the body after the choice');
+  log('explore respects realm ok');
+}
+
+// ---- 11. a stored choice from an older version cannot cross realms either ----
+{
+  importTransition({ phase: 'summary', next: {
+    lifeId: 6, chapter: 3, formId: 'spider', realmId: 'manussa', explore: true, chosen: true,
+  } });
+  assert.equal(pendingTransition().next.formId, 'human');
+  assert.equal(choicePending(), true);
+  assert.equal(chooseNextBody('spider'), false);
+  assert.equal(chooseNextBody('human'), true);
+  log('stored explore realm repaired ok');
 }
 
 console.error('REBIRTH CHOICE TEST OK — three bodies on real odds, nothing born until the player picks, and the cards survive a reload');

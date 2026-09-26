@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
 import { getForm } from '../systems/forms.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { animatePlayer, player } from '../entities/player.js';
 
 /**
@@ -60,6 +61,7 @@ function buildBridge() {
   state.world.bridge = true;
   animatePlayer();
   recordKarma('give');
+  saveRun();
   playChime();
   addFloater(player.x, player.y - 130, t('memory.bridgeBuilt'), '#bfd9cd', 15);
 }
@@ -68,6 +70,7 @@ function clearDebris() {
   state.world.cleared = true;
   animatePlayer();
   recordKarma('give');
+  saveRun();
   playChime();
   addFloater(player.x, player.y - 130, t('memory.debrisCleared'), '#bfd9cd', 15);
 }

@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { digFeature, dynamicFeatures } from '../systems/worldgen.js';
 import { choose } from '../ui/choices.js';
@@ -153,6 +154,7 @@ function noticeGround() {
   if (!alive) return;
   state.boar.aware = true;
   recordKarma('mindful');
+  saveRun();
   addFloater(player.x, player.y - 110, t('boar.answer.aware'), '#c2a878', 14);
 }
 
@@ -162,6 +164,7 @@ export function rootMound(feature) {
   const where = { x: feature.x, y: feature.y };
   if (!digFeature(feature.i)) return false;
   state.world.dug = [...dugGround(), where];
+  saveRun();
   animatePlayer();
   playThud();
   addFloater(player.x, player.y - 120, t('boar.answer.opened'), '#b5a184', 14);
@@ -185,6 +188,7 @@ export function rootPatch(feature) {
   } else {
     addFloater(player.x, player.y - 120, t('boar.answer.rooted'), '#c2a878', 14);
   }
+  saveRun();
   animatePlayer();
   playThud();
   return true;
@@ -209,6 +213,7 @@ function turnSoil() {
       } else {
         recordKarma('cling');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

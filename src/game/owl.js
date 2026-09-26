@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { visionRadius } from '../systems/vision.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { choose } from '../ui/choices.js';
@@ -109,6 +110,7 @@ function leadHome() {
   const pending = nextLost();
   if (!pending) return;
   state.owl.found[pending.id] = true;
+  saveRun();
   animatePlayer();
   playChime();
   addFloater(
@@ -134,6 +136,7 @@ function decideWatch() {
         recordEffect('night-watched');
         recordKarma('give');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

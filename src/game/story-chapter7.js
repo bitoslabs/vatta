@@ -4,7 +4,8 @@ import { MODE, TEMPLE } from '../core/constants.js';
 import { dist } from '../core/math.js';
 import { state } from '../core/state.js';
 import { t } from '../systems/i18n.js';
-import { recordKarma, getKarma } from '../systems/karma.js';import { player } from '../entities/player.js';
+import { recordKarma } from '../systems/karma.js';
+import { player } from '../entities/player.js';
 import { choose } from '../ui/choices.js';
 import { say } from '../ui/dialogue.js';
 import { showEndScreen } from '../ui/end-screen.js';
@@ -24,8 +25,8 @@ const STATION_PANNA = 1900;
  *   1. ศีล     — do not harm, and do not take
  *   2. สมาธิ   — sit and steady the mind (the meditation minigame)
  *   3. ปัญญา   — see that nothing, not even "self", is to be held
- * The ending leaves the cycle only when the final release is real *and* the
- * accumulated kamma is not outweighed by its harm.
+ * This is a lesson on release, not the journey's ending. The final release is
+ * decided in chapter 14 after the later path lessons have been played.
  */
 let ch7 = { stations: {}, seated: false, ended: false };
 
@@ -136,10 +137,7 @@ function askFinal() {
         say('ch7.answerUnknown', askFinal);
       } else {
         recordKarma('letgo');
-        // Leaving the cycle asks for a real release, and for kamma that is not
-        // outweighed by harm across the whole run.
-        const karma = getKarma();
-        state.liberated = karma.merit >= karma.demerit;
+        state.liberated = false;
         say('ch7.answerWarm', finish);
       }
     },

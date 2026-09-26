@@ -27,7 +27,9 @@ function element() {
 const query = (id) => { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); };
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: (id) => query(`#${id}`), createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null,
+  setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -42,6 +44,7 @@ const { goalFor } = await import('../src/systems/goals.js');
 const { updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld } = await import('../src/systems/worldgen.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects } = await import('../src/systems/world-effects.js');
 const { candidatesFor, planNextLife } = await import('../src/systems/life-route.js');
 const { loadChapter } = await import('../src/game/chapters.js');
@@ -116,6 +119,16 @@ emit(EVENTS.CHOICE_PICK, 0); // the first option is to leave a share
 assert.equal(ant.isCarrying(), true, 'the ant carries the seed home');
 assert.equal(ant.didShare(), true, 'and it left a share');
 assert(getKarma().merit > 0, 'sharing is remembered as giving');
+assert.equal(readSave().ant.carrying, true, 'the seed choice saves the carried seed immediately');
+assert.equal(readSave().ant.shared, true, 'the saved choice remembers the intention');
+const meritAfterChoice = getKarma().merit;
+ant.resetAnt();
+applySaveRuntime(readSave());
+assert.equal(ant.isCarrying(), true, 'loading resumes the same errand');
+state.interact = null;
+ant.updateAnt();
+assert.equal(state.interact, null, 'the seed choice is not offered again after loading');
+assert.equal(getKarma().merit, meritAfterChoice, 'loading cannot grant the same merit twice');
 
 const after = goalFor();
 assert.equal(after.kind, 'nest', 'with the seed, the nest becomes the ending');

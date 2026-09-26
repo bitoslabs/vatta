@@ -5,6 +5,7 @@ import { t } from '../systems/i18n.js';
 import { currentNote, isTeacher, tourProgress, tourTarget, toggleTeacher } from '../systems/teacher.js';
 import { isProjector, toggleProjector } from '../systems/projector.js';
 import { dynamicWorld } from '../systems/worldgen.js';
+import { state } from '../core/state.js';
 import { $ } from './dom.js';
 
 const panel = $('#teacherPanel');
@@ -59,6 +60,14 @@ function renderChrome() {
 /** Called every world frame; only touches the DOM when something changes. */
 export function updateTeacherPanel() {
   if (!isTeacher()) return;
+
+  if (state.explore?.active && state.formId === 'worm') {
+    titleEl.textContent = t('teacher.chicken.title');
+    textEl.textContent = t('teacher.chicken.text');
+    tourEl.textContent = '';
+    hintEl.textContent = t('teacher.chicken.hint');
+    return;
+  }
 
   const note = currentNote();
   if (note !== lastNote) {

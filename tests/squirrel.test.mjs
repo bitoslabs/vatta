@@ -24,7 +24,8 @@ function element() {
 const query = () => element();
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: query, createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -40,6 +41,7 @@ const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld } = await import('../src/systems/worldgen.js');
 const { isRestful, restingPlaceAt } = await import('../src/systems/rest.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects } = await import('../src/systems/world-effects.js');
 const { planNextLife, candidatesFor } = await import('../src/systems/life-route.js');
 const { loadChapter } = await import('../src/game/chapters.js');
@@ -116,6 +118,13 @@ for (const [index] of crowns.entries()) {
   state.interact.fn();
   assert.equal(squirrel.seedsHeld(), index + 1, `seed ${index + 1} is in the paws`);
   assert.equal(squirrel.crownPicked(index), true, `and crown ${index + 1} is picked`);
+  assert.equal(readSave().squirrel.picked.length, index + 1, `crown ${index + 1} is saved`);
+  if (index === 0) {
+    squirrel.resetSquirrel();
+    applySaveRuntime(readSave());
+    assert.equal(squirrel.seedsHeld(), 1, 'the gathered seed survives a reload');
+    assert.equal(goalFor().x, crowns[1].x, 'the resumed goal is the next crown');
+  }
 }
 assert.equal(squirrel.allPicked(), true, 'all three crowns are empty now');
 log('gathering ok');
@@ -135,6 +144,15 @@ assert.equal(completions, 0, 'reaching the cache does not end the life before th
 assert.equal(squirrel.didScatter(), true, 'the squirrel scattered them');
 assert.equal(hasEffect('seeds-scattered'), true, 'and the world records it');
 assert(getKarma().merit > 0, 'scattering is remembered as giving');
+const scatteredMerit = getKarma().merit;
+assert.equal(readSave().squirrel.scattered, true, 'scattering is saved before the life ends');
+squirrel.resetSquirrel();
+applySaveRuntime(readSave());
+assert.equal(squirrel.didScatter(), true, 'scattering survives a reload');
+state.interact = null;
+squirrel.updateSquirrel();
+assert.equal(state.interact, null, 'the cache does not ask again');
+assert.equal(getKarma().merit, scatteredMerit, 'resuming gives no extra merit');
 assert.equal(goalFor().kind, 'cache', 'and only now does the cache become the ending');
 updateLifeGoal();
 assert.equal(completions, 1, 'standing at the cache after deciding completes the life');
@@ -182,6 +200,16 @@ assert.equal(squirrel.didScatter(), false, 'this squirrel kept them all');
 assert.equal(hasEffect('seeds-scattered'), false, 'so nothing was scattered');
 assert.equal(getKarma().merit, 0, 'and nothing is recorded as giving');
 assert(getKarma().tendencies.clinging > 0, 'the holding-on is what it leaves in itself');
+const hoardedClinging = getKarma().tendencies.clinging;
+assert.equal(readSave().squirrel.decided, true, 'hoarding is saved too');
+squirrel.resetSquirrel();
+applySaveRuntime(readSave());
+assert.equal(squirrel.hasDecided(), true, 'hoarding survives a reload');
+assert.equal(squirrel.didScatter(), false, 'the restored choice stays hoarding');
+state.interact = null;
+squirrel.updateSquirrel();
+assert.equal(state.interact, null, 'the hoarding choice is not asked again');
+assert.equal(getKarma().tendencies.clinging, hoardedClinging, 'resuming adds no clinging');
 assert.equal(goalFor().kind, 'cache', 'the cache still ends the life — the choice is not a punishment');
 log('hoarding ok');
 

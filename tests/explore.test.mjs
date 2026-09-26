@@ -50,6 +50,9 @@ const { buildDynamicWorld, validateRoute } = await import('../src/world/rooms.js
 const { isTeacher } = await import('../src/systems/teacher.js');
 const { saveRun, readSave, getActiveSlot, setActiveSlot } = await import('../src/systems/save.js');
 const { snapshot } = await import('../src/systems/save.js');
+const { player } = await import('../src/entities/player.js');
+const { DEER, FISH, MARSH, NEST } = await import('../src/world/world-data.js');
+const { inWater } = await import('../src/systems/forms.js');
 const explore = await import('../src/systems/explore.js');
 const { openBook, closeBook, isBookOpen, initAnimalBook } = await import('../src/ui/animal-book.js');
 const { choicePending, importTransition, markChosenBody, pendingTransition, resetTransition } = await import('../src/systems/transition.js');
@@ -96,20 +99,48 @@ const log = (message) => console.error(`[explore] ${message}`);
   log(`every body enterable ok — ${checked} bodies`);
 }
 
+// Preview bodies start close enough to see their encounter, outside its danger.
+{
+  for (const [formId, point, radius] of [
+    ['ant', NEST.runoff, 70],
+    ['fish', FISH.shallows, 48],
+    ['frog', MARSH.drying, 72],
+    ['deer', DEER.crossing, 80],
+  ]) {
+    state.explore = { active: false };
+    state.world = { effects: {}, leavings: [] };
+    assert(explore.startExplore({ formId, chapterId: 1 }), `${formId} preview opens`);
+    const distance = Math.hypot(player.x - point.x, player.y - point.y);
+    assert(distance > radius + 20, `${formId} preview begins safely outside the hazard`);
+    assert(distance < 255, `${formId} preview shows the encounter nearby`);
+    if (formId === 'fish') assert(inWater(player.x, player.y), 'fish preview stays in water');
+  }
+}
+
 // ---- 3. exploring writes nothing to the journey ----
 {
   setActiveSlot(1);
   loadChapter(CHAPTERS[0].id); // a normal life, to give the slot something real
+  state.world.effects = {};
+  const { waterRoot } = await import('../src/game/burrow.js');
+  const { hasEffect } = await import('../src/systems/world-effects.js');
+  const { getKarma } = await import('../src/systems/karma.js');
+  const meritBefore = getKarma().merit;
   const before = JSON.stringify(snapshot());
   storage.clear();
   state.explore = { active: false };
-  assert.equal(explore.startExplore({ formId: 'tiger', chapterId: 3 }), true, 'enter a body in explore mode');
+  assert.equal(explore.startExplore({ formId: 'worm', chapterId: 3 }), true, 'enter a body in explore mode');
   assert.equal(explore.isExploring(), true, 'and the mode is on');
+  assert.equal(waterRoot(), true, 'the trial body can practise a world-changing act');
+  assert.equal(hasEffect('root-watered'), true, 'the trial effect is visible during practice');
   assert.equal(saveRun(), false, 'a save while exploring is refused');
   assert.equal(readSave(), null, 'so the slot stays empty');
   assert.equal(explore.stopExplore(), true, 'leaving explore mode');
   assert.equal(explore.isExploring(), false, 'turns it off');
   assert.equal(state.explore.active, false, 'and the state agrees');
+  assert.equal(hasEffect('root-watered'), false, 'leaving practice restores the original world');
+  assert.equal(getKarma().merit, meritBefore, 'practice cannot add merit to the journey');
+  assert.equal(state.mode, MODE.TITLE, 'leaving practice returns to the title');
   assert.equal(typeof before, 'string', 'the journey snapshot is untouched by any of it');
   log('no writes ok');
 }
@@ -148,6 +179,8 @@ const log = (message) => console.error(`[explore] ${message}`);
   state.formHistory = ['human', 'deer'];
   state.lifeLog = [{ lifeId: 4, formId: 'deer' }];
   state.world = { effects: {}, leavings: [] };
+  const { resetKarma } = await import('../src/systems/karma.js');
+  resetKarma();
   resetTransition('explore-run');
   state.runId = 'explore-run';
   const { setRebirthMode } = await import('../src/systems/rebirth.js');
@@ -156,16 +189,19 @@ const log = (message) => console.error(`[explore] ${message}`);
   assert.equal(begun.transition.next.explore, true, 'the reservation says the body comes from the book');
   assert.equal(choicePending(), true, 'so the rebirth waits');
   assert.equal(advanceLife(), false, 'and nothing is born before a pick');
-  // The pick: any body the book offers, including one outside any draw.
+  // The book only offers bodies compatible with the karmic realm.
   const { chooseNextBody } = await import('../src/systems/life.js');
   const { exportTransition, importTransition } = await import('../src/systems/transition.js');
   assert.equal(chooseNextBody('unknown-body'), false, 'unknown bodies cannot answer a rebirth');
-  assert.equal(chooseNextBody('spider'), true, 'the book uses the public life picker');
+  assert.equal(begun.transition.next.realmId, 'manussa');
+  assert.equal(chooseNextBody('spider'), false, 'an animal cannot answer a human rebirth');
+  assert.equal(chooseNextBody('human'), true, 'the book uses the public life picker');
+  assert.equal(readSave().transition.next.formId, 'human', 'the rebirth book choice is saved immediately');
   importTransition(JSON.parse(JSON.stringify(exportTransition())));
   assert.equal(choicePending(), false, 'a reload remembers the book selection');
-  assert.equal(plannedNextLife().formId, 'spider', 'the card reads the chosen body');
+  assert.equal(plannedNextLife().formId, 'human', 'the card reads the chosen body');
   assert.equal(advanceLife(), true, 'and the life goes on');
-  assert.equal(state.formId, 'spider', 'into the body that was chosen');
+  assert.equal(state.formId, 'human', 'into the body that was chosen');
   setRebirthMode('flow');
   log('rebirth from the book ok');
 }

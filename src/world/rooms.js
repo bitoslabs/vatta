@@ -1058,6 +1058,7 @@ export function assembleMarketRooms(options = {}) {
   // free width of the alley on its own, so opening it opens the whole way.
   curtainAt.forEach((distance, index) => {
     if (options.loosed === true && index === 0) return;
+    if (options.shared === true && index === 1) return;
     features.push({
       i: 0, site: 'market', type: 'curtain', fixed: true,
       needs: curtainNeeds[index], x: at(distance).x, y: at(distance).y, r: MARKET.curtainRadius,

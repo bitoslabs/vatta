@@ -8,6 +8,7 @@ import { currentBiomeId } from '../systems/biome.js';
 import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { choose } from '../ui/choices.js';
 import { ASURA, asuraGate } from '../world/world-data.js';
@@ -89,6 +90,7 @@ function decideSpan() {
         recordKarma('cling');
         playChime();
       }
+      saveRun();
       animatePlayer();
       addFloater(
         player.x,

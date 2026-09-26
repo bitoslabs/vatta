@@ -2,6 +2,7 @@
 
 import { state } from '../core/state.js';
 import { realmById } from '../content/realms.js';
+import { realmFormIds } from './rebirth.js';
 
 /**
  * Changing lives (docs/rebirth-effects.md, docs/next-production-plan.md item 2).
@@ -127,8 +128,11 @@ export function setTransitionPhase(phase) {
 export function markChosenBody(formId, probability = null) {
   const t = transition();
   if (t.phase === 'idle' || !t.next) return false;
-  // Explore mode: any body the animal book offers may be chosen, because the book is
-  // the picker (systems/explore.js). Otherwise the choice must be one of the cards.
+  if (t.next.chosen === true) return false;
+  // A reserved realm also limits choices restored from older saves or passed by
+  // callers other than the animal book.
+  if (t.next.realmId && !realmFormIds(t.next.realmId, t.next.chapter).includes(formId)) return false;
+  // Explore mode uses the book as its picker. Otherwise use the reserved cards.
   if (t.next.explore === true) {
     t.next.formId = formId;
     t.next.chosen = true;
@@ -198,11 +202,23 @@ export function importTransition(raw) {
     state.transition = idleTransition();
     return false;
   }
+  const realmId = typeof next.realmId === 'string' && realmById(next.realmId) ? next.realmId : null;
+  const allowedIds = realmId ? realmFormIds(realmId, next.chapter) : null;
+  const allowed = allowedIds ? new Set(allowedIds) : null;
   const candidates = Array.isArray(next.candidateIds)
-    ? [...new Set(next.candidateIds.filter((id) => typeof id === 'string' && id))]
+    ? [...new Set(next.candidateIds.filter((id) => typeof id === 'string' && id && (!allowed || allowed.has(id))))]
     : null;
+  // Older saves may contain a free-picked body from before the realm restriction.
+  // Keep the reserved realm and repair the body without re-running the karma draw.
+  const formId = allowed && !allowed.has(next.formId) ? allowedIds[0] : next.formId;
+  if (!formId) {
+    state.transition = idleTransition();
+    return false;
+  }
+  if (candidates && candidates.length === 0 && allowedIds?.length) candidates.push(formId);
   const probabilities = next.probabilities && typeof next.probabilities === 'object'
-    ? Object.fromEntries(Object.entries(next.probabilities).filter(([, value]) => Number.isFinite(value)))
+    ? Object.fromEntries(Object.entries(next.probabilities).filter(([id, value]) =>
+      Number.isFinite(value) && (!allowed || allowed.has(id))))
     : null;
   state.transition = {
     id: typeof raw.id === 'string' ? raw.id : transitionIdFor(raw.fromLifeId, raw.completionId, raw.runId),
@@ -212,17 +228,18 @@ export function importTransition(raw) {
     next: {
       lifeId: next.lifeId,
       chapter: next.chapter,
-      formId: next.formId,
-      realmId: typeof next.realmId === 'string' && realmById(next.realmId) ? next.realmId : null,
+      formId,
+      realmId,
       reasonKey: typeof next.reasonKey === 'string' && next.reasonKey.startsWith('rebirth.reason.') ? next.reasonKey : null,
       // The odds the draw gave this body, kept so the summary can show the real
       // number again after a reload (never recomputed — systems/rebirth.js).
-      probability: Number.isFinite(next.probability) ? next.probability : null,
+      probability: formId === next.formId && Number.isFinite(next.probability) ? next.probability : null,
       // Choice mode: the three bodies the draw offered, and which one was picked.
       // Kept so a reload shows the same cards and the same selection.
       candidateIds: candidates,
       probabilities,
-      chosen: next.chosen === true && (next.explore === true || Boolean(candidates) && candidates.includes(next.formId)),
+      chosen: next.chosen === true && formId === next.formId
+        && (next.explore === true || Boolean(candidates) && candidates.includes(formId)),
       explore: next.explore === true,
     },
     runId: typeof raw.runId === 'string' ? raw.runId : '',

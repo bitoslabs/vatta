@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { choose } from '../ui/choices.js';
 import { SEEDS, saplingsAlong } from '../world/world-data.js';
@@ -126,6 +127,7 @@ function pickCrown(index) {
   if (crownPicked(index)) return;
   state.squirrel.picked = [...pickedCrowns(), index];
   state.squirrel.seeds = seedsHeld() + 1;
+  saveRun();
   animatePlayer();
   playChime();
   addFloater(
@@ -153,6 +155,7 @@ function decideSeeds() {
       } else {
         recordKarma('cling');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

@@ -4,8 +4,8 @@ import { emit, EVENTS } from '../core/events.js';
 import { state } from '../core/state.js';
 import { GATE_OUT } from '../core/constants.js';
 import {
-  ASURA, BOAR, BLOOMS, BURROW, CAVE, CREVICE, DAMP, ENCLOSURE, FIELD, FORD, GARDEN, GROVE, MARSH,
-  NEST, OTTER, OWL, PUSH, SEEDS, SIGNAL, TIDE, TRAIL, WARM_STONE, WEB, marketInside,
+  ASURA, BOAR, BLOOMS, BURROW, CAVE, CREVICE, DAMP, DEER, ENCLOSURE, FIELD, FORD, GARDEN, GROVE, MARSH,
+  FISH, NEST, OTTER, OWL, PUSH, SEEDS, SIGNAL, TIDE, TRAIL, WARM_STONE, WEB, marketInside,
 } from '../world/world-data.js';
 
 /**
@@ -22,10 +22,17 @@ export const WORLD_EFFECTS = Object.freeze({
   // `site` is the place a leaving stands: the world book (ui/codex.js) reads it to
   // say *where* a past life left something, and to walk the player back there.
   // Each site is the one whose own module records the effect (see src/game/*.js).
-  'root-watered': { key: 'effect.rootWatered', color: '#bfd9cd', site: 'burrow' },
-  'seed-carried': { key: 'effect.seedCarried', color: '#d9c48f', site: 'nest' },
-  'nest-sheltered': { key: 'effect.nestSheltered', color: '#c9b7dd', site: 'field' },
-  'water-opened': { key: 'effect.waterOpened', color: '#9fc6dd', site: 'marsh' },
+  'root-watered': {
+    key: 'effect.rootWatered', consequenceKey: 'effect.rootWatered.consequence',
+    color: '#bfd9cd', site: 'burrow',
+  },
+  'seed-carried': { key: 'effect.seedCarried', consequenceKey: 'effect.seedCarried.consequence', color: '#d9c48f', site: 'nest' },
+  'runoff-drained': { key: 'effect.runoffDrained', consequenceKey: 'effect.runoffDrained.consequence', color: '#9fcad6', site: 'drain' },
+  'fry-guided': { key: 'effect.fryGuided', consequenceKey: 'effect.fryGuided.consequence', color: '#a7d5d5', site: 'fish-channel' },
+  'herd-sheltered': { key: 'effect.herdSheltered', consequenceKey: 'effect.herdSheltered.consequence', color: '#bad3a7', site: 'deer-herd' },
+  'nest-sheltered': { key: 'effect.nestSheltered', consequenceKey: 'effect.nestSheltered.consequence', color: '#c9b7dd', site: 'field' },
+  'water-opened': { key: 'effect.waterOpened', consequenceKey: 'effect.waterOpened.consequence', color: '#9fc6dd', site: 'marsh' },
+  'eggs-shaded': { key: 'effect.eggsShaded', consequenceKey: 'effect.eggsShaded.consequence', color: '#cfe0b4', site: 'marsh' },
   'water-linked': { key: 'effect.waterLinked', color: '#8fd0c4', site: 'crevice' },
   'night-watched': { key: 'effect.nightWatched', color: '#cbd6ea', site: 'owl' },
   'ways-joined': { key: 'effect.waysJoined', color: '#c9b78f', site: 'grove' },
@@ -33,16 +40,18 @@ export const WORLD_EFFECTS = Object.freeze({
   'gate-opened': { key: 'effect.gateOpened', color: '#b9c9a8', site: 'enclosure' },
   'echo-shared': { key: 'effect.echoShared', color: '#cbd6ea', site: 'cave' },
   'seeds-scattered': { key: 'effect.seedsScattered', color: '#bfd0a0', site: 'seeds' },
-  'channel-kept': { key: 'effect.channelKept', color: '#9fc6dd', site: 'tide' },
+  'channel-kept': { key: 'effect.channelKept', consequenceKey: 'effect.channelKept.consequence', color: '#9fc6dd', site: 'tide' },
   'river-tended': { key: 'effect.riverTended', color: '#9fd6b8', site: 'otter' },
   'forest-pollinated': { key: 'effect.forestPollinated', color: '#e0c8a0', site: 'blooms' },
   'hearths-respected': { key: 'effect.hearthsRespected', color: '#d8c8a8', site: 'homes' },
   'ford-bridged': { key: 'effect.fordBridged', color: '#c9a97a', site: 'ford' },
-  'damp-trail': { key: 'effect.dampTrail', color: '#a8c6b4', site: 'damp' },
+  'damp-trail': { key: 'effect.dampTrail', consequenceKey: 'effect.dampTrail.consequence', color: '#a8c6b4', site: 'damp' },
   'soil-turned': { key: 'effect.soilTurned', color: '#c2a878', site: 'boar' },
   'span-built': { key: 'effect.spanBuilt', color: '#b9c3d0', site: 'asura' },
   'seeds-released': { key: 'effect.seedsReleased', color: '#e6d8a8', site: 'garden' },
+  'visitor-guided': { key: 'effect.visitorGuided', consequenceKey: 'effect.visitorGuided.consequence', color: '#e6d8a8', site: 'garden' },
   'hands-emptied': { key: 'effect.handsEmptied', color: '#e9c46a', site: 'market' },
+  'offer-shared': { key: 'effect.offerShared', consequenceKey: 'effect.offerShared.consequence', color: '#bfd9cd', site: 'market' },
   'friend-kept': { key: 'effect.friendKept', color: '#e6d8a8', site: 'gate' },
   'web-spun': { key: 'effect.webSpun', color: '#cfd8e6', site: 'web' },
   'swarm-lit': { key: 'effect.swarmLit', color: '#f0e0a8', site: 'signal' },
@@ -57,6 +66,9 @@ export function sitePlaces() {
   return {
     burrow: { x: BURROW.chamber.x, y: BURROW.chamber.y },
     nest: { x: NEST.chamber.x, y: NEST.chamber.y },
+    drain: { x: NEST.drain.x, y: NEST.drain.y },
+    'fish-channel': { x: FISH.channel.x, y: FISH.channel.y },
+    'deer-herd': { x: DEER.herd.x, y: DEER.herd.y },
     field: { x: FIELD.meadow.x, y: FIELD.meadow.y },
     marsh: { x: MARSH.bank.x, y: MARSH.bank.y },
     crevice: { x: CREVICE.spring.x, y: CREVICE.spring.y },
@@ -115,6 +127,18 @@ export function sanitiseLeavings(raw) {
   return clean;
 }
 
+/** Recover effects from older saves without inventing a source life. */
+export function completeLeavings(raw, effects) {
+  const known = sanitiseLeavings(raw).filter((entry) => effects?.[entry.code] === true);
+  const seen = new Set(known.map((entry) => entry.code));
+  for (const code of Object.keys(WORLD_EFFECTS)) {
+    if (effects?.[code] === true && !seen.has(code)) {
+      known.push({ code, lifeId: null, formId: null, chapter: null });
+    }
+  }
+  return known;
+}
+
 /** The effect store, created on demand so old saves need no migration. */
 export function worldEffects() {
   if (!state.world || typeof state.world !== 'object') state.world = {};
@@ -124,6 +148,14 @@ export function worldEffects() {
 
 export function hasEffect(code) {
   return worldEffects()[code] === true;
+}
+
+/** An effect applies as an inheritance only after the life that first left it. */
+export function inheritedEffect(code) {
+  if (!hasEffect(code)) return false;
+  const source = leavings().find((entry) => entry.code === code);
+  // Older saves may know the effect without knowing which life left it.
+  return !source || source.lifeId === null || source.lifeId !== state.lifeId;
 }
 
 /**
@@ -152,7 +184,8 @@ export function leavingList() {
   return leavings().map((entry) => {
     const data = WORLD_EFFECTS[entry.code] || {};
     const place = data.site ? places[data.site] : null;
-    return { ...entry, site: data.site || null, place, color: data.color, key: data.key };
+    return { ...entry, site: data.site || null, place, color: data.color,
+      key: data.key, consequenceKey: data.consequenceKey || null };
   });
 }
 

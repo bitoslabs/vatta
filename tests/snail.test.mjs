@@ -25,7 +25,8 @@ function element() {
 const query = () => element();
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: query, createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -39,6 +40,7 @@ const { BIOMES } = await import('../src/content/biomes.js');
 const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld } = await import('../src/systems/worldgen.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects } = await import('../src/systems/world-effects.js');
 const moisture = await import('../src/systems/moisture.js');
 const { planNextLife, candidatesFor } = await import('../src/systems/life-route.js');
@@ -139,6 +141,15 @@ emit(EVENTS.CHOICE_PICK, 0); // leave the trail damp
 assert.equal(snail.didLeaveTrail(), true, 'the snail left the trail damp');
 assert.equal(hasEffect('damp-trail'), true, 'and the world records it');
 assert(getKarma().merit > 0, 'leaving a way for others is remembered as giving');
+const trailMerit = getKarma().merit;
+assert.deepEqual(readSave().snail, { decided: true, leftTrail: true }, 'the trail choice is saved immediately');
+snail.resetSnail();
+applySaveRuntime(readSave());
+assert.equal(snail.didLeaveTrail(), true, 'the trail choice survives a reload');
+state.interact = null;
+snail.updateSnail();
+assert.equal(state.interact, null, 'the resumed snail is not asked again');
+assert.equal(getKarma().merit, trailMerit, 'resuming does not give merit twice');
 assert.equal(goalFor().kind, 'damp-garden', 'and only now does the garden end the life');
 updateLifeGoal();
 assert.equal(completions, 1, 'the garden completes the life');
@@ -173,6 +184,13 @@ emit(EVENTS.CHOICE_PICK, 1); // go on without leaving a trail
 assert.equal(snail.didLeaveTrail(), false, 'this snail left no trail');
 assert.equal(hasEffect('damp-trail'), false, 'so nothing was left for the next snail');
 assert.equal(goalFor().kind, 'damp-garden', 'the garden still ends the life — the answer is not a punishment');
+assert.deepEqual(readSave().snail, { decided: true, leftTrail: false }, 'leaving no trail is saved too');
+snail.resetSnail();
+applySaveRuntime(readSave());
+assert.equal(snail.hasDecided(), true, 'the no-trail choice survives a reload');
+state.interact = null;
+snail.updateSnail();
+assert.equal(state.interact, null, 'the no-trail choice is not asked again');
 log('no trail ok');
 
 // ---- 7. a new life arrives on ground whose dampness it must wait for ----

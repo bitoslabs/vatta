@@ -25,7 +25,8 @@ function element() {
 const query = () => element();
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: query, createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -40,6 +41,7 @@ const { ROUTES } = await import('../src/world/world-data.js');
 const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld } = await import('../src/systems/worldgen.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects } = await import('../src/systems/world-effects.js');
 const { visionRadius } = await import('../src/systems/vision.js');
 const echo = await import('../src/systems/echo.js');
@@ -117,6 +119,10 @@ bat.updateBat();
 assert(state.interact && state.interact.labelKey === 'prompt.findPup', 'standing at the pup, the pulse confirms it');
 state.interact.fn();
 assert.equal(bat.foundPup(), true, 'the pup is found');
+assert.equal(readSave().bat.found, true, 'finding the pup is saved immediately');
+bat.resetBat();
+applySaveRuntime(readSave());
+assert.equal(bat.foundPup(), true, 'the found pup survives a reload');
 const { initChoices } = await import('../src/ui/choices.js');
 initChoices();
 state.interact = null;
@@ -132,6 +138,15 @@ emit(EVENTS.CHOICE_PICK, 0); // teach it
 assert.equal(bat.didTeach(), true, 'the bat taught it to call');
 assert.equal(hasEffect('echo-shared'), true, 'and the world records that someone can now teach');
 assert(getKarma().merit > 0, 'teaching is remembered as giving');
+const taughtMerit = getKarma().merit;
+assert.deepEqual(readSave().bat, { found: true, decided: true, taught: true }, 'teaching is saved immediately');
+bat.resetBat();
+applySaveRuntime(readSave());
+assert.equal(bat.didTeach(), true, 'teaching survives a reload');
+state.interact = null;
+bat.updateBat();
+assert.equal(state.interact, null, 'the resumed bat is not asked again');
+assert.equal(getKarma().merit, taughtMerit, 'resuming does not award merit twice');
 assert.equal(goalFor().kind, 'dark-roost', 'with the pup settled, the roost becomes the ending');
 log('teaching ok');
 
@@ -167,6 +182,14 @@ assert.equal(bat.didTeach(), false, 'this bat carried the pup instead');
 assert.equal(hasEffect('echo-shared'), false, 'so nothing was taught on');
 assert.equal(getKarma().merit, 0, 'and nothing is recorded as giving');
 assert.equal(goalFor().kind, 'dark-roost', 'the roost still ends the life — the choice is not a punishment');
+assert.deepEqual(readSave().bat, { found: true, decided: true, taught: false }, 'carrying the pup is saved too');
+bat.resetBat();
+applySaveRuntime(readSave());
+assert.equal(bat.hasDecided(), true, 'the carrying choice survives a reload');
+assert.equal(bat.didTeach(), false, 'the pup was still carried');
+state.interact = null;
+bat.updateBat();
+assert.equal(state.interact, null, 'the carrying choice is not asked again');
 log('choice recorded ok');
 
 // ---- 7. a new life arrives in the dark with quiet ears ----

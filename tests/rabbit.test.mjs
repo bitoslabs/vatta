@@ -28,7 +28,8 @@ function element() {
 const query = (id) => { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); };
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: (id) => query(`#${id}`), createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -43,6 +44,7 @@ const { FIELD, FIELD_APPROACH, TREES } = await import('../src/world/world-data.j
 const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld } = await import('../src/systems/worldgen.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects } = await import('../src/systems/world-effects.js');
 const { planNextLife } = await import('../src/systems/life-route.js');
 const { loadChapter } = await import('../src/game/chapters.js');
@@ -118,6 +120,13 @@ for (const [index, warren] of warrens.entries()) {
   assert(state.interact && state.interact.labelKey === 'prompt.connectWarren', `warren ${warren.id} offers to be joined`);
   state.interact.fn();
   assert.equal(rabbit.connectedCount(), index + 1, `warren ${warren.id} is joined (${index + 1} of ${warrens.length})`);
+  assert.equal(readSave().rabbit.connected[warren.id], true, `warren ${warren.id} is saved immediately`);
+  if (index === 0) {
+    rabbit.resetRabbit();
+    applySaveRuntime(readSave());
+    assert.equal(rabbit.connectedCount(), 1, 'a resumed relay keeps its first joined warren');
+    assert.equal(goalFor().x, warrens[1].x, 'the next warren remains the goal');
+  }
 }
 assert.equal(rabbit.allConnected(), true, 'all the warrens are joined');
 log('relay ok');
@@ -144,6 +153,16 @@ emit(EVENTS.CHOICE_PICK, 0); // share it
 assert.equal(rabbit.didShare(), true, 'the rabbit left the shelter open');
 assert.equal(hasEffect('nest-sheltered'), true, 'the world records the shelter');
 assert(getKarma().merit > 0, 'sharing shelter is remembered as giving');
+const sharedMerit = getKarma().merit;
+assert.equal(readSave().rabbit.shared, true, 'sharing shelter is saved before the field ending');
+rabbit.resetRabbit();
+applySaveRuntime(readSave());
+assert.equal(rabbit.didShare(), true, 'sharing survives a reload');
+assert.equal(rabbit.allConnected(), true, 'all joined warrens survive a reload');
+state.interact = null;
+rabbit.updateRabbit();
+assert.equal(state.interact, null, 'the resumed shelter choice is not offered again');
+assert.equal(getKarma().merit, sharedMerit, 'resuming gives no extra merit');
 
 const back = goalFor();
 assert.equal(back.kind, 'storm', 'with the question answered, the open field becomes the ending');
@@ -187,6 +206,14 @@ assert.equal(rabbit.didShare(), false, 'this rabbit kept the shelter');
 assert.equal(hasEffect('nest-sheltered'), false, 'so the world records no shelter');
 assert.equal(getKarma().merit, 0, 'and nothing is recorded as giving');
 assert.equal(goalFor().kind, 'storm', 'the field still ends the life — the choice is not a punishment');
+assert.equal(readSave().rabbit.decided, true, 'keeping the shelter private is saved too');
+rabbit.resetRabbit();
+applySaveRuntime(readSave());
+assert.equal(rabbit.hasDecided(), true, 'the private choice survives a reload');
+assert.equal(rabbit.didShare(), false, 'the private choice remains private');
+state.interact = null;
+rabbit.updateRabbit();
+assert.equal(state.interact, null, 'the private choice is not offered again');
 log('choice recorded ok');
 
 // ---- 7. a new life arrives with the warrens unjoined ----

@@ -12,7 +12,7 @@ import { floaters, lifeLights, screenNotes, sparks } from '../systems/effects.js
 import { ctx, viewport } from '../systems/viewport.js';
 import { textures } from '../world/textures.js';
 import {
-  ENCLOSURE, FALSE_A, FALSE_B, FOOT, GATES, RIVER, RIVER_WIDTH, TREES,
+  DEER, ENCLOSURE, FALSE_A, FALSE_B, FISH, FOOT, GATES, RIVER, RIVER_WIDTH, TREES,
   footprintsAlong, routeForPlane, saplingsAlong,
 } from '../world/world-data.js';
 import { cam } from '../game/camera.js';
@@ -24,9 +24,12 @@ import { renderLighting, shakeOffset } from './lighting.js';
 import { drawEncounter, drawGhost, drawGuardian, drawLure, drawPlayer, drawPrompt, drawSala, drawTeacherLabel, drawTemple, drawTourMarker, drawTree } from './sprites.js';
 import { getLures } from '../game/lures.js';
 import { bridgeSite, hasBridge, isWaterwayCleared } from '../game/world-memory.js';
-import { burrowSite, rootWatered } from '../game/burrow.js';
-import { isCarrying, nestSite, seedCarried } from '../game/ant.js';
-import { marshSite, waterOpened } from '../game/frog.js';
+import { burrowSite, chickenState, rootWatered } from '../game/burrow.js';
+import { fishBirdState, fryGuided } from '../game/fish.js';
+import { deerHazardState, herdSheltered } from '../game/deer.js';
+import { isReducedMotion } from '../systems/settings.js';
+import { isCarrying, nestSite, rainState, seedCarried } from '../game/ant.js';
+import { dryMarshState, marshSite, waterOpened } from '../game/frog.js';
 import { creviceSite, isLinked } from '../game/snake.js';
 import { fieldSite, isSheltered, warrenIsConnected } from '../game/rabbit.js';
 import { nightWatched, owlFound, owlSite, perceivesLost } from '../game/owl.js';
@@ -43,7 +46,7 @@ import { dampSite, trailKept } from '../game/snail.js';
 import { boarSite, coloniesLost, groundTells, turnedSoil } from '../game/boar.js';
 import { asuraSite, gatePoint, spanBuilt, spans } from '../game/asura-city.js';
 import { gardenSite, gatePoint as gardenGatePoint, releasedBeds } from '../game/garden.js';
-import { isLit, lightLevel } from '../systems/light.js';
+import { isGardenGateLit, lightLevel } from '../systems/light.js';
 import { waypoint } from '../systems/waypoint.js';
 import { companionState } from '../systems/companion.js';
 import { threads, webSite, webSpun } from '../game/spider.js';
@@ -123,6 +126,7 @@ export function renderWorld() {
   drawOwlNight(dawn);
   drawGrove(dawn);
   drawTigerTrail(dawn);
+  drawDeerCrossing();
   drawEnclosure(dawn);
   drawCave(dawn);
   drawSquirrelSeeds(dawn);
@@ -299,7 +303,71 @@ function drawBurrow(dawn) {
   if (!hasChamber) return;
 
   // The way in, and the seed waiting at the end of it.
-  const { mouth, chamber } = burrowSite();
+  const { mouth, chamber, shelter } = burrowSite();
+  if ((state.lifeMode || state.explore?.active) && state.formId === 'worm') {
+    const bird = chickenState();
+    if (rootWatered()) {
+      ctx.fillStyle = 'rgba(70,105,57,.32)';
+      ctx.beginPath(); ctx.ellipse(mouth.x, mouth.y - 8, 69, 40, -0.35, 0, TAU); ctx.fill();
+      ctx.strokeStyle = 'rgba(151,191,119,.55)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(mouth.x - 69, mouth.y - 16);
+      ctx.quadraticCurveTo(mouth.x - 13, mouth.y - 62, mouth.x + 60, mouth.y - 27);
+      ctx.stroke();
+    }
+    // A root canopy marks a safe waiting place before the pecking ground.
+    ctx.fillStyle = 'rgba(55,38,21,.78)';
+    ctx.beginPath(); ctx.ellipse(shelter.x, shelter.y, 48, 29, -0.5, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(200,168,105,.75)';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(shelter.x, shelter.y, 22, 0.4, 3.8); ctx.stroke();
+    const patrolX = mouth.x + (isReducedMotion() ? 0 : Math.sin(bird.patrol * 1.3) * 70);
+    ctx.save();
+    ctx.translate(bird.phase === 'rest' ? patrolX : mouth.x - 12, mouth.y - 92);
+    ctx.fillStyle = '#8c6a47';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 26, 20, -0.25, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = '#b79264';
+    ctx.beginPath();
+    ctx.arc(20, -14, 14, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = '#d45f48';
+    ctx.fillRect(18, -32, 8, 8);
+    ctx.fillStyle = '#e2b653';
+    ctx.beginPath();
+    const peck = bird.phase === 'strike' ? 44 : 0;
+    ctx.moveTo(33, -13 + peck); ctx.lineTo(46, -9 + peck); ctx.lineTo(33, -4 + peck); ctx.fill();
+    ctx.strokeStyle = '#c69b62';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(-5, 17); ctx.lineTo(-5, 34);
+    ctx.moveTo(10, 16); ctx.lineTo(10, 34); ctx.stroke();
+    ctx.restore();
+    if (bird.phase !== 'rest') {
+      ctx.fillStyle = bird.phase === 'warning' ? 'rgba(40,32,24,.35)' : 'rgba(40,20,15,.5)';
+      ctx.beginPath(); ctx.ellipse(mouth.x, mouth.y, bird.radius, bird.radius / 2, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = bird.phase === 'warning' ? 'rgba(245,192,82,.9)' : 'rgba(235,99,70,.95)';
+      ctx.lineWidth = bird.phase === 'warning' ? 3 : 5;
+      ctx.beginPath();
+      ctx.arc(mouth.x, mouth.y, bird.radius, 0, TAU);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(225,170,95,.16)';
+      ctx.beginPath(); ctx.arc(mouth.x, mouth.y, bird.radius, 0, TAU); ctx.fill();
+      ctx.save();
+      ctx.font = canvasFont(18);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const message = t('burrow.chickenWarning');
+      const width = Math.max(160, ctx.measureText(message).width + 28);
+      const labelY = viewport.W < 600 ? mouth.y + 86 : mouth.y - 139;
+      ctx.fillStyle = 'rgba(22,19,15,.88)';
+      ctx.fillRect(mouth.x - width / 2, labelY - 17, width, 34);
+      ctx.fillStyle = '#fff0c7';
+      ctx.fillText(message, mouth.x, labelY);
+      ctx.restore();
+    }
+  }
   ctx.strokeStyle = 'rgba(200,170,120,.35)';
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -346,6 +414,48 @@ function drawNest(dawn) {
     ctx.beginPath();
     ctx.ellipse(feature.x, feature.y, feature.r * 0.7, feature.r * 1.15, 0, 0, TAU);
     ctx.fill();
+  }
+
+  if ((state.lifeMode || state.explore?.active) && state.formId === 'ant') {
+    const rain = rainState();
+    const { drain } = nestSite();
+    ctx.strokeStyle = rain.drained ? 'rgba(143,219,185,.9)' : 'rgba(141,192,200,.75)';
+    ctx.lineWidth = rain.drained ? 5 : 3;
+    ctx.beginPath();
+    ctx.moveTo(drain.x - 18, drain.y + 15);
+    ctx.quadraticCurveTo(drain.x + 14, drain.y + 3, rain.x - rain.radius, rain.y);
+    ctx.stroke();
+    ctx.fillStyle = rain.drained ? '#91d9b9' : '#b9d9dc';
+    ctx.beginPath(); ctx.arc(drain.x, drain.y, 10, 0, TAU); ctx.fill();
+    ctx.fillStyle = rain.phase === 'flood' ? 'rgba(73,143,173,.48)' : 'rgba(73,143,173,.14)';
+    ctx.beginPath(); ctx.arc(rain.x, rain.y, rain.radius, 0, TAU); ctx.fill();
+    ctx.strokeStyle = rain.phase === 'warning' ? '#ffe39b' : 'rgba(122,194,220,.8)';
+    ctx.lineWidth = rain.phase === 'warning' ? 4 : 2;
+    ctx.beginPath(); ctx.arc(rain.x, rain.y, rain.radius, 0, TAU); ctx.stroke();
+    if (rain.rooted) {
+      ctx.strokeStyle = 'rgba(168,206,140,.88)';
+      ctx.lineWidth = 2;
+      for (const dx of [-rain.radius - 8, rain.radius + 8]) {
+        ctx.beginPath();
+        ctx.moveTo(rain.x + dx, rain.y + 10);
+        ctx.quadraticCurveTo(rain.x + dx - 7, rain.y - 8, rain.x + dx - 4, rain.y - 24);
+        ctx.stroke();
+      }
+    }
+    if (rain.phase !== 'rest') {
+      ctx.save();
+      ctx.font = canvasFont(18);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const message = t('ant.rainWarning');
+      const width = Math.max(156, ctx.measureText(message).width + 24);
+      const labelY = viewport.W < 600 ? rain.y + 112 : rain.y - 112;
+      ctx.fillStyle = 'rgba(19,31,38,.88)';
+      ctx.fillRect(rain.x - width / 2, labelY - 17, width, 34);
+      ctx.fillStyle = '#f4f6e8';
+      ctx.fillText(message, rain.x, labelY);
+      ctx.restore();
+    }
   }
 
   // The nest mound, and the way in.
@@ -413,6 +523,31 @@ function drawMarsh(dawn) {
         feature.r * 0.22, 0, TAU,
       );
       ctx.fill();
+    }
+  }
+
+  if ((state.lifeMode || state.explore?.active) && state.formId === 'frog') {
+    const patch = dryMarshState();
+    ctx.fillStyle = patch.phase === 'dry' ? 'rgba(169,126,75,.5)'
+      : patch.watered ? 'rgba(87,158,171,.32)' : 'rgba(161,141,93,.18)';
+    ctx.beginPath(); ctx.arc(patch.x, patch.y, patch.radius, 0, TAU); ctx.fill();
+    ctx.strokeStyle = patch.phase === 'warning' ? '#f4dd8d'
+      : patch.phase === 'dry' ? '#e3a967' : 'rgba(145,188,180,.65)';
+    ctx.lineWidth = patch.phase === 'rest' ? 2 : 4;
+    ctx.beginPath(); ctx.arc(patch.x, patch.y, patch.radius, 0, TAU); ctx.stroke();
+    if (patch.phase !== 'rest') {
+      ctx.save();
+      ctx.font = canvasFont(18);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const message = t('frog.dryWarning');
+      const width = Math.max(156, ctx.measureText(message).width + 24);
+      const labelY = viewport.W < 600 ? patch.y + 108 : patch.y - 108;
+      ctx.fillStyle = 'rgba(35,30,22,.9)';
+      ctx.fillRect(patch.x - width / 2, labelY - 17, width, 34);
+      ctx.fillStyle = '#fff2cf';
+      ctx.fillText(message, patch.x, labelY);
+      ctx.restore();
     }
   }
 
@@ -1133,7 +1268,7 @@ function drawAsuraRooms(dawn) {
 function drawGardenRooms(dawn) {
   const { center, ring } = gardenSite();
   const gate = gardenGatePoint();
-  const lit = isLit();
+  const lit = isGardenGateLit();
   const level = lightLevel();
   const released = releasedBeds();
 
@@ -2008,6 +2143,92 @@ function drawRiver(dawn) {
   const biome = currentBiome();
   drawPath(RIVER, RIVER_WIDTH * 2, dawn ? '#1b3550' : biome.water);
   drawPath(RIVER, RIVER_WIDTH * 1.1, dawn ? '#264f70' : biome.waterCore);
+  if (fryGuided() || ((state.lifeMode || state.explore?.active) && state.formId === 'fish')) {
+    ctx.strokeStyle = fryGuided() ? 'rgba(142,221,208,.85)' : 'rgba(150,192,204,.65)';
+    ctx.lineWidth = fryGuided() ? 8 : 4;
+    ctx.beginPath();
+    ctx.moveTo(FISH.channel.x - 35, FISH.channel.y - 42);
+    ctx.quadraticCurveTo(FISH.channel.x + 54, FISH.channel.y - 30, FISH.shallows.x - 30, FISH.shallows.y - 24);
+    ctx.stroke();
+    ctx.fillStyle = fryGuided() ? '#a7e1d3' : '#b1cdd0';
+    for (const [dx, dy] of [[-16, -7], [4, 7], [22, -3]]) {
+      ctx.beginPath(); ctx.ellipse(FISH.channel.x + dx, FISH.channel.y + dy, 7, 3, -0.3, 0, TAU); ctx.fill();
+    }
+  }
+  if ((state.lifeMode || state.explore?.active) && state.formId === 'fish') {
+    const bird = fishBirdState();
+    ctx.fillStyle = 'rgba(196,178,137,.24)';
+    ctx.beginPath(); ctx.arc(bird.x, bird.y, 70, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#917e62';
+    ctx.beginPath(); ctx.ellipse(bird.x + 26, bird.y - 61, 23, 16, -0.3, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#bca982';
+    ctx.beginPath(); ctx.arc(bird.x + 39, bird.y - 71, 10, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#c7af84';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(bird.x + 29, bird.y - 47); ctx.lineTo(bird.x + 18, bird.y - 12); ctx.stroke();
+    if (bird.phase !== 'rest') {
+      ctx.fillStyle = bird.phase === 'warning' ? 'rgba(45,38,25,.25)' : 'rgba(71,31,25,.4)';
+      ctx.beginPath(); ctx.arc(bird.x, bird.y, bird.radius, 0, TAU); ctx.fill();
+      ctx.strokeStyle = bird.phase === 'warning' ? '#f6d984' : '#f08c70';
+      ctx.lineWidth = bird.phase === 'warning' ? 4 : 5;
+      ctx.beginPath(); ctx.arc(bird.x, bird.y, bird.radius, 0, TAU); ctx.stroke();
+      ctx.save();
+      ctx.font = canvasFont(18);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const message = t('fish.birdWarning');
+      const width = Math.max(158, ctx.measureText(message).width + 24);
+      const labelY = viewport.W < 600 ? bird.y + 94 : bird.y - 124;
+      ctx.fillStyle = 'rgba(24,31,39,.9)';
+      ctx.fillRect(bird.x - width / 2, labelY - 17, width, 34);
+      ctx.fillStyle = '#fff2cf';
+      ctx.fillText(message, bird.x, labelY);
+      ctx.restore();
+    }
+  }
+}
+
+function drawDeerCrossing() {
+  if (herdSheltered()) {
+    ctx.fillStyle = 'rgba(91,132,77,.48)';
+    for (const [dx, dy, r] of [[-34, -24, 26], [2, -36, 32], [34, -15, 24]]) {
+      ctx.beginPath(); ctx.arc(DEER.herd.x + dx, DEER.herd.y + dy, r, 0, TAU); ctx.fill();
+    }
+  }
+  if (!((state.lifeMode || state.explore?.active) && state.formId === 'deer')) return;
+  const hunter = deerHazardState();
+  ctx.fillStyle = 'rgba(35,31,27,.85)';
+  ctx.beginPath(); ctx.ellipse(hunter.x + 95, hunter.y - 62, 35, 16, -0.2, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(hunter.x + 115, hunter.y - 70);
+  ctx.lineTo(hunter.x + 137, hunter.y - 84);
+  ctx.lineTo(hunter.x + 126, hunter.y - 53); ctx.fill();
+  if (hunter.phase === 'rest') {
+    // Keep the crossing legible before the first rush, especially in previews.
+    ctx.save();
+    ctx.strokeStyle = 'rgba(245,217,141,.65)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 10]);
+    ctx.beginPath(); ctx.arc(hunter.x, hunter.y, hunter.radius, 0, TAU); ctx.stroke();
+    ctx.restore();
+    return;
+  }
+  ctx.fillStyle = hunter.phase === 'warning' ? 'rgba(63,42,30,.3)' : 'rgba(81,29,24,.48)';
+  ctx.beginPath(); ctx.arc(hunter.x, hunter.y, hunter.radius, 0, TAU); ctx.fill();
+  ctx.strokeStyle = hunter.phase === 'warning' ? '#f5d98d' : '#eb8c71';
+  ctx.lineWidth = hunter.phase === 'warning' ? 4 : 5;
+  ctx.beginPath(); ctx.arc(hunter.x, hunter.y, hunter.radius, 0, TAU); ctx.stroke();
+  ctx.save();
+  ctx.font = canvasFont(18);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const message = t('deer.hunterWarning');
+  const width = Math.max(158, ctx.measureText(message).width + 24);
+  const labelY = viewport.W < 600 ? hunter.y + 120 : hunter.y - 126;
+  ctx.fillStyle = 'rgba(28,25,22,.9)';
+  ctx.fillRect(hunter.x - width / 2, labelY - 17, width, 34);
+  ctx.fillStyle = '#fff1d0';
+  ctx.fillText(message, hunter.x, labelY);
+  ctx.restore();
 }
 
 function drawPaths(dawn) {

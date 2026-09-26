@@ -12,6 +12,7 @@ import { isMindful } from '../systems/input.js';
 import { t } from '../systems/i18n.js';
 import { getPathModifiers } from '../systems/path.js';
 import { getForm } from '../systems/forms.js';
+import { saveRun } from '../systems/save.js';
 import { rng } from '../core/rng.js';
 import { addSpark } from '../systems/effects.js';
 import { dynamicFeatures, removeFeature } from '../systems/worldgen.js';
@@ -25,8 +26,9 @@ import { callCompanion, companionState, updateCompanion } from '../systems/compa
 import { updateGuardian } from './npc.js';
 import { updateEncounters } from './npc-encounters.js';
 import { updateWorldMemory } from './world-memory.js';
-import { updateAnt } from './ant.js';
-import { updateFrog } from './frog.js';
+import { updateAnt, updateRain } from './ant.js';
+import { updateDryMarsh, updateFrog } from './frog.js';
+import { updateDeer, updateDeerHazard } from './deer.js';
 import { updateSnake } from './snake.js';
 import { updateRabbit } from './rabbit.js';
 import { updateOwl } from './owl.js';
@@ -58,6 +60,8 @@ import { updateStory } from './story.js';
 import { updateTeacherPanel } from '../ui/teacher-panel.js';
 import { updateTour } from '../systems/teacher.js';
 import { updateLifeGoal } from '../systems/goals.js';
+import { updateChicken } from './burrow.js';
+import { updateFish, updateFishBird } from './fish.js';
 
 let heartCd = 0;
 
@@ -70,6 +74,11 @@ export function updateWorld(dt) {
   const mind = isMindful();
 
   const { running } = updatePlayer(dt);
+  updateChicken(dt);
+  updateRain(dt);
+  updateFishBird(dt);
+  updateDryMarsh(dt);
+  updateDeerHazard(dt);
 
   // Classroom mode: free roam, no spirits, no fail states — just the map.
   if (state.teacher) {
@@ -107,7 +116,9 @@ export function updateWorld(dt) {
   }
   updateWorldMemory();
   updateAnt();
+  updateFish();
   updateFrog();
+  updateDeer();
   updateSnake();
   updateRabbit();
   updateOwl();
@@ -224,7 +235,8 @@ function clearBouldersForStrongForms() {
   for (const feature of dynamicFeatures()) {
     if (feature.type !== 'boulders') continue;
     if (dist(player.x, player.y, feature.x, feature.y) < feature.r + 14) {
-      removeFeature(feature.i);
+      if (!removeFeature(feature.i)) continue;
+      saveRun();
       animatePlayer();
       playThud();
       addFloater(player.x, player.y - 120, t('form.asura.lift'), '#c9bcd6', 15);

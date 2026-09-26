@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { choose } from '../ui/choices.js';
 import { TRAIL } from '../world/world-data.js';
@@ -101,6 +102,7 @@ function readTrack() {
   const step = tracksRead();
   if (step >= TRAIL.tracks.length) return;
   state.tiger.step = step + 1;
+  saveRun();
   animatePlayer();
   playChime();
   addFloater(
@@ -129,6 +131,7 @@ function faceRival() {
       } else {
         recordKarma('harm');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

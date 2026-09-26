@@ -6,7 +6,7 @@ import { state } from '../core/state.js';
 import { emit, EVENTS } from '../core/events.js';
 import { getForm, isWaterBound } from './forms.js';
 import { player } from '../entities/player.js';
-import { BURROW, GROVE, nearestRiverPoint } from '../world/world-data.js';
+import { BURROW, FISH, GROVE, nearestRiverPoint } from '../world/world-data.js';
 import { waterRoot } from '../game/burrow.js';
 import { antGoal, deliverSeed } from '../game/ant.js';
 import { frogGoal, spawnAtBank } from '../game/frog.js';
@@ -103,6 +103,9 @@ export const ENDING_GOALS = new Set(['water', 'burrow', 'nest', 'spawn', 'link',
  *          then decide what the soil you opened should give (game/boar.js)
  */
 export function goalFor() {
+  if (getForm().id === 'fish') {
+    return { x: FISH.pool.x, y: FISH.pool.y, r: WATER_GOAL_RADIUS, kind: 'water' };
+  }
   if (isWaterBound() || getForm().lifeGoal === 'water') {
     const point = nearestRiverPoint(TEMPLE);
     return { x: point.x, y: point.y, r: WATER_GOAL_RADIUS, kind: 'water' };
@@ -152,7 +155,7 @@ export function updateLifeGoal() {
   if (dist(player.x, player.y, goal.x, goal.y) < goal.r) {
     if (goal.kind === 'burrow') waterRoot();
     if (goal.kind === 'nest') deliverSeed();
-    if (goal.kind === 'spawn') spawnAtBank();
+    if (goal.kind === 'spawn' && !spawnAtBank()) return;
     if (goal.kind === 'link') linkWater();
     if (goal.kind === 'storm') tendField();
     if (goal.kind === 'watch') settleRoost();

@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { choose } from '../ui/choices.js';
 import { FIELD } from '../world/world-data.js';
@@ -112,6 +113,7 @@ function joinWarren() {
   const pending = nextWarren();
   if (!pending) return;
   state.rabbit.connected[pending.id] = true;
+  saveRun();
   animatePlayer();
   playChime();
   addFloater(
@@ -137,6 +139,7 @@ function decideShelter() {
         recordEffect('nest-sheltered');
         recordKarma('give');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

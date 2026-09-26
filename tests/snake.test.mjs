@@ -28,7 +28,8 @@ function element() {
 const query = (id) => { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); };
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: (id) => query(`#${id}`), createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -44,6 +45,7 @@ const { BIOMES } = await import('../src/content/biomes.js');
 const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld, worldAbilities, dynamicBlocked } = await import('../src/systems/worldgen.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects, WORLD_EFFECTS } = await import('../src/systems/world-effects.js');
 const { planNextLife } = await import('../src/systems/life-route.js');
 const { loadChapter } = await import('../src/game/chapters.js');
@@ -127,6 +129,15 @@ emit(EVENTS.CHOICE_PICK, 0); // widen
 assert.equal(snake.didWiden(), true, 'the snake widened the slot');
 assert.equal(hasEffect('water-linked'), true, 'the water is linked in the world');
 assert(getKarma().merit > 0, 'opening the way for others is remembered as giving');
+const widenedMerit = getKarma().merit;
+assert.deepEqual(readSave().snake, { decided: true, widened: true }, 'widening is saved before the outflow');
+snake.resetSnake();
+applySaveRuntime(readSave());
+assert.equal(snake.didWiden(), true, 'widening survives a reload');
+state.interact = null;
+snake.updateSnake();
+assert.equal(state.interact, null, 'the spring does not ask again');
+assert.equal(getKarma().merit, widenedMerit, 'resuming gives no extra merit');
 
 const after = goalFor();
 assert.equal(after.kind, 'link', 'with the question answered, the outflow becomes the ending');
@@ -175,6 +186,14 @@ assert.equal(snake.didWiden(), false, 'this snake kept its narrow way');
 assert.equal(hasEffect('water-linked'), false, 'so the water stays unlinked');
 assert.equal(getKarma().merit, 0, 'and nothing is recorded as giving');
 assert.equal(goalFor().kind, 'link', 'the outflow still ends the life — the choice is not a punishment');
+assert.deepEqual(readSave().snake, { decided: true, widened: false }, 'keeping the way narrow is saved too');
+snake.resetSnake();
+applySaveRuntime(readSave());
+assert.equal(snake.hasDecided(), true, 'keeping the way narrow survives a reload');
+assert.equal(snake.didWiden(), false, 'the restored crevice remains narrow');
+state.interact = null;
+snake.updateSnake();
+assert.equal(state.interact, null, 'the narrow-way answer is not asked again');
 log('choice recorded ok');
 
 // ---- 7. a new life arrives at stone that is shut again ----

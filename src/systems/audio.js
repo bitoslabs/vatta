@@ -162,6 +162,39 @@ export function playHeart() {
   osc.stop(t + 0.16);
 }
 
+/** Low falling cues for weather and drying ground, before their visible hazards. */
+export function playRunoffWarning() {
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(420, t);
+  osc.frequency.linearRampToValueAtTime(150, t + 0.65);
+  envelope(gain, t, 0.02, 0.055, 0.65);
+  osc.connect(gain);
+  gain.connect(master);
+  osc.start(t);
+  osc.stop(t + 0.72);
+}
+
+export function playDryWarning() {
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  for (const offset of [0, 0.22, 0.43]) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(240, t + offset);
+    osc.frequency.exponentialRampToValueAtTime(120, t + offset + 0.12);
+    envelope(gain, t + offset, 0.003, 0.04, 0.13);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(t + offset);
+    osc.stop(t + offset + 0.17);
+  }
+}
+
 export function playBird() {
   if (!ctx) return;
   const t = ctx.currentTime;

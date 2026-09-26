@@ -51,6 +51,7 @@ function renderLeavings() {
     const where = leaving.site ? t(`site.${leaving.site}`) : '';
     item.appendChild(el('div', 'codex-name', t(leaving.key)));
     item.appendChild(el('div', 'codex-desc', [who, where].filter(Boolean).join(' · ')));
+    if (leaving.consequenceKey) item.appendChild(el('div', 'codex-desc', t(leaving.consequenceKey)));
     if (leaving.place) {
       const go = el('button', 'link-btn', t('book.leavings.go'));
       go.type = 'button';

@@ -8,10 +8,13 @@ import { currentBiomeId } from '../systems/biome.js';
 import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { dynamicFeatures } from '../systems/worldgen.js';
 import { MARKET, marketAxis, marketGate } from '../world/world-data.js';
 import { animatePlayer, player } from '../entities/player.js';
+import { encountersHere } from './npc-encounters.js';
+import { choose } from '../ui/choices.js';
 
 /**
  * The market alley (design §7, "ตลาดความอยาก — ร้านแตกแขนงเมื่อรับข้อเสนอบ่อย ·
@@ -81,6 +84,7 @@ export function updateMarket() {
     life.passed = true;
     recordEffect('hands-emptied');
     recordKarma('precept');
+    saveRun();
     addFloater(player.x, player.y - 120, t('market.answer.passed'), '#bfd9cd', 15);
   }
 
@@ -92,6 +96,12 @@ export function updateMarket() {
   ));
   if (gift) {
     state.interact = { fn: () => takeOffer(gift), labelKey: 'prompt.takeOffer' };
+    return;
+  }
+  const receiver = encountersHere().find((entry) => entry.id === 'market-stall');
+  if (carriedCount() > 0 && receiver
+    && dist(player.x, player.y, receiver.x, receiver.y) <= receiver.r) {
+    state.interact = { fn: offerToShare, labelKey: 'prompt.shareOffer' };
     return;
   }
   if (carriedCount() > 0) {
@@ -113,6 +123,7 @@ export function takeOffer(gift) {
   life.carried.push(key);
   life.touched = true;
   recordKarma('cling');
+  saveRun();
   animatePlayer();
   playChime();
   addFloater(player.x, player.y - 120, t('market.answer.taken', { n: life.carried.length }), '#e9c46a', 15);
@@ -131,7 +142,30 @@ export function putDown() {
   const had = life.carried.length;
   if (had === 0) return false;
   life.carried = [];
+  saveRun();
   animatePlayer();
   addFloater(player.x, player.y - 120, t('market.answer.putDown', { n: had }), '#bfd9cd', 14);
   return true;
+}
+
+/** Give one held offer to the hungry being in the next chamber. */
+export function shareOffer() {
+  const life = market();
+  if (life.carried.length === 0) return false;
+  life.carried.pop();
+  if (recordEffect('offer-shared')) recordKarma('give');
+  animatePlayer();
+  playChime();
+  addFloater(player.x, player.y - 120, t('market.answer.shared'), '#bfd9cd', 15);
+  saveRun();
+  return true;
+}
+
+function offerToShare() {
+  choose([
+    { t: t('market.choice.share') },
+    { t: t('market.choice.keep') },
+  ], (index) => {
+    if (index === 0) shareOffer();
+  });
 }

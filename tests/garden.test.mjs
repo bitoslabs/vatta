@@ -41,7 +41,8 @@ const { getKarma, resetKarma } = await import('../src/systems/karma.js');
 const { hasEffect, WORLD_EFFECTS } = await import('../src/systems/world-effects.js');
 const light = await import('../src/systems/light.js');
 const { loadChapter } = await import('../src/game/chapters.js');
-const { encountersHere } = await import('../src/game/npc-encounters.js');
+const { encountersHere, updateEncounters } = await import('../src/game/npc-encounters.js');
+const { initChoices } = await import('../src/ui/choices.js');
 const { player } = await import('../src/entities/player.js');
 const garden = await import('../src/game/garden.js');
 
@@ -130,6 +131,26 @@ log('the room and the light ok');
 const being = encountersHere().find((encounter) => encounter.id === 'garden-bloom');
 assert(being, 'the garden being is in this plane');
 assert.equal(dist(being.x, being.y, GARDEN.center.x, GARDEN.center.y), 0, 'standing in the garden, past the gate');
+
+// Guiding a visitor is a separate act: it extends the gate's light only later.
+initChoices();
+player.x = being.x;
+player.y = being.y;
+state.interact = null;
+updateEncounters();
+assert.equal(state.interact?.labelKey, 'prompt.talkGardenBloom');
+state.interact.fn();
+emit(EVENTS.CHOICE_PICK, 1);
+assert.equal(hasEffect('visitor-guided'), true);
+light.setLightPhase(0.2);
+assert.equal(worldAbilities().lightLit, undefined, 'the guiding life still has the ordinary light window');
+state.lifeId++;
+assert.equal(worldAbilities().lightLit, true, 'a later life inherits a longer light window');
+assert.equal(blockedAt(dynamicFeatures(), gate.x, gate.y, worldAbilities()), false,
+  'the inherited light opens the actual garden gate');
+light.setLightPhase(0);
+assert.equal(worldAbilities().lightLit, undefined, 'the gate still goes dark each round');
+light.resetLight();
 
 // ---- 5. let an old bed go ----
 const ripe = beds().find((b) => b.ripe === true);

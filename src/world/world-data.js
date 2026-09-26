@@ -12,6 +12,14 @@ export const PATH = [
   [2820, 1520], [3120, 1650], [3420, 1500], [3680, 1150], [3880, 1000], [3960, 940],
 ];
 
+/** A herd crossing on the forest road, with cover before the exposed ground. */
+export const DEER = Object.freeze({
+  crossing: Object.freeze({ x: 1900, y: 1400 }),
+  herd: Object.freeze({ x: 1730, y: 1500 }),
+  refuge: Object.freeze({ x: 1600, y: 1540 }),
+  preview: Object.freeze({ x: 1810, y: 1490 }),
+});
+
 /**
  * Every plane walks its own road (design §7).
  *
@@ -150,6 +158,15 @@ export function nearestRiverPoint(target) {
 }
 export const RIVER_WIDTH = 95;
 
+/** A fish swims from the upper river to a downstream pool past the shallows. */
+export const FISH = Object.freeze({
+  pool: Object.freeze({ x: 1420, y: 2430 }),
+  shallows: Object.freeze({ x: 1620, y: 1930 }),
+  refuge: Object.freeze({ x: 1310, y: 1420 }),
+  channel: Object.freeze({ x: 1510, y: 1800 }),
+  preview: Object.freeze({ x: 1540, y: 1810 }),
+});
+
 /** False branches that lead to light gates. */
 export const FALSE_A = [[2250, 1180], [2280, 860], [2380, 560], [2470, 340]];
 export const FALSE_B = [[3120, 1650], [3260, 1980], [3420, 2280]];
@@ -165,6 +182,7 @@ export const FALSE_B = [[3120, 1650], [3260, 1980], [3420, 2280]];
  */
 export const BURROW = Object.freeze({
   mouth: Object.freeze({ x: 700, y: 1120 }),
+  shelter: Object.freeze({ x: 740, y: 1210 }),
   chamber: Object.freeze({ x: 520, y: 900 }),
   ring: 150,
   walls: 14,
@@ -1233,6 +1251,9 @@ export const CREVICE_APPROACH = Object.freeze([
 export const MARSH = Object.freeze({
   inlet: Object.freeze({ x: 2860, y: 2320 }),
   bank: Object.freeze({ x: 3108, y: 2180 }),
+  drying: Object.freeze({ x: 2820, y: 2140 }),
+  refuge: Object.freeze({ x: 2790, y: 1900 }),
+  preview: Object.freeze({ x: 2800, y: 1990 }),
   ring: 150,
   walls: 12,
   wallRadius: 44,
@@ -1278,6 +1299,9 @@ export const MARSH_APPROACH = Object.freeze([
 export const NEST = Object.freeze({
   seed: Object.freeze({ x: 980, y: 1440 }),
   chamber: Object.freeze({ x: 1300, y: 1960 }),
+  runoff: Object.freeze({ x: 1200, y: 1720 }),
+  drain: Object.freeze({ x: 1110, y: 1640 }),
+  preview: Object.freeze({ x: 1040, y: 1530 }),
   ring: 130,
   walls: 12,
   wallRadius: 40,

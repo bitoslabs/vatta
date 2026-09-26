@@ -126,6 +126,129 @@ const log = (message) => console.error(`[levels] ${message}`);
   log('no accidental ending ok');
 }
 
+// ---- 5. chapter seven teaches release and continues to chapter eight ----
+{
+  const { updateChapter7 } = await import('../src/game/story-chapter7.js');
+  const { advanceDialogue, resetDialogue } = await import('../src/ui/dialogue.js');
+  const { initChoices } = await import('../src/ui/choices.js');
+  const { pendingTransition, resetTransition } = await import('../src/systems/transition.js');
+  const { emit, EVENTS } = await import('../src/core/events.js');
+  const { player } = await import('../src/entities/player.js');
+  const { TEMPLE } = await import('../src/core/constants.js');
+  initChoices();
+  state.lifeId = 7;
+  resetTransition();
+  state.lifeMode = true;
+  state.liberated = false;
+  loadChapter(7, { autosave: false });
+  resetDialogue();
+  player.x = TEMPLE.x;
+  player.y = TEMPLE.y;
+  updateChapter7(0);
+  for (let i = 0; i < 8 && state.dialogueOpen; i++) advanceDialogue();
+  assert.equal(state.choiceOpen, true, 'the seventh chapter offers its final reflection');
+  emit(EVENTS.CHOICE_PICK, 1);
+  for (let i = 0; i < 8 && state.dialogueOpen; i++) advanceDialogue();
+  assert.equal(state.liberated, false, 'choosing release in chapter seven does not end the journey');
+  assert.equal(query('#lifeSummary').classList.contains('hidden'), false,
+    'the seventh chapter shows a life summary');
+  assert.equal(pendingTransition()?.next?.chapter, 8, 'the reserved next life enters chapter eight');
+  const { snapshot, readSave, applySaveRuntime } = await import('../src/systems/save.js');
+  const legacy = { ...snapshot(), chapter: 7, lifeMode: true, liberated: true, journeyComplete: true };
+  const savedEffects = legacy.world.effects;
+  globalThis.localStorage = { getItem: () => JSON.stringify(legacy), setItem() {}, removeItem() {} };
+  const restored = readSave(1);
+  assert.equal(restored.liberated, false, 'an old chapter-seven ending is reopened');
+  assert.equal(restored.journeyComplete, false, 'an old completed-run flag cannot block chapter eight');
+  assert.deepEqual(restored.world.effects, savedEffects, 'migration keeps the world effects');
+  applySaveRuntime(restored);
+  assert.equal(state.liberated, false, 'loading the old save can continue the journey');
+  assert.equal(state.journeyComplete, false, 'the restored journey remains active');
+  log('chapter seven continues ok');
+}
+
+// ---- 6. partial release at the real finale still leads to another life ----
+{
+  const { updateChapter14 } = await import('../src/game/story-chapter14.js');
+  const { advanceDialogue, resetDialogue } = await import('../src/ui/dialogue.js');
+  const { resetTransition, pendingTransition } = await import('../src/systems/transition.js');
+  const { importPath } = await import('../src/systems/path.js');
+  const { resetKarma, recordKarma } = await import('../src/systems/karma.js');
+  const { isPrototypeComplete, journeyReadiness } = await import('../src/systems/life.js');
+  const { emit, EVENTS } = await import('../src/core/events.js');
+  const { player } = await import('../src/entities/player.js');
+  const { TEMPLE } = await import('../src/core/constants.js');
+  resetKarma();
+  state.lifeId = 14;
+  state.lifeMode = true;
+  state.liberated = false;
+  resetTransition();
+  loadChapter(14, { autosave: false });
+  recordKarma('meditate');
+  recordKarma('give', 2);
+  recordKarma('compassion');
+  recordKarma('letgo');
+  importPath([]);
+  assert.equal(journeyReadiness().ready, true, 'the journey memory is ready for the mirror court');
+  assert.equal(isPrototypeComplete(), false, 'readiness alone cannot end chapter fourteen before a choice');
+  resetDialogue();
+  player.x = TEMPLE.x;
+  player.y = TEMPLE.y;
+  updateChapter14(0);
+  for (let i = 0; i < 8 && state.dialogueOpen; i++) advanceDialogue();
+  assert.equal(state.choiceOpen, true, 'the last chapter offers a partial release');
+  emit(EVENTS.CHOICE_PICK, 0);
+  assert.equal(state.liberated, false, 'partial release does not claim liberation');
+  assert.equal(isPrototypeComplete(), false, 'the mirror court cannot override an explicit choice to continue');
+  const { snapshot, applySaveRuntime } = await import('../src/systems/save.js');
+  const partialSave = snapshot();
+  state.finalChoice = null;
+  applySaveRuntime(partialSave);
+  assert.equal(state.finalChoice, 'continue', 'a reload remembers the choice to continue');
+  for (let i = 0; i < 8 && state.dialogueOpen; i++) advanceDialogue();
+  assert.equal(pendingTransition()?.next?.chapter, 1, 'a continuing life cycles back to chapter one');
+  log('partial release continues ok');
+}
+
+// ---- 7. the complete path alone offers and applies the final exit ----
+{
+  const { updateChapter14 } = await import('../src/game/story-chapter14.js');
+  const { advanceDialogue, resetDialogue } = await import('../src/ui/dialogue.js');
+  const { resetTransition, pendingTransition } = await import('../src/systems/transition.js');
+  const { resetKarma, recordKarma } = await import('../src/systems/karma.js');
+  const { resetPath, unlockedCount } = await import('../src/systems/path.js');
+  const { keptPreceptCount } = await import('../src/systems/precepts.js');
+  const { emit, EVENTS } = await import('../src/core/events.js');
+  const { player } = await import('../src/entities/player.js');
+  const { TEMPLE } = await import('../src/core/constants.js');
+  resetKarma();
+  resetPath();
+  recordKarma('mindful', 3);
+  recordKarma('give', 2);
+  recordKarma('letgo');
+  recordKarma('meditate', 2);
+  assert.equal(unlockedCount(), 8, 'the complete path has all eight factors');
+  assert.equal(keptPreceptCount(), 5, 'the five precepts remain kept');
+  state.lifeId = 28;
+  state.lifeMode = true;
+  resetTransition();
+  loadChapter(14, { autosave: false });
+  resetDialogue();
+  player.x = TEMPLE.x;
+  player.y = TEMPLE.y;
+  updateChapter14(0);
+  for (let i = 0; i < 8 && state.dialogueOpen; i++) advanceDialogue();
+  assert.equal(state.choiceOpen, true);
+  emit(EVENTS.CHOICE_PICK, 0);
+  assert.equal(state.liberated, true, 'the fully qualified release exits the wheel');
+  assert.equal(state.finalChoice, 'free');
+  const { isPrototypeComplete } = await import('../src/systems/life.js');
+  assert.equal(isPrototypeComplete(), true, 'the completion check agrees with the accepted final exit');
+  for (let i = 0; i < 8 && state.dialogueOpen; i++) advanceDialogue();
+  assert.equal(pendingTransition(), null, 'a true ending does not reserve another birth');
+  log('complete path exits ok');
+}
+
 function startLife() {
   initLifeSummary();
   state.lifeMode = true;

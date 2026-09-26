@@ -25,7 +25,8 @@ function element() {
 const query = () => element();
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: query, createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -39,6 +40,7 @@ const { BIOMES } = await import('../src/content/biomes.js');
 const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld, worldAbilities } = await import('../src/systems/worldgen.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects } = await import('../src/systems/world-effects.js');
 const tide = await import('../src/systems/tide.js');
 const { planNextLife, candidatesFor } = await import('../src/systems/life-route.js');
@@ -135,6 +137,16 @@ assert.equal(crab.didKeep(), true, 'the crab kept the channel shallow');
 assert.equal(hasEffect('channel-kept'), true, 'and the world records it');
 assert(getKarma().merit > 0, 'keeping a way open is remembered as giving');
 assert.equal(goalFor().kind, 'home', 'now home is where the life ends');
+const keptMerit = getKarma().merit;
+assert.equal(readSave().crab.kept, true, 'keeping the channel is saved before reaching home');
+crab.resetCrab();
+applySaveRuntime(readSave());
+assert.equal(crab.didKeep(), true, 'the choice survives a reload');
+assert.equal(goalFor().kind, 'home', 'the resumed crab still goes home');
+state.interact = null;
+crab.updateCrab();
+assert.equal(state.interact, null, 'the resumed choice is not offered again');
+assert.equal(getKarma().merit, keptMerit, 'resuming does not award merit twice');
 player.x = TIDE.home.x;
 player.y = TIDE.home.y;
 updateLifeGoal();
@@ -172,6 +184,13 @@ assert.equal(crab.didKeep(), false, 'this crab left the channel to the river');
 assert.equal(hasEffect('channel-kept'), false, 'so nothing was kept');
 assert.equal(getKarma().merit, 0, 'and nothing is recorded as giving');
 assert.equal(goalFor().kind, 'home', 'home still ends the life — the choice is not a punishment');
+assert.deepEqual(readSave().crab, { reached: true, decided: true, kept: false }, 'leaving the channel is saved too');
+crab.resetCrab();
+applySaveRuntime(readSave());
+assert.equal(crab.hasDecided(), true, 'the declined choice survives a reload');
+state.interact = null;
+crab.updateCrab();
+assert.equal(state.interact, null, 'declining is not offered again after a reload');
 log('leaving it ok');
 
 // ---- 7. a new life arrives with the channel as the river left it ----

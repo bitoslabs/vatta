@@ -145,6 +145,11 @@ log('save/load at every stage ok');
   assert.equal(importTransition({ phase: 'summary', next: { lifeId: 3, chapter: 2, formId: 'frog' } }), true,
     'a well-formed stored transition is read back');
   assert.equal(pendingTransition().next.formId, 'frog', 'with its reservation');
+  assert.equal(importTransition({ phase: 'summary', next: {
+    lifeId: 3, chapter: 2, formId: 'frog', realmId: 'manussa', chosen: true,
+  } }), true, 'an older reservation with a valid realm is migrated');
+  assert.equal(pendingTransition().next.formId, 'human', 'its body is brought into the reserved human realm');
+  assert.equal(pendingTransition().next.chosen, false, 'a repaired body is never treated as a player choice');
   assert.equal(importTransition({ phase: 'nonsense', next: { lifeId: 3, chapter: 2, formId: 'frog' } }), false,
     'an unknown phase is refused');
   assert.equal(importTransition({ phase: 'summary', next: { lifeId: 'three', chapter: 2, formId: 'frog' } }), false,

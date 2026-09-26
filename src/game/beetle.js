@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { dynamicFeatures, nextFeatureIndex } from '../systems/worldgen.js';
 import { assemblePushSite } from '../world/rooms.js';
@@ -105,6 +106,7 @@ export function pushSeed() {
     playThud();
     addFloater(player.x, player.y - 110, t('beetle.answer.pushed'), '#d8c8a4', 13);
   }
+  saveRun();
   return true;
 }
 

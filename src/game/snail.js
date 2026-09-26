@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { isDamp, moistureLevel, moistureTrend } from '../systems/moisture.js';
 import { choose } from '../ui/choices.js';
@@ -89,6 +90,7 @@ function decideTrail() {
         recordEffect('damp-trail');
         recordKarma('give');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

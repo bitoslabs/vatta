@@ -5,7 +5,7 @@ import { state } from '../core/state.js';
 import { getKarmaMemory } from './karma-memory.js';
 import { getForm, isWaterBound, setForm } from './forms.js';
 import { planNextLife } from './life-route.js';
-import { drawNextLife, eligibleForms, resetRebirth, resolveRebirth } from './rebirth.js';
+import { drawNextLife, realmFormIds, resetRebirth, resolveRebirth } from './rebirth.js';
 import { getKarma, resetKarma } from './karma.js';
 import { saveRun } from './save.js';
 import { addFloater } from './effects.js';
@@ -95,13 +95,17 @@ export function plannedNextLife() {
 export function chooseNextBody(formId) {
   const pending = pendingTransition();
   if (!pending) return false;
+  let chosen = false;
   if (pending.next.explore === true) {
-    if (!eligibleForms(pending.next.chapter).all.includes(formId)) return false;
-    return markChosenBody(formId);
+    if (!realmFormIds(pending.next.realmId, pending.next.chapter).includes(formId)) return false;
+    chosen = markChosenBody(formId);
+  } else {
+    const cards = pending.next.candidateIds;
+    if (!Array.isArray(cards) || !cards.includes(formId)) return false;
+    chosen = markChosenBody(formId, pending.next.probabilities ? pending.next.probabilities[formId] : null);
   }
-  const cards = pending.next.candidateIds;
-  if (!Array.isArray(cards) || !cards.includes(formId)) return false;
-  return markChosenBody(formId, pending.next.probabilities ? pending.next.probabilities[formId] : null);
+  if (chosen) saveRun();
+  return chosen;
 }
 
 /** What this life did, read from what kamma remembers (design §2 summary). */
@@ -152,7 +156,9 @@ export function favouriteForm() {
 }
 
 export function isPrototypeComplete() {
-  return state.chapter === CHAPTERS.at(-1).id && journeyReadiness().ready;
+  return state.chapter === CHAPTERS.at(-1).id
+    && state.finalChoice === 'free'
+    && state.liberated === true;
 }
 
 /**

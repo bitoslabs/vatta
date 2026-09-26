@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { choose } from '../ui/choices.js';
 import { BLOOMS } from '../world/world-data.js';
@@ -121,6 +122,7 @@ export function updateBee() {
 function visitFlower(index) {
   if (flowerVisited(index)) return;
   state.bee.visited = [...(state.bee.visited || []), index];
+  saveRun();
   animatePlayer();
   playChime();
   addFloater(
@@ -148,6 +150,7 @@ function decidePollen() {
       } else {
         recordKarma('cling');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

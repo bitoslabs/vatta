@@ -2,6 +2,7 @@
 
 import { state } from '../core/state.js';
 import { emit, EVENTS } from '../core/events.js';
+import { inheritedEffect } from './world-effects.js';
 
 /**
  * The garden's light (design §7, "สวนแสงไม่เที่ยง — สวนบานแล้วโรย ทางแสงมีอายุ ·
@@ -40,6 +41,13 @@ export function lightLevel() {
 export function isLit() {
   const phase = lightPhase();
   return phase >= 0.25 && phase <= 0.75;
+}
+
+/** A path shown to a visitor in an earlier life stays visible a little longer. */
+export function isGardenGateLit() {
+  const phase = lightPhase();
+  const margin = inheritedEffect('visitor-guided') ? 0.08 : 0;
+  return phase >= 0.25 - margin && phase <= 0.75 + margin;
 }
 
 export function isDim() {

@@ -97,6 +97,7 @@ function renderChoice(pending) {
   const showing = Array.isArray(cards) && cards.length > 0;
   choiceBox.classList.toggle('hidden', !showing);
   if (randomButton) randomButton.classList.toggle('hidden', !showing);
+  if (randomButton) randomButton.disabled = pending?.next?.chosen === true;
   if (!showing) return;
   choiceCards.innerHTML = '';
   const probabilities = pending.next.probabilities || {};
@@ -105,6 +106,7 @@ function renderChoice(pending) {
     card.type = 'button';
     card.className = 'life-choice-card';
     card.dataset.form = formId;
+    card.disabled = pending.next.chosen === true;
     if (pending.next.chosen && pending.next.formId === formId) card.classList.add('is-picked');
 
     const canvas = document.createElement('canvas');
@@ -141,7 +143,6 @@ function renderChoice(pending) {
     card.addEventListener('click', (e) => {
       e.target.blur?.();
       if (chooseNextBody(formId)) {
-        saveRun();
         card.classList.add('is-picked');
         renderLifeSummary();
       }
@@ -166,7 +167,8 @@ export function renderLifeSummary() {
     // The card shows the *reserved* life, so what the player reads and what they
     // are born into cannot drift apart.
     const next = plannedNextLife();
-    body.appendChild(row(t('life.next'), `${t(formNameKey(next.formId))} · ${t(`chapter${next.chapter}.name`)}`));
+    const nextForm = choicePending() ? t('life.choice.waiting') : t(formNameKey(next.formId));
+    body.appendChild(row(t('life.next'), `${nextForm} · ${t(`chapter${next.chapter}.name`)}`));
     const realm = realmById(next.realmId);
     if (realm) {
       body.appendChild(row(t('life.realm'), t(realm.nameKey)));
@@ -183,7 +185,7 @@ export function renderLifeSummary() {
     }
   }
   if (choicePending()) {
-    body.appendChild(row(t('life.auto'), t('life.choice.picked')));
+    body.appendChild(row(t('life.auto'), t('life.choice.waiting')));
   } else {
     body.appendChild(row(t('life.auto'), paused ? t('life.paused') : t('life.countdown', { seconds })));
   }
@@ -299,7 +301,7 @@ export function initLifeSummary() {
       // Only among the cards on screen: the player can always see what they get.
       if (Array.isArray(cards) && cards.length) {
         const pick = cards[Math.floor(((typeof performance !== 'undefined' ? performance.now() : 0) / 1000) * 7) % cards.length];
-        if (chooseNextBody(pick)) { saveRun(); renderLifeSummary(); }
+        if (chooseNextBody(pick)) renderLifeSummary();
       }
     });
   }

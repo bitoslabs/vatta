@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { choose } from '../ui/choices.js';
 import { HOMES, WARM_STONE } from '../world/world-data.js';
@@ -131,6 +132,7 @@ function decideHome(home) {
         state.cat.rummaged = [...(state.cat.rummaged || []), home.id];
         recordKarma('harm');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(
@@ -155,6 +157,7 @@ function decideHome(home) {
  * of several small decisions rather than the outcome of a single one.
  */
 export function settleHomes() {
+  if (hasDecided()) return respectedAll();
   state.cat.decided = true;
   animatePlayer();
   playChime();
@@ -163,6 +166,7 @@ export function settleHomes() {
     recordEffect('hearths-respected');
     recordKarma('give');
   }
+  saveRun();
   addFloater(
     WARM_STONE.x,
     WARM_STONE.y - 70,

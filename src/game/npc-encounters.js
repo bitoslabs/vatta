@@ -7,6 +7,8 @@ import { ENCOUNTERS } from '../content/encounters.js';
 import { addFloater } from '../systems/effects.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { recordEffect } from '../systems/world-effects.js';
+import { saveRun } from '../systems/save.js';
 import { currentMapId, currentBiomeId } from '../systems/biome.js';
 import { anchoredPoint } from '../world/world-data.js';
 
@@ -61,7 +63,9 @@ function talk(encounter) {
     const choice = encounter.choices[index];
     if (!choice) return;
     animatePlayer();
-    recordKarma(choice.karma);
+    const newlyRecorded = choice.effect ? recordEffect(choice.effect) : false;
+    if (!choice.effect || newlyRecorded) recordKarma(choice.karma);
+    saveRun();
     addFloater(player.x, player.y - 130, t(choice.answer), choice.color || '#bfd9cd', 15);
   });
 }

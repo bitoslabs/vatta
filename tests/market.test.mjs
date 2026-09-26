@@ -25,7 +25,8 @@ function element() {
 const query = () => element();
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: query, createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -43,7 +44,9 @@ const { hasEffect, WORLD_EFFECTS } = await import('../src/systems/world-effects.
 const { loadChapter } = await import('../src/game/chapters.js');
 const { encountersHere } = await import('../src/game/npc-encounters.js');
 const { player } = await import('../src/entities/player.js');
+const { initChoices } = await import('../src/ui/choices.js');
 const market = await import('../src/game/market.js');
+const { snapshot, readSave, applySaveRuntime } = await import('../src/systems/save.js');
 
 const log = (message) => console.error(`[market] ${message}`);
 
@@ -134,6 +137,11 @@ state.interact.fn();
 assert.equal(market.carriedCount(), 1, 'taking it fills the hands');
 assert.equal(market.hasTouched(), true, 'and the life has touched the market');
 assert.equal(market.giftTaken(first), true, 'and that stall is taken once, not twice');
+assert.equal(readSave().market.carried.length, 1, 'the taken offer is saved immediately');
+market.resetMarket();
+applySaveRuntime(readSave());
+assert.equal(market.carriedCount(), 1, 'the offer remains carried after a reload');
+assert.equal(market.giftTaken(first), true, 'the same gift cannot be taken again');
 assert(getKarma().demerit > 0, 'which is recorded as holding on');
 assert.equal(worldAbilities().carryCount, 1, 'the world knows what the hands hold');
 assert.equal(blockedAt(dynamicFeatures(), gatePoint.x, gatePoint.y, worldAbilities()), true, 'so the gate will not let it out');
@@ -154,6 +162,26 @@ assert.equal(blockedAt(dynamicFeatures(), curtains()[0].x, curtains()[0].y, worl
 assert.equal(blockedAt(dynamicFeatures(), curtains()[1].x, curtains()[1].y, worldAbilities()), false, 'and so is the second');
 assert.equal(blockedAt(dynamicFeatures(), curtains()[2].x, curtains()[2].y, worldAbilities()), true, 'while the third still needs a heavier hand');
 
+// A carried offer can be shared with the hungry being behind the first curtain.
+initChoices();
+player.x = being.x;
+player.y = being.y;
+state.interact = null;
+market.updateMarket();
+assert.equal(state.interact?.labelKey, 'prompt.shareOffer');
+state.interact.fn();
+emit(EVENTS.CHOICE_PICK, 1);
+assert.equal(market.carriedCount(), 2, 'keeping the offer leaves the choice open for later');
+state.interact = null;
+market.updateMarket();
+state.interact.fn();
+emit(EVENTS.CHOICE_PICK, 0);
+assert.equal(market.carriedCount(), 1, 'sharing gives away exactly one held offer');
+assert.equal(hasEffect('offer-shared'), true, 'the world remembers the sharing');
+assert.equal(snapshot().world.effects['offer-shared'], true, 'a mid-life save keeps the shared offer');
+assert.equal(blockedAt(dynamicFeatures(), curtains()[1].x, curtains()[1].y, worldAbilities()), true,
+  'sharing changes the weight carried in this life');
+
 // Put everything down, away from the stalls.
 player.x = gatePoint.x;
 player.y = gatePoint.y;
@@ -162,6 +190,7 @@ market.updateMarket();
 assert(state.interact && state.interact.labelKey === 'prompt.putDown', 'anywhere in the market, the hands can be emptied');
 state.interact.fn();
 assert.equal(market.carriedCount(), 0, 'putting it all down empties them');
+assert.equal(readSave().market.carried.length, 0, 'empty hands are saved immediately');
 // The passage is noticed on the next frame, standing at the gate with empty hands.
 state.interact = null;
 market.updateMarket();
@@ -172,6 +201,7 @@ log('putting down ok');
 
 // ---- 5. passing the gate empty-handed is what the market remembers ----
 assert.equal(market.hasPassedEmpty(), true, 'a life that took, and then put down, has passed the gate empty-handed');
+assert.equal(readSave().market.passed, true, 'the gate passage is saved immediately');
 assert.equal(hasEffect('hands-emptied'), true, 'and the world records it');
 assert(getKarma().merit > 0, 'empty hands are remembered as keeping the precept, not as loss');
 assert.equal(WORLD_EFFECTS['hands-emptied'] !== undefined, true, 'the effect is registered');
@@ -191,7 +221,8 @@ assert.equal(hasEffect('hands-emptied'), false, 'so nothing was left behind');
 log('untouched hands ok');
 
 // ---- 6. a new life arrives with its own hands ----
-state.world.effects = { 'hands-emptied': true };
+state.world.effects = { 'hands-emptied': true, 'offer-shared': true };
+state.lifeId++;
 loadChapter(1, { autosave: false });
 assert.equal(market.carriedCount(), 0, 'a new life starts empty-handed');
 assert.equal(market.hasTouched(), false, 'unpractised at the market');
@@ -201,7 +232,8 @@ state.formId = 'deer';
 state.realmId = 'manussa';
 recordKarma('steal', 4);
 initDynamicWorld(2);
-assert.equal(curtains().length, MARKET.curtainAt.length - 1, 'and the market does not put its first curtain across the way');
+assert.equal(curtains().length, MARKET.curtainAt.length - 2,
+  'the later market leaves the first and second curtains open');
 log('new life ok');
 
 // ---- 7. the planes stay apart, and no trunk stands in the alley ----

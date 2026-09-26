@@ -71,6 +71,28 @@ const byId = {
   exploreBtn: new El('button', { class: 'hidden', attributes: { id: 'exploreBtn' } }),
   settingsBtn: new El('button', { attributes: { id: 'settingsBtn' } }),
   settingsOverlay: new El('div', { class: 'hidden', attributes: { id: 'settingsOverlay' } }),
+  titleScreen: new El('div', { attributes: { id: 'titleScreen' } }),
+  dlgBox: new El('div', { class: 'hidden', attributes: { id: 'dlgBox' } }),
+  dlgWho: new El('div', { attributes: { id: 'dlgWho' } }),
+  dlgText: new El('div', { attributes: { id: 'dlgText' } }),
+  choiceBox: new El('div', { class: 'hidden', attributes: { id: 'choiceBox' } }),
+  medOverlay: new El('div', { class: 'hidden', attributes: { id: 'medOverlay' } }),
+  memOverlay: new El('div', { class: 'hidden', attributes: { id: 'memOverlay' } }),
+  disturbCard: new El('div', { class: 'hidden', attributes: { id: 'disturbCard' } }),
+  hud: new El('div', { class: 'hidden', attributes: { id: 'hud' } }),
+  ctrlHint: new El('div', { class: 'hidden', attributes: { id: 'ctrlHint' } }),
+  endScreen: new El('div', { class: 'hidden', attributes: { id: 'endScreen' } }),
+  endTitle: new El('div', { attributes: { id: 'endTitle' } }),
+  endName: new El('div', { attributes: { id: 'endName' } }),
+  endLesson: new El('div', { attributes: { id: 'endLesson' } }),
+  endStats: new El('div', { attributes: { id: 'endStats' } }),
+  nextBtn: new El('button', { attributes: { id: 'nextBtn' } }),
+  realmName: new El('div', { attributes: { id: 'realmName' } }),
+  realmPali: new El('div', { attributes: { id: 'realmPali' } }),
+  realmDesc: new El('div', { attributes: { id: 'realmDesc' } }),
+  realmReason: new El('div', { attributes: { id: 'realmReason' } }),
+  karmaSummary: new El('div', { attributes: { id: 'karmaSummary' } }),
+  preceptSummary: new El('div', { attributes: { id: 'preceptSummary' } }),
   confirmOverlay: new El('div', { class: 'hidden', attributes: { id: 'confirmOverlay' } }),
   confirmTitle: new El('div', { attributes: { id: 'confirmTitle' } }),
   confirmBody: new El('div', { attributes: { id: 'confirmBody' } }),
@@ -226,5 +248,48 @@ assert.equal(locales.th.strings['title.name'], 'วัฏฏะ', 'Thai name is 
 assert.equal(locales.lo.strings['title.name'], 'ວັດຕະ', 'Lao name is ວັດຕະ');
 assert.equal(locales.en.strings['title.name'], 'Vatta', 'English name is Vatta');
 log('markup + name + fonts ok');
+
+// ---- 8. a completed save reopens its ending through either entry point ----
+const { MODE } = await import('../src/core/constants.js');
+const audioNode = () => ({ connect() {}, start() {}, stop() {}, frequency: { value: 0 },
+  gain: { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} } });
+window.AudioContext = class {
+  constructor() { this.sampleRate = 8; this.currentTime = 0; this.destination = audioNode(); }
+  createGain() { return audioNode(); }
+  createBuffer() { return { getChannelData: () => new Float32Array(16) }; }
+  createBufferSource() { return audioNode(); }
+  createBiquadFilter() { return audioNode(); }
+  createOscillator() { return audioNode(); }
+};
+const { resetKarma } = await import('../src/systems/karma.js');
+const { currentMapId } = await import('../src/systems/biome.js');
+resetKarma();
+state.chapter = 6;
+state.formId = 'niraya';
+state.realmId = 'niraya';
+state.lifeMode = true;
+state.liberated = false;
+state.journeyComplete = false;
+save.saveRun(2);
+byId.continueBtn.click();
+assert.equal(state.realmId, 'niraya', 'Continue keeps the saved realm');
+assert.equal(state.dynamic.mapId, currentMapId(), 'Continue builds the map for that realm');
+slots.renderSaveSlots();
+saveSlots.children[1].click();
+assert.equal(state.dynamic.mapId, currentMapId(), 'opening a slot builds the map for its saved realm');
+state.chapter = 14;
+state.lifeMode = true;
+state.liberated = true;
+state.finalChoice = 'free';
+save.saveRun(2);
+byId.continueBtn.click();
+assert.equal(state.mode, MODE.END, 'Continue restores the completed ending');
+assert.equal(byId.endScreen.classes.has('hidden'), false, 'the end card is visible again');
+byId.endScreen.classList.add('hidden');
+slots.renderSaveSlots();
+saveSlots.children[1].click();
+assert.equal(state.mode, MODE.END, 'opening the slot also restores the ending');
+assert.equal(byId.endScreen.classes.has('hidden'), false);
+log('completed save resumes ok');
 
 console.error('TITLE TEST OK — five views in one scrolling panel, keyboard tabs, numbered chapters, slot rows, an About page and the Vatta name/fonts');

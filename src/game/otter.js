@@ -8,6 +8,7 @@ import { addFloater } from '../systems/effects.js';
 import { getForm } from '../systems/forms.js';
 import { t } from '../systems/i18n.js';
 import { recordKarma } from '../systems/karma.js';
+import { saveRun } from '../systems/save.js';
 import { hasEffect, recordEffect } from '../systems/world-effects.js';
 import { allDriftersCaught, catchDrifter, caughtDrifters, drifterCount, nearestDrifter } from '../systems/drift.js';
 import { choose } from '../ui/choices.js';
@@ -90,6 +91,7 @@ export function updateOtter() {
 
 function catchOne(drift) {
   if (!catchDrifter(drift.id)) return;
+  saveRun();
   animatePlayer();
   playChime();
   addFloater(
@@ -120,6 +122,7 @@ function decideRiver() {
         state.world.snags = ['drift-a', 'drift-b', 'drift-c'];
         recordKarma('cling');
       }
+      saveRun();
       animatePlayer();
       playChime();
       addFloater(

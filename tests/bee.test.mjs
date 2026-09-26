@@ -25,7 +25,8 @@ function element() {
 const query = () => element();
 globalThis.document = { hidden: false, querySelector: query, querySelectorAll: () => [], getElementById: query, createElement: element };
 globalThis.window = { matchMedia: () => ({ matches: false }), addEventListener() {}, location: { reload() {} } };
-globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) };
 globalThis.performance = { now: () => 0 };
 
 const { state } = await import('../src/core/state.js');
@@ -39,6 +40,7 @@ const { BIOMES } = await import('../src/content/biomes.js');
 const { goalFor, updateLifeGoal } = await import('../src/systems/goals.js');
 const { initDynamicWorld } = await import('../src/systems/worldgen.js');
 const { getKarma, resetKarma } = await import('../src/systems/karma.js');
+const { readSave, applySaveRuntime } = await import('../src/systems/save.js');
 const { hasEffect, worldEffects } = await import('../src/systems/world-effects.js');
 const { planNextLife, candidatesFor } = await import('../src/systems/life-route.js');
 const { loadChapter } = await import('../src/game/chapters.js');
@@ -109,6 +111,13 @@ for (const [index, flower] of flowers.entries()) {
   state.interact.fn();
   assert.equal(bee.visitedCount(), index + 1, `flower ${index + 1} is worked`);
   assert.equal(bee.flowerVisited(index), true, `and marked as worked`);
+  assert.equal(readSave().bee.visited.length, index + 1, `flower ${index + 1} is saved`);
+  if (index === 0) {
+    bee.resetBee();
+    applySaveRuntime(readSave());
+    assert.equal(bee.visitedCount(), 1, 'the first flower survives a reload');
+    assert.equal(goalFor().x, flowers[1].x, 'the resumed goal is the next flower');
+  }
 }
 assert.equal(bee.allFlowersVisited(), true, 'the whole chain is worked');
 assert.equal(goalFor().kind, 'meadow', 'now the meadow is where the question is');
@@ -126,6 +135,15 @@ emit(EVENTS.CHOICE_PICK, 0); // share it
 assert.equal(bee.didShare(), true, 'the bee left a share in the far field');
 assert.equal(hasEffect('forest-pollinated'), true, 'and the world records it');
 assert(getKarma().merit > 0, 'sharing the pollen is remembered as giving');
+const sharedMerit = getKarma().merit;
+assert.equal(readSave().bee.shared, true, 'sharing pollen is saved before the hive');
+bee.resetBee();
+applySaveRuntime(readSave());
+assert.equal(bee.didShare(), true, 'sharing survives a reload');
+state.interact = null;
+bee.updateBee();
+assert.equal(state.interact, null, 'the meadow question is not offered again');
+assert.equal(getKarma().merit, sharedMerit, 'resuming gives no extra merit');
 assert.equal(goalFor().kind, 'hive', 'now the hive is where the life ends');
 
 // ---- 4. a pollinated forest grows flowers in later lives ----
@@ -175,6 +193,16 @@ assert.equal(bee.didShare(), false, 'this bee kept every grain');
 assert.equal(hasEffect('forest-pollinated'), false, 'so the forest was not pollinated');
 assert.equal(getKarma().merit, 0, 'and nothing is recorded as giving');
 assert(getKarma().tendencies.clinging > 0, 'the keeping is what it leaves in itself');
+const keptClinging = getKarma().tendencies.clinging;
+assert.equal(readSave().bee.decided, true, 'keeping all pollen is saved too');
+bee.resetBee();
+applySaveRuntime(readSave());
+assert.equal(bee.hasDecided(), true, 'the keeping choice survives a reload');
+assert.equal(bee.didShare(), false, 'the keeping choice stays unchanged');
+state.interact = null;
+bee.updateBee();
+assert.equal(state.interact, null, 'the keeping choice is not offered again');
+assert.equal(getKarma().tendencies.clinging, keptClinging, 'resuming gives no extra clinging');
 assert.equal(goalFor().kind, 'hive', 'the hive still ends the life — the choice is not a punishment');
 log('keeping ok');
 
